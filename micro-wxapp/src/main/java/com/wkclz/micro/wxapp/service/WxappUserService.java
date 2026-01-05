@@ -1,12 +1,12 @@
 package com.wkclz.micro.wxapp.service;
 
-import com.wkclz.common.emuns.ResultStatus;
-import com.wkclz.common.exception.BizException;
-import com.wkclz.common.utils.AssertUtil;
-import com.wkclz.micro.wxapp.dao.WxappUserMapper;
+import com.wkclz.core.enums.ResultCode;
+import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.wxapp.bean.entity.WxappUser;
-import com.wkclz.mybatis.base.BaseService;
+import com.wkclz.micro.wxapp.dao.WxappUserMapper;
+import com.wkclz.mybatis.service.BaseService;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 /**
  * Description Create by shrimp-gen
@@ -26,19 +26,18 @@ public class WxappUserService extends BaseService<WxappUser, WxappUserMapper> {
 
     public WxappUser update(WxappUser entity) {
         duplicateCheck(entity);
-        AssertUtil.notNull(entity.getId(), "请求错误！参数[id]不能为空");
-        AssertUtil.notNull(entity.getVersion(), "请求错误！参数[version]不能为空");
-        WxappUser oldEntity = get(entity.getId());
+        Assert.notNull(entity.getId(), "请求错误！参数[id]不能为空");
+        Assert.notNull(entity.getVersion(), "请求错误！参数[version]不能为空");
+        WxappUser oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
-            throw BizException.error(ResultStatus.RECORD_NOT_EXIST);
+            throw ValidationException.of(ResultCode.NOT_FOUND);
         }
         WxappUser.copyIfNotNull(entity, oldEntity);
-        updateSelective(oldEntity);
+        updateByIdSelective(oldEntity);
         return oldEntity;
     }
 
     private void duplicateCheck(WxappUser entity) {
-        AssertUtil.notNull(entity);
         // 唯一条件为空，直接通过
         if (true) {
             return;
@@ -47,7 +46,7 @@ public class WxappUserService extends BaseService<WxappUser, WxappUserMapper> {
         // 唯一条件不为空，请设置唯一条件
         WxappUser param = new WxappUser();
         // 唯一条件
-        param = get(param);
+        param = selectOneByEntity(param);
         if (param == null) {
             return;
         }
@@ -55,7 +54,7 @@ public class WxappUserService extends BaseService<WxappUser, WxappUserMapper> {
             return;
         }
         // 查到有值，为新增或 id 不一样场景，为数据重复
-        throw BizException.error(ResultStatus.RECORD_DUPLICATE);
+        throw ValidationException.of(ResultCode.RECORD_DUPLICATE);
     }
 
 }

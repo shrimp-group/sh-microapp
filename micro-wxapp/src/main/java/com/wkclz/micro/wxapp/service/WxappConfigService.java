@@ -1,14 +1,14 @@
 package com.wkclz.micro.wxapp.service;
 
-import com.wkclz.common.emuns.ResultStatus;
-import com.wkclz.common.exception.BizException;
-import com.wkclz.common.utils.AssertUtil;
-import com.wkclz.micro.wxapp.dao.WxappConfigMapper;
+import cn.hutool.core.lang.Assert;
+import com.wkclz.core.base.PageData;
+import com.wkclz.core.enums.ResultCode;
+import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.wxapp.bean.entity.WxappConfig;
 import com.wkclz.micro.wxapp.bean.vo.WxMaAppInfo;
-import com.wkclz.mybatis.base.BaseService;
-import com.wkclz.mybatis.base.PageData;
-import com.wkclz.mybatis.base.PageQuery;
+import com.wkclz.micro.wxapp.dao.WxappConfigMapper;
+import com.wkclz.mybatis.helper.PageQuery;
+import com.wkclz.mybatis.service.BaseService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -31,11 +31,11 @@ public class WxappConfigService extends BaseService<WxappConfig, WxappConfigMapp
     }
 
     public WxappConfig getConfigInfo(WxappConfig entity) {
-        AssertUtil.notNull(entity.getId(), "请求错误！参数[id]不能为空");
-        AssertUtil.notNull(entity.getTenantCode(), "请求错误！参数[tenantCode]不能为空");
-        WxappConfig config = get(entity);
+        Assert.notNull(entity.getId(), "请求错误！参数[id]不能为空");
+        Assert.notNull(entity.getTenantCode(), "请求错误！参数[tenantCode]不能为空");
+        WxappConfig config = selectOneByEntity(entity);
         if (config == null) {
-            throw BizException.error(ResultStatus.RECORD_NOT_EXIST);
+            throw ValidationException.of(ResultCode.RECORD_NOT_EXIST);
         }
         if (StringUtils.isNotBlank(config.getAppSecret())) {
             config.setAppSecret("******");
@@ -63,11 +63,11 @@ public class WxappConfigService extends BaseService<WxappConfig, WxappConfigMapp
 
     public WxappConfig update(WxappConfig entity) {
         duplicateCheck(entity);
-        AssertUtil.notNull(entity.getId(), "请求错误！参数[id]不能为空");
-        AssertUtil.notNull(entity.getVersion(), "请求错误！参数[version]不能为空");
-        WxappConfig oldEntity = get(entity.getId());
+        Assert.notNull(entity.getId(), "请求错误！参数[id]不能为空");
+        Assert.notNull(entity.getVersion(), "请求错误！参数[version]不能为空");
+        WxappConfig oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
-            throw BizException.error(ResultStatus.RECORD_NOT_EXIST);
+            throw ValidationException.of(ResultCode.RECORD_NOT_EXIST);
         }
 
         if (StringUtils.isBlank(entity.getAppSecret()) || "******".equals(entity.getAppSecret())) {
@@ -86,12 +86,12 @@ public class WxappConfigService extends BaseService<WxappConfig, WxappConfigMapp
             entity.setKeyPem(null);
         }
         WxappConfig.copyIfNotNull(entity, oldEntity);
-        updateSelective(oldEntity);
+        updateByIdSelective(oldEntity);
         return oldEntity;
     }
 
     private void duplicateCheck(WxappConfig entity) {
-        AssertUtil.notNull(entity);
+        Assert.notNull(entity);
         // 唯一条件为空，直接通过
         if (StringUtils.isBlank(entity.getAppId())) {
             return;
@@ -101,7 +101,7 @@ public class WxappConfigService extends BaseService<WxappConfig, WxappConfigMapp
         WxappConfig param = new WxappConfig();
         param.setAppId(entity.getAppId());
         // 唯一条件
-        param = get(param);
+        param = selectOneByEntity(param);
         if (param == null) {
             return;
         }
@@ -109,7 +109,7 @@ public class WxappConfigService extends BaseService<WxappConfig, WxappConfigMapp
             return;
         }
         // 查到有值，为新增或 id 不一样场景，为数据重复
-        throw BizException.error(ResultStatus.RECORD_DUPLICATE);
+        throw ValidationException.of(ResultCode.RECORD_DUPLICATE);
     }
 
 }

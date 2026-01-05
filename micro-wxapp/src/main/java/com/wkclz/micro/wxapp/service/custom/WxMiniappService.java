@@ -3,18 +3,17 @@ package com.wkclz.micro.wxapp.service.custom;
 import cn.binarywang.wx.miniapp.api.WxMaService;
 import cn.binarywang.wx.miniapp.bean.WxMaJscode2SessionResult;
 import cn.binarywang.wx.miniapp.bean.WxMaUserInfo;
-import com.wkclz.auth.sdk.helper.AuthHelper;
-import com.wkclz.auth.sdk.pojo.LoginResponse;
-import com.wkclz.common.exception.BizException;
-import com.wkclz.common.utils.AssertUtil;
+import com.wkclz.core.exception.ValidationException;
+import com.wkclz.iam.sdk.helper.SessionHelper;
+import com.wkclz.iam.sdk.model.LoginResponse;
 import com.wkclz.micro.wxapp.config.WxMaConfiguration;
 import com.wkclz.micro.wxapp.dao.WxappLoginLogMapper;
 import com.wkclz.micro.wxapp.dao.WxappUserMapper;
 import com.wkclz.micro.wxapp.bean.entity.WxappLoginLog;
 import com.wkclz.micro.wxapp.bean.entity.WxappUser;
 import com.wkclz.micro.wxapp.bean.vo.WxMaAppUserLoginVo;
-import com.wkclz.redis.gen.RedisIdGenHelper;
-import com.wkclz.spring.helper.IpHelper;
+import com.wkclz.redis.helper.RedisIdGenerator;
+import com.wkclz.web.helper.IpHelper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import me.chanjar.weixin.common.error.WxErrorException;
@@ -23,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @Service
@@ -31,10 +31,10 @@ public class WxMiniappService {
 
     private static final Logger logger = LoggerFactory.getLogger(WxMiniappService.class);
 
-    private final AuthHelper authHelper;
+    private final SessionHelper aessionHelper;
     private final WxMaConfiguration configuration;
     private final WxappUserMapper wxappUserMapper;
-    private final RedisIdGenHelper redisIdGenHelper;
+    private final RedisIdGenerator redisIdGenerator;
     private final WxappLoginService wxappLoginService;
     private final WxappLoginLogMapper wxappLoginLogMapper;;
 
@@ -56,10 +56,10 @@ public class WxMiniappService {
             withUserInfo++;
         }
         if (withUserInfo > 0 && withUserInfo != 4) {
-            AssertUtil.notNull(vo.getEncryptedData(), "encryptedData 不能为空");
-            AssertUtil.notNull(vo.getIv(), "iv 不能为空");
-            AssertUtil.notNull(vo.getRawData(), "rawData 不能为空");
-            AssertUtil.notNull(vo.getSignature(), "signature 不能为空");
+            Assert.notNull(vo.getEncryptedData(), "encryptedData 不能为空");
+            Assert.notNull(vo.getIv(), "iv 不能为空");
+            Assert.notNull(vo.getRawData(), "rawData 不能为空");
+            Assert.notNull(vo.getSignature(), "signature 不能为空");
         }
 
         WxMaService wxService = configuration.getMaService(vo.getAppId());
@@ -79,7 +79,7 @@ public class WxMiniappService {
         if (withUserInfo == 4) {
             // 用户信息校验
             if (!wxService.getUserService().checkUserInfo(sessionKey, vo.getRawData(), vo.getSignature())) {
-                throw BizException.error("Wxapp check failed");
+                throw ValidationException.of("Wxapp check failed");
             }
             // 解密用户信息
             wxMaUserInfo = wxService.getUserService().getUserInfo(sessionKey, vo.getEncryptedData(), vo.getIv());
@@ -88,7 +88,7 @@ public class WxMiniappService {
         WxappUser user = wxappUserMapper.getWxappUserByOpenId(openid);
         // 第一次登录，什么信息都没有
         if (user == null) {
-            String userCode = wxMaUserInfo == null ? "wxapp_" + redisIdGenHelper.nextShot() : wxMaUserInfo.getNickName();
+            String userCode = wxMaUserInfo == null ? redisIdGenerator.generateIdWithPrefix("wxapp_") : wxMaUserInfo.getNickName();
 
             user = new WxappUser();
             user.setAppId(vo.getAppId());
@@ -141,7 +141,7 @@ public class WxMiniappService {
                     userChangeFlag = true;
                 }
                 if (userChangeFlag){
-                    wxappUserMapper.updateSelective(user);
+                    wxappUserMapper.updateByIdSelective(user);
                 }
             }
         }
@@ -154,22 +154,22 @@ public class WxMiniappService {
         wxappLoginLogMapper.insert(log);
 
         // 基础信息验证完了后，进入统一的创建session的过程
-        authHelper.invalidToken();
+        aessionHelper.invalidToken();
         return wxappLoginService.login(user);
     }
 
     public WxappUser miniappUserInfo() {
-        String userCode = authHelper.getUserCode();
+        String userCode = aessionHelper.getUserCode();
         return wxappUserMapper.getWxappUserByUserCode(userCode);
     }
 
     @Transactional(rollbackFor = Exception.class)
     public boolean miniappUserinfoUpdate(WxappUser wu) {
-        String userCode = authHelper.getUserCode();
+        String userCode = aessionHelper.getUserCode();
 
         WxappUser user = wxappUserMapper.getWxappUserByUserCode(userCode);
         if (user == null) {
-            throw BizException.error("用户信息不全，无法操作更新");
+            throw ValidationException.of("用户信息不全，无法操作更新");
         }
         boolean userChangeFlag = false;
 
@@ -197,7 +197,7 @@ public class WxMiniappService {
         */
 
         if (userChangeFlag){
-            wxappUserMapper.updateSelective(user);
+            wxappUserMapper.updateByIdSelective(user);
         }
         return true;
     }

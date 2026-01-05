@@ -1,14 +1,15 @@
 package com.wkclz.micro.wxapp.rest;
 
-import com.wkclz.auth.sdk.helper.AuthHelper;
-import com.wkclz.common.emuns.ResultStatus;
-import com.wkclz.common.entity.Result;
-import com.wkclz.common.utils.AssertUtil;
+import com.wkclz.core.base.PageData;
+import com.wkclz.core.base.R;
+import com.wkclz.core.enums.ResultCode;
+import com.wkclz.iam.sdk.helper.SessionHelper;
+import com.wkclz.micro.wxapp.Route;
 import com.wkclz.micro.wxapp.bean.entity.WxappConfig;
 import com.wkclz.micro.wxapp.service.WxappConfigService;
-import com.wkclz.mybatis.base.PageData;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class WxappConfigRest {
 
     @Autowired
-    private AuthHelper authHelper;
+    private SessionHelper aessionHelper;
     @Autowired
     private WxappConfigService wxappConfigService;
 
@@ -79,11 +80,11 @@ public class WxappConfigRest {
      * }
      *
      */
-    @GetMapping(Routes.WXAPP_CONFIG_PAGE)
-    public Result wxappConfigPage(WxappConfig entity) {
-        entity.setTenantCode(authHelper.getTenantCode());
+    @GetMapping(Route.WXAPP_CONFIG_PAGE)
+    public R wxappConfigPage(WxappConfig entity) {
+        entity.setTenantCode(aessionHelper.getTenantCode());
         PageData<WxappConfig> page = wxappConfigService.getConfigPage(entity);
-        return Result.data(page);
+        return R.ok(page);
     }
 
 
@@ -138,12 +139,12 @@ public class WxappConfigRest {
      * }
      *
      */
-    @GetMapping(Routes.WXAPP_CONFIG_INFO)
-    public Result wxappConfigInfo(WxappConfig entity) {
-        AssertUtil.notNull(entity.getId(), "请求错误！参数[id]不能为空");
-        entity.setTenantCode(authHelper.getTenantCode());
+    @GetMapping(Route.WXAPP_CONFIG_INFO)
+    public R wxappConfigInfo(WxappConfig entity) {
+        Assert.notNull(entity.getId(), "请求错误！参数[id]不能为空");
+        entity.setTenantCode(aessionHelper.getTenantCode());
         entity = wxappConfigService.getConfigInfo(entity);
-        return Result.data(entity);
+        return R.ok(entity);
     }
 
 
@@ -183,12 +184,12 @@ public class WxappConfigRest {
      * }
      *
      */
-    @PostMapping(Routes.WXAPP_CONFIG_CREATE)
-    public Result wxappConfigCreate(@RequestBody WxappConfig entity) {
+    @PostMapping(Route.WXAPP_CONFIG_CREATE)
+    public R wxappConfigCreate(@RequestBody WxappConfig entity) {
         paramCheck(entity);
-        entity.setTenantCode(authHelper.getTenantCode());
+        entity.setTenantCode(aessionHelper.getTenantCode());
         entity = wxappConfigService.create(entity);
-        return Result.data(entity);
+        return R.ok(entity);
     }
 
 
@@ -233,13 +234,13 @@ public class WxappConfigRest {
      * }
      *
      */
-    @PostMapping(Routes.WXAPP_CONFIG_UPDATE)
-    public Result wxappConfigUpdate(@RequestBody WxappConfig entity) {
-        AssertUtil.notNull(entity.getId(), ResultStatus.PARAM_NO_ID.getMsg());
-        AssertUtil.notNull(entity.getVersion(), ResultStatus.UPDATE_NO_VERSION.getMsg());
+    @PostMapping(Route.WXAPP_CONFIG_UPDATE)
+    public R wxappConfigUpdate(@RequestBody WxappConfig entity) {
+        Assert.notNull(entity.getId(), ResultCode.PARAM_NO_ID.getMessage());
+        Assert.notNull(entity.getVersion(), ResultCode.UPDATE_NO_VERSION.getMessage());
         paramCheck(entity);
         entity = wxappConfigService.update(entity);
-        return Result.data(entity);
+        return R.ok(entity);
     }
 
 
@@ -265,19 +266,19 @@ public class WxappConfigRest {
      * }
      *
      */
-    @PostMapping(Routes.WXAPP_CONFIG_REMOVE)
-    public Result wxappConfigRemove(@RequestBody WxappConfig entity) {
-        wxappConfigService.deleteWithCheck(entity.getId());
-        return Result.data(1);
+    @PostMapping(Route.WXAPP_CONFIG_REMOVE)
+    public R wxappConfigRemove(@RequestBody WxappConfig entity) {
+        wxappConfigService.deleteById(entity);
+        return R.ok(1);
     }
 
 
 
     private void paramCheck(WxappConfig entity) {
-        AssertUtil.notNull(entity.getAppId(), "appId 不能为空");
-        AssertUtil.notNull(entity.getAppSecret(), "appSecret 不能为空");
+        Assert.notNull(entity.getAppId(), "appId 不能为空");
+        Assert.notNull(entity.getAppSecret(), "appSecret 不能为空");
         if (StringUtils.isBlank(entity.getTenantCode())) {
-            entity.setTenantCode(authHelper.getTenantCode());
+            entity.setTenantCode(aessionHelper.getTenantCode());
         }
     }
 

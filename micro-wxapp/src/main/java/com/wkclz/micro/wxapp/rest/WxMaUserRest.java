@@ -2,23 +2,23 @@ package com.wkclz.micro.wxapp.rest;
 
 import cn.binarywang.wx.miniapp.api.WxMaService;
 import cn.binarywang.wx.miniapp.bean.WxMaPhoneNumberInfo;
-import com.wkclz.auth.sdk.helper.AuthHelper;
-import com.wkclz.auth.sdk.pojo.LoginResponse;
-import com.wkclz.auth.sdk.pojo.UserInfo;
-import com.wkclz.common.entity.Result;
-import com.wkclz.common.exception.BizException;
-import com.wkclz.common.tools.RegularTool;
-import com.wkclz.common.utils.AssertUtil;
-import com.wkclz.micro.file.api.FsApi;
-import com.wkclz.micro.wxapp.config.WxMaConfiguration;
+import com.wkclz.core.base.R;
+import com.wkclz.core.base.UserInfo;
+import com.wkclz.core.exception.ValidationException;
+import com.wkclz.iam.sdk.helper.SessionHelper;
+import com.wkclz.iam.sdk.model.LoginResponse;
+import com.wkclz.micro.wxapp.Route;
 import com.wkclz.micro.wxapp.bean.entity.WxappUser;
 import com.wkclz.micro.wxapp.bean.vo.WxMaAppUserLoginVo;
+import com.wkclz.micro.wxapp.config.WxMaConfiguration;
 import com.wkclz.micro.wxapp.service.WxappUserService;
 import com.wkclz.micro.wxapp.service.custom.WxMiniappService;
+import com.wkclz.tool.tools.RegularTool;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,10 +33,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class WxMaUserRest {
 
 
+//    @Resource
+//    private FsApi fsApi;
     @Resource
-    private FsApi fsApi;
-    @Resource
-    private AuthHelper authHelper;
+    private SessionHelper aessionHelper;
     @Resource
     private WxMaConfiguration configuration;
     @Resource
@@ -91,13 +91,13 @@ public class WxMaUserRest {
      * }
      *
      */
-    @PostMapping(Routes.MINIAPP_LOGIN)
-    public Result customerMiniappLogin(@RequestBody WxMaAppUserLoginVo vo, HttpServletRequest request) {
-        AssertUtil.notNull(vo.getAppId(), "appId 不能为空");
-        AssertUtil.notNull(vo.getCode(), "code 不能为空");
+    @PostMapping(Route.MINIAPP_LOGIN)
+    public R customerMiniappLogin(@RequestBody WxMaAppUserLoginVo vo, HttpServletRequest request) {
+        Assert.notNull(vo.getAppId(), "appId 不能为空");
+        Assert.notNull(vo.getCode(), "code 不能为空");
 
         LoginResponse response = wxMiniappService.miniappLogin(vo, request);
-        return Result.data(response);
+        return R.ok(response);
     }
 
 
@@ -125,15 +125,15 @@ public class WxMaUserRest {
      * }
      *
      */
-    @GetMapping(Routes.MINIAPP_USERINFO)
-    public Result customerMiniappUserinfo() {
+    @GetMapping(Route.MINIAPP_USERINFO)
+    public R customerMiniappUserinfo() {
         WxappUser user = wxMiniappService.miniappUserInfo();
         UserInfo ui = new UserInfo();
         ui.setUserCode(user.getUserCode());
         ui.setNickname(user.getNickname());
-        ui.setAvatar(fsApi.sign(user.getAvatar()));
+        // ui.setAvatar(fsApi.sign(user.getAvatar()));
         ui.setOpenId(user.getOpenId());
-        return Result.data(ui);
+        return R.ok(ui);
     }
 
 
@@ -161,13 +161,13 @@ public class WxMaUserRest {
      * }
      *
      */
-    @PostMapping(Routes.MINIAPP_USERINFO_UPDATE)
-    public Result customerMiniappUserinfoUpdate(@RequestBody WxappUser userInfo) {
+    @PostMapping(Route.MINIAPP_USERINFO_UPDATE)
+    public R customerMiniappUserinfoUpdate(@RequestBody WxappUser userInfo) {
         if (StringUtils.isBlank(userInfo.getNickname()) && StringUtils.isBlank(userInfo.getAvatar())) {
-            throw BizException.error("没有头像也没有昵称！");
+            throw ValidationException.of("没有头像也没有昵称！");
         }
         boolean b = wxMiniappService.miniappUserinfoUpdate( userInfo);
-        return Result.data(b);
+        return R.ok(b);
     }
 
 
@@ -190,18 +190,18 @@ public class WxMaUserRest {
      * }
      *
      */
-    @PostMapping(Routes.MINIAPP_MOBILE_BIND)
-    public Result miniappMobileBind(HttpServletRequest req, HttpServletResponse rep, @RequestBody WxappUser user) {
-        AssertUtil.notNull(user.getMobile(), "mobile can not be null");
+    @PostMapping(Route.MINIAPP_MOBILE_BIND)
+    public R miniappMobileBind(HttpServletRequest req, HttpServletResponse rep, @RequestBody WxappUser user) {
+        Assert.notNull(user.getMobile(), "mobile can not be null");
         if (!RegularTool.isMobile(user.getMobile())) {
-            throw BizException.remind("手机号格式错误");
+            return R.error("手机号格式错误");
         }
         WxappUser param = new WxappUser();
-        param.setUserCode(authHelper.getUserCode());
-        WxappUser wxappUser = wxappBindMobile.get(param);
+        param.setUserCode(aessionHelper.getUserCode());
+        WxappUser wxappUser = wxappBindMobile.selectOneByEntity(param);
         wxappUser.setMobile(user.getMobile());
-        wxappBindMobile.updateSelective(wxappUser);
-        return Result.ok();
+        wxappBindMobile.updateByIdSelective(wxappUser);
+        return R.ok();
     }
 
 
@@ -231,18 +231,18 @@ public class WxMaUserRest {
      * }
      *
      */
-    @GetMapping(Routes.CUSTOMER_WX_USER_PHONE)
-    public Result phone(String sessionKey, String signature, String rawData, String encryptedData, String iv) {
+    @GetMapping(Route.CUSTOMER_WX_USER_PHONE)
+    public R phone(String sessionKey, String signature, String rawData, String encryptedData, String iv) {
         final WxMaService wxService = configuration.getMaService();
 
         // 用户信息校验
         if (!wxService.getUserService().checkUserInfo(sessionKey, rawData, signature)) {
-            throw BizException.error("user check failed");
+            throw ValidationException.of("user check failed");
         }
 
         // 解密
         WxMaPhoneNumberInfo phoneNoInfo = wxService.getUserService().getPhoneNoInfo(sessionKey, encryptedData, iv);
-        return Result.data(phoneNoInfo);
+        return R.ok(phoneNoInfo);
     }
 
 

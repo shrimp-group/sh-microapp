@@ -4,7 +4,8 @@ import cn.binarywang.wx.miniapp.api.WxMaService;
 import cn.binarywang.wx.miniapp.constant.WxMaConstants;
 import com.google.common.collect.Lists;
 import com.google.common.io.Files;
-import com.wkclz.common.entity.Result;
+import com.wkclz.core.base.R;
+import com.wkclz.micro.wxapp.Route;
 import com.wkclz.micro.wxapp.config.WxMaConfiguration;
 import jakarta.servlet.http.HttpServletRequest;
 import me.chanjar.weixin.common.bean.result.WxMediaUploadResult;
@@ -62,13 +63,13 @@ public class WxMaMediaRest {
      *      ]
      * }
      */
-    @PostMapping(Routes.CUSTOMER_WX_MEDIA_UPLOAD)
-    public Result uploadMedia(HttpServletRequest request) throws WxErrorException {
+    @PostMapping(Route.CUSTOMER_WX_MEDIA_UPLOAD)
+    public R uploadMedia(HttpServletRequest request) throws WxErrorException {
         final WxMaService wxService = configuration.getMaService();
 
         StandardServletMultipartResolver resolver = new StandardServletMultipartResolver();
         if (!resolver.isMultipart(request)) {
-            return Result.data(Lists.newArrayList());
+            return R.ok(Lists.newArrayList());
         }
 
         MultipartHttpServletRequest multiRequest = resolver.resolveMultipart(request);
@@ -89,7 +90,7 @@ public class WxMaMediaRest {
                 this.logger.error(e.getMessage(), e);
             }
         }
-        return Result.data(result);
+        return R.ok(result);
     }
 
     /**
@@ -107,7 +108,7 @@ public class WxMaMediaRest {
      * @apiSuccessExample {json} 返回样例:
      * File
      */
-    @GetMapping(Routes.CUSTOMER_WX_MEDIA_DOWNLOAD)
+    @GetMapping(Route.CUSTOMER_WX_MEDIA_DOWNLOAD)
     public File getMedia(@PathVariable String mediaId) throws WxErrorException {
         final WxMaService wxService = configuration.getMaService();
         return wxService.getMediaService().getMedia(mediaId);

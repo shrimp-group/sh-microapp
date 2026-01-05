@@ -1,6 +1,7 @@
 package com.wkclz.micro.wxapp.rest;
 
 import cn.binarywang.wx.miniapp.api.WxMaService;
+import com.wkclz.micro.wxapp.Route;
 import com.wkclz.micro.wxapp.config.WxMaConfiguration;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +30,7 @@ public class WxAppRest {
      * @apiSuccessExample {json} 返回样例:
      * vvvvvvvvvvvvvv
      */
-    @GetMapping(value = Routes.CUSTOMER_WX_PORTAL, produces = "text/plain;charset=utf-8")
+    @GetMapping(value = Route.CUSTOMER_WX_PORTAL, produces = "text/plain;charset=utf-8")
     public String authGet(@RequestParam(name = "signature", required = false) String signature,
                           @RequestParam(name = "timestamp", required = false) String timestamp,
                           @RequestParam(name = "nonce", required = false) String nonce,

@@ -1,45 +1,52 @@
 package com.wkclz.micro.wxapp.service.custom;
 
-import com.wkclz.auth.sdk.config.CasSdkConfig;
-import com.wkclz.auth.sdk.helper.JwtHelper;
-import com.wkclz.auth.sdk.pojo.LoginResponse;
-import com.wkclz.auth.sdk.pojo.UserInfo;
+import com.alibaba.fastjson2.JSON;
+import com.wkclz.iam.sdk.config.IamSdkConfig;
+import com.wkclz.iam.sdk.enums.LoginStatus;
+import com.wkclz.iam.sdk.model.LoginResponse;
+import com.wkclz.iam.sdk.model.UserJwt;
+import com.wkclz.iam.sdk.model.UserSession;
+import com.wkclz.iam.sdk.util.JwtUtil;
 import com.wkclz.micro.wxapp.bean.entity.WxappUser;
 import lombok.AllArgsConstructor;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 @Service
 @AllArgsConstructor
 public class WxappLoginService {
 
-    private final CasSdkConfig casSdkConfig;
-    private final StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private IamSdkConfig iamSdkConfig;
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
 
     public LoginResponse login(WxappUser user) {
-        String sessionId = UUID.randomUUID().toString().replace("-", "");
-        UserInfo userInfo = new UserInfo();
-        userInfo.setUserCode(user.getUserCode());
-        userInfo.setUsername(user.getUserCode());
-        userInfo.setNickname(user.getNickname());
-        userInfo.setMobile(user.getMobile());
-        userInfo.setEmail(user.getEmail());
-        userInfo.setAvatar(user.getAvatar());
-        userInfo.setSessionId(sessionId);
-        userInfo.setAppCode("miniapp");
-
         LoginResponse response = new LoginResponse();
-        response.setStatus(0);
-        String token = JwtHelper.createToken(casSdkConfig.getTokenSecret(), userInfo);
-        response.setToken(token);
 
-        String value = System.currentTimeMillis() + "";
-        stringRedisTemplate.boundValueOps(sessionId).set(value, 8L,  TimeUnit.HOURS);
+        // JWT, 生成 token 返回给前端
+        UserJwt jwt = new UserJwt();
+        jwt.setUserCode(user.getUserCode());
+        jwt.setUsername(user.getOpenId());
+        jwt.setNickname(user.getNickname());
+        jwt.setAvatar(user.getAvatar());
+        String jwtToken = JwtUtil.generateToken(jwt, iamSdkConfig.getJwtSecretKey());
+
+        // 用户信息，缓存到 Redis
+        UserSession us = new UserSession();
+        us.setUserCode(user.getUserCode());
+        us.setUsername(user.getOpenId());
+        us.setNickname(user.getNickname());
+        us.setAuthType("WXAPP");
+
+        String tokenRedisKey = JwtUtil.getTokenRedisKey(jwtToken, jwt.getUsername());
+        redisTemplate.opsForValue().set(tokenRedisKey, JSON.toJSONString(us));
+
+        response.setLoginStatus(LoginStatus.SUCCESS.getCode());
+        response.setLoginMessage(LoginStatus.SUCCESS.getMessage());
+        response.setToken(jwtToken);
         return response;
     }
-
 
 }

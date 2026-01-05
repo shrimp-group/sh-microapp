@@ -1,7 +1,7 @@
 package com.wkclz.micro.wxapp.dao;
 
 import com.wkclz.micro.wxapp.bean.entity.WxappLoginLog;
-import com.wkclz.mybatis.base.BaseMapper;
+import com.wkclz.mybatis.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 
 /**

@@ -2,7 +2,7 @@ package com.wkclz.micro.wxapp.dao;
 
 import com.wkclz.micro.wxapp.bean.entity.WxappConfig;
 import com.wkclz.micro.wxapp.bean.vo.WxMaAppInfo;
-import com.wkclz.mybatis.base.BaseMapper;
+import com.wkclz.mybatis.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;

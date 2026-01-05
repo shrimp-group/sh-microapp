@@ -1,12 +1,12 @@
 package com.wkclz.micro.wxapp.service;
 
-import com.wkclz.common.emuns.ResultStatus;
-import com.wkclz.common.exception.BizException;
-import com.wkclz.common.utils.AssertUtil;
-import com.wkclz.micro.wxapp.dao.WxappLoginLogMapper;
+import com.wkclz.core.enums.ResultCode;
+import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.wxapp.bean.entity.WxappLoginLog;
-import com.wkclz.mybatis.base.BaseService;
+import com.wkclz.micro.wxapp.dao.WxappLoginLogMapper;
+import com.wkclz.mybatis.service.BaseService;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 /**
  * Description Create by shrimp-gen
@@ -30,19 +30,18 @@ public class WxappLoginLogService extends BaseService<WxappLoginLog, WxappLoginL
 
     public WxappLoginLog update(WxappLoginLog entity) {
         duplicateCheck(entity);
-        AssertUtil.notNull(entity.getId(), "请求错误！参数[id]不能为空");
-        AssertUtil.notNull(entity.getVersion(), "请求错误！参数[version]不能为空");
-        WxappLoginLog oldEntity = get(entity.getId());
+        Assert.notNull(entity.getId(), "请求错误！参数[id]不能为空");
+        Assert.notNull(entity.getVersion(), "请求错误！参数[version]不能为空");
+        WxappLoginLog oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
-            throw BizException.error(ResultStatus.RECORD_NOT_EXIST);
+            throw ValidationException.of(ResultCode.RECORD_NOT_EXIST);
         }
         WxappLoginLog.copyIfNotNull(entity, oldEntity);
-        updateSelective(oldEntity);
+        updateByIdSelective(oldEntity);
         return oldEntity;
     }
 
     private void duplicateCheck(WxappLoginLog entity) {
-        AssertUtil.notNull(entity);
         // 唯一条件为空，直接通过
         if (true) {
             return;
@@ -51,7 +50,7 @@ public class WxappLoginLogService extends BaseService<WxappLoginLog, WxappLoginL
         // 唯一条件不为空，请设置唯一条件
         WxappLoginLog param = new WxappLoginLog();
         // 唯一条件
-        param = get(param);
+        param = selectOneByEntity(param);
         if (param == null) {
             return;
         }
@@ -59,7 +58,7 @@ public class WxappLoginLogService extends BaseService<WxappLoginLog, WxappLoginL
             return;
         }
         // 查到有值，为新增或 id 不一样场景，为数据重复
-        throw BizException.error(ResultStatus.RECORD_DUPLICATE);
+        throw ValidationException.of(ResultCode.RECORD_DUPLICATE);
     }
 
 }

@@ -7,9 +7,8 @@ import cn.binarywang.wx.miniapp.config.impl.WxMaDefaultConfigImpl;
 import cn.binarywang.wx.miniapp.message.WxMaMessageHandler;
 import cn.binarywang.wx.miniapp.message.WxMaMessageRouter;
 import com.google.common.collect.Maps;
-import com.wkclz.auth.sdk.helper.AuthHelper;
-import com.wkclz.common.exception.BizException;
-import com.wkclz.common.utils.AssertUtil;
+import com.wkclz.core.exception.ValidationException;
+import com.wkclz.iam.sdk.helper.SessionHelper;
 import com.wkclz.micro.wxapp.bean.vo.WxMaAppInfo;
 import com.wkclz.micro.wxapp.service.WxappConfigService;
 import me.chanjar.weixin.common.bean.result.WxMediaUploadResult;
@@ -17,6 +16,7 @@ import me.chanjar.weixin.common.error.WxErrorException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.Assert;
 
 import java.io.File;
 import java.util.Map;
@@ -33,12 +33,12 @@ public class WxMaConfiguration {
     private static final Map<String, String> MA_APPID_TENANT = Maps.newHashMap();
 
     @Autowired
-    private AuthHelper authHelper;
+    private SessionHelper sessionHelper;
     @Autowired
     private WxappConfigService wxappConfigService;
 
     public WxMaService getMaService(String appid) {
-        AssertUtil.notNull(appid, "appid 不能为空");
+        Assert.notNull(appid, "appid 不能为空");
         String tenantCode = MA_APPID_TENANT.get(appid);
         if (tenantCode == null) {
             init(appid);
@@ -48,7 +48,7 @@ public class WxMaConfiguration {
     }
 
     public WxMaService getMaService() {
-        String tenantCode = authHelper.getTenantCode();
+        String tenantCode = sessionHelper.getTenantCode();
         if (StringUtils.isBlank(tenantCode)) {
             throw new IllegalArgumentException("找不到域名信息，请核实！");
         }
@@ -61,7 +61,7 @@ public class WxMaConfiguration {
     }
 
     public WxMaMessageRouter getRouter(String appid) {
-        AssertUtil.notNull(appid, "appid 不能为空");
+        Assert.notNull(appid, "appid 不能为空");
         String tenantCode = MA_APPID_TENANT.get(appid);
         if (StringUtils.isBlank(tenantCode)) {
             init(appid);
@@ -71,7 +71,7 @@ public class WxMaConfiguration {
     }
 
     public WxMaMessageRouter getRouter() {
-        String tenantCode = authHelper.getTenantCode();
+        String tenantCode = sessionHelper.getTenantCode();
         if (StringUtils.isBlank(tenantCode)) {
             throw new IllegalArgumentException("找不到域名信息，请核实！");
         }
@@ -88,14 +88,14 @@ public class WxMaConfiguration {
 
         WxMaAppInfo wxApp = new WxMaAppInfo();
         wxApp.setAppId(appid);
-        String tenantCode = authHelper.getTenantCode();
+        String tenantCode = sessionHelper.getTenantCode();
         if (StringUtils.isNotBlank(tenantCode)) {
             wxApp.setTenantCode(tenantCode);
         }
 
         wxApp = wxappConfigService.getWxMaAppInfo(wxApp);
         if (wxApp == null) {
-            throw BizException.error("没有找到小程序配置：appid: {}, tenantCode: {}", appid, tenantCode);
+            throw ValidationException.of("没有找到小程序配置：appid: {}, tenantCode: {}", appid, tenantCode);
         }
         WxMaDefaultConfigImpl config = new WxMaDefaultConfigImpl();
         config.setAppid(wxApp.getAppId());
