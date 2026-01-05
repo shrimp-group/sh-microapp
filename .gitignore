@@ -1,0 +1,16 @@
+
+# spring
+*.iml
+application-local.yml
+
+
+# maven
+target
+.flattened-pom.xml
+
+# idea
+.idea
+
+
+# Mac
+.DS_Store
