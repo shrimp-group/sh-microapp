@@ -3,7 +3,7 @@ package com.wkclz.micro.wxapp.service;
 import com.wkclz.core.enums.ResultCode;
 import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.wxapp.bean.entity.WxappLoginLog;
-import com.wkclz.micro.wxapp.dao.WxappLoginLogMapper;
+import com.wkclz.micro.wxapp.mapper.WxappLoginLogMapper;
 import com.wkclz.mybatis.service.BaseService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;

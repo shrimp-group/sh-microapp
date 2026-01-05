@@ -36,8 +36,6 @@ public class WxMaUserRest {
 //    @Resource
 //    private FsApi fsApi;
     @Resource
-    private SessionHelper aessionHelper;
-    @Resource
     private WxMaConfiguration configuration;
     @Resource
     private WxMiniappService wxMiniappService;
@@ -197,7 +195,7 @@ public class WxMaUserRest {
             return R.error("手机号格式错误");
         }
         WxappUser param = new WxappUser();
-        param.setUserCode(aessionHelper.getUserCode());
+        param.setUserCode(SessionHelper.getUserCode());
         WxappUser wxappUser = wxappBindMobile.selectOneByEntity(param);
         wxappUser.setMobile(user.getMobile());
         wxappBindMobile.updateByIdSelective(wxappUser);

@@ -33,8 +33,6 @@ public class WxMaConfiguration {
     private static final Map<String, String> MA_APPID_TENANT = Maps.newHashMap();
 
     @Autowired
-    private SessionHelper sessionHelper;
-    @Autowired
     private WxappConfigService wxappConfigService;
 
     public WxMaService getMaService(String appid) {
@@ -48,7 +46,7 @@ public class WxMaConfiguration {
     }
 
     public WxMaService getMaService() {
-        String tenantCode = sessionHelper.getTenantCode();
+        String tenantCode = SessionHelper.getTenantCode();
         if (StringUtils.isBlank(tenantCode)) {
             throw new IllegalArgumentException("找不到域名信息，请核实！");
         }
@@ -71,7 +69,7 @@ public class WxMaConfiguration {
     }
 
     public WxMaMessageRouter getRouter() {
-        String tenantCode = sessionHelper.getTenantCode();
+        String tenantCode = SessionHelper.getTenantCode();
         if (StringUtils.isBlank(tenantCode)) {
             throw new IllegalArgumentException("找不到域名信息，请核实！");
         }
@@ -88,7 +86,7 @@ public class WxMaConfiguration {
 
         WxMaAppInfo wxApp = new WxMaAppInfo();
         wxApp.setAppId(appid);
-        String tenantCode = sessionHelper.getTenantCode();
+        String tenantCode = SessionHelper.getTenantCode();
         if (StringUtils.isNotBlank(tenantCode)) {
             wxApp.setTenantCode(tenantCode);
         }

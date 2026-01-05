@@ -1,4 +1,4 @@
-package com.wkclz.micro.wxapp.dao;
+package com.wkclz.micro.wxapp.mapper;
 
 import com.wkclz.micro.wxapp.bean.entity.WxappUser;
 import com.wkclz.mybatis.mapper.BaseMapper;

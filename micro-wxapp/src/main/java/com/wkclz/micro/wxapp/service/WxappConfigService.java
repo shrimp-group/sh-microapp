@@ -6,7 +6,7 @@ import com.wkclz.core.enums.ResultCode;
 import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.wxapp.bean.entity.WxappConfig;
 import com.wkclz.micro.wxapp.bean.vo.WxMaAppInfo;
-import com.wkclz.micro.wxapp.dao.WxappConfigMapper;
+import com.wkclz.micro.wxapp.mapper.WxappConfigMapper;
 import com.wkclz.mybatis.helper.PageQuery;
 import com.wkclz.mybatis.service.BaseService;
 import org.apache.commons.lang3.StringUtils;

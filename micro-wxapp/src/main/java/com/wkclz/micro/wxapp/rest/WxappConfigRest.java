@@ -24,8 +24,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class WxappConfigRest {
 
     @Autowired
-    private SessionHelper aessionHelper;
-    @Autowired
     private WxappConfigService wxappConfigService;
 
     /**
@@ -82,7 +80,7 @@ public class WxappConfigRest {
      */
     @GetMapping(Route.WXAPP_CONFIG_PAGE)
     public R wxappConfigPage(WxappConfig entity) {
-        entity.setTenantCode(aessionHelper.getTenantCode());
+        entity.setTenantCode(SessionHelper.getTenantCode());
         PageData<WxappConfig> page = wxappConfigService.getConfigPage(entity);
         return R.ok(page);
     }
@@ -142,7 +140,7 @@ public class WxappConfigRest {
     @GetMapping(Route.WXAPP_CONFIG_INFO)
     public R wxappConfigInfo(WxappConfig entity) {
         Assert.notNull(entity.getId(), "请求错误！参数[id]不能为空");
-        entity.setTenantCode(aessionHelper.getTenantCode());
+        entity.setTenantCode(SessionHelper.getTenantCode());
         entity = wxappConfigService.getConfigInfo(entity);
         return R.ok(entity);
     }
@@ -187,7 +185,7 @@ public class WxappConfigRest {
     @PostMapping(Route.WXAPP_CONFIG_CREATE)
     public R wxappConfigCreate(@RequestBody WxappConfig entity) {
         paramCheck(entity);
-        entity.setTenantCode(aessionHelper.getTenantCode());
+        entity.setTenantCode(SessionHelper.getTenantCode());
         entity = wxappConfigService.create(entity);
         return R.ok(entity);
     }
@@ -278,7 +276,7 @@ public class WxappConfigRest {
         Assert.notNull(entity.getAppId(), "appId 不能为空");
         Assert.notNull(entity.getAppSecret(), "appSecret 不能为空");
         if (StringUtils.isBlank(entity.getTenantCode())) {
-            entity.setTenantCode(aessionHelper.getTenantCode());
+            entity.setTenantCode(SessionHelper.getTenantCode());
         }
     }
 

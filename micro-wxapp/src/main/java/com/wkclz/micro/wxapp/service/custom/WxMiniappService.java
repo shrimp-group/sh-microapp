@@ -6,12 +6,12 @@ import cn.binarywang.wx.miniapp.bean.WxMaUserInfo;
 import com.wkclz.core.exception.ValidationException;
 import com.wkclz.iam.sdk.helper.SessionHelper;
 import com.wkclz.iam.sdk.model.LoginResponse;
-import com.wkclz.micro.wxapp.config.WxMaConfiguration;
-import com.wkclz.micro.wxapp.dao.WxappLoginLogMapper;
-import com.wkclz.micro.wxapp.dao.WxappUserMapper;
 import com.wkclz.micro.wxapp.bean.entity.WxappLoginLog;
 import com.wkclz.micro.wxapp.bean.entity.WxappUser;
 import com.wkclz.micro.wxapp.bean.vo.WxMaAppUserLoginVo;
+import com.wkclz.micro.wxapp.config.WxMaConfiguration;
+import com.wkclz.micro.wxapp.mapper.WxappLoginLogMapper;
+import com.wkclz.micro.wxapp.mapper.WxappUserMapper;
 import com.wkclz.redis.helper.RedisIdGenerator;
 import com.wkclz.web.helper.IpHelper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,7 +31,6 @@ public class WxMiniappService {
 
     private static final Logger logger = LoggerFactory.getLogger(WxMiniappService.class);
 
-    private final SessionHelper aessionHelper;
     private final WxMaConfiguration configuration;
     private final WxappUserMapper wxappUserMapper;
     private final RedisIdGenerator redisIdGenerator;
@@ -154,18 +153,18 @@ public class WxMiniappService {
         wxappLoginLogMapper.insert(log);
 
         // 基础信息验证完了后，进入统一的创建session的过程
-        aessionHelper.invalidToken();
+        SessionHelper.invalidToken();
         return wxappLoginService.login(user);
     }
 
     public WxappUser miniappUserInfo() {
-        String userCode = aessionHelper.getUserCode();
+        String userCode = SessionHelper.getUserCode();
         return wxappUserMapper.getWxappUserByUserCode(userCode);
     }
 
     @Transactional(rollbackFor = Exception.class)
     public boolean miniappUserinfoUpdate(WxappUser wu) {
-        String userCode = aessionHelper.getUserCode();
+        String userCode = SessionHelper.getUserCode();
 
         WxappUser user = wxappUserMapper.getWxappUserByUserCode(userCode);
         if (user == null) {
