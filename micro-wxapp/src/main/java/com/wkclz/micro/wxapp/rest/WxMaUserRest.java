@@ -19,10 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 微信小程序用户接口
@@ -30,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author <a href="https://github.com/binarywang">Binary Wang</a>
  */
 @RestController
+@RequestMapping(Route.PREFIX)
 public class WxMaUserRest {
 
 
