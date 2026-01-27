@@ -18,7 +18,7 @@
       FROM
           mdm_pdf_template
       WHERE
-          `status` = 1
+          deleted = 0
           <if test="templateCode != null">AND template_code LIKE CONCAT('%', #{templateCode}, '%') </if>
           <if test="templateName != null">AND template_name LIKE CONCAT('%', #{templateName}, '%') </if>
       ORDER BY
@@ -32,7 +32,7 @@
         FROM
             mdm_pdf_template
         WHERE
-            `status` = 1
+            deleted = 0
     </select>
 
 

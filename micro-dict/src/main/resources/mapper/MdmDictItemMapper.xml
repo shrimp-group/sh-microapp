@@ -16,8 +16,8 @@
             INNER JOIN mdm_dict_item di ON di.dict_type = d.dict_type
         WHERE
             1 = 1
-            AND d.status = 1
-            AND di.status = 1
+            AND d.deleted = 0
+            AND di.deleted = 0
             <if test="dictType != null"> AND d.dict_type = #{dictType} </if>
             <if test="dictValue != null"> AND di.dict_value = #{dictValue} </if>
             <if test="enableFlag != null"> AND di.enable_flag = #{enableFlag} </if>
@@ -42,8 +42,8 @@
             mdm_dict d
             INNER JOIN mdm_dict_item di ON di.dict_type = d.dict_type
         WHERE
-            d.`status` = 1
-            AND di.`status` = 1
+            d.deleted = 0
+            AND di.deleted = 0
         ORDER BY
             d.id,
             di.sort
@@ -60,7 +60,7 @@
         FROM
             mdm_dict_item
         WHERE
-            `status` = 1
+            deleted = 0
             AND dict_type IN ( <foreach collection="dictTypes" item="item" separator=","> #{item} </foreach> )
         ORDER BY
             sort ASC,
@@ -78,7 +78,7 @@
         FROM
             mdm_dict_item
         WHERE
-            `status` = 1
+            deleted = 0
         ORDER BY
             sort,
             id
@@ -98,7 +98,7 @@
         FROM
             mdm_dict_item
         WHERE
-            `status` = 1
+            deleted = 0
             <if test="dictType != null"> AND dict_type = #{dictType} </if>
 
             <if test="dictTypes != null and dictTypes.size > 0">
@@ -113,7 +113,7 @@
         FROM
             mdm_dict_item
         WHERE
-            `status` = 1
+            deleted = 0
             <if test="dictType != null"> AND dict_type = #{dictType} </if>
 
             <if test="dictTypes != null and dictTypes.size > 0">

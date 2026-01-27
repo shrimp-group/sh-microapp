@@ -20,7 +20,7 @@
       FROM
           fun_category
       WHERE
-          `status` = 1
+          deleted = 0
           <if test="ids != null and ids.size > 0">AND id IN ( <foreach collection="ids" item="item" separator=","> #{item} </foreach> ) </if>
           <if test="timeFrom != null">AND create_time &gt;= #{timeFrom} </if>
           <if test="timeTo != null">AND create_time &lt;= #{timeTo} </if>
@@ -44,7 +44,7 @@
         FROM
             fun_category
         WHERE
-            `status` = 1
+            deleted = 0
             <if test="pcode != null">AND pcode = #{pcode} </if>
             <if test="visible != null">AND visible = #{visible} </if>
         ORDER BY

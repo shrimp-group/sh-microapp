@@ -19,9 +19,9 @@
           COUNT( fri.id ) item_count
       FROM
           mdm_form_rule fr
-          LEFT JOIN mdm_form_rule_item fri ON fri.form_rule_code = fr.form_rule_code AND fri.`status` = 1
+          LEFT JOIN mdm_form_rule_item fri ON fri.form_rule_code = fr.form_rule_code AND fri.deleted = 0
       WHERE
-          fr.`status` = 1
+          fr.deleted = 0
           <if test="formRuleCode != null">AND form_rule_code LIKE CONCAT('%', #{formRuleCode}, '%') </if>
           <if test="formRuleName != null">AND form_rule_name LIKE CONCAT('%', #{formRuleName}, '%') </if>
           <if test="apiMethod != null">AND api_method = #{apiMethod} </if>
@@ -38,7 +38,7 @@
         FROM
             mdm_form_rule
         WHERE
-            `status` = 1
+            deleted = 0
     </select>
 
 

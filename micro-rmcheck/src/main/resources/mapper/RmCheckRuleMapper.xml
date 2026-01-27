@@ -23,9 +23,9 @@
           rm_check_rule r
           LEFT JOIN information_schema.`TABLES` t ON t.table_name = r.table_name AND t.table_schema = #{tableSchema}
           LEFT JOIN information_schema.`COLUMNS` c ON c.table_name = r.table_name AND c.column_name = r.column_name AND t.table_schema = #{tableSchema}
-          LEFT JOIN rm_check_rule_item i ON i.rule_code = r.rule_code AND i.`status` = 1
+          LEFT JOIN rm_check_rule_item i ON i.rule_code = r.rule_code AND i.deleted = 0
       WHERE
-          r.`status` = 1
+          r.deleted = 0
           <if test="ruleCode != null">AND r.rule_code LIKE CONCAT('%', #{ruleCode}, '%') </if>
           <if test="tableName != null">AND r.table_name LIKE CONCAT('%', #{tableName}, '%') </if>
           <if test="columnName != null">AND r.column_name LIKE CONCAT('%', #{columnName}, '%') </if>
@@ -46,7 +46,7 @@
         FROM
             rm_check_rule
         WHERE
-            `status` = 1
+            deleted = 0
             AND enable_flag = 1
             AND table_name = #{tableName}
     </select>

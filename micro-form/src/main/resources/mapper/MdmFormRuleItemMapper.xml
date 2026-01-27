@@ -8,7 +8,7 @@
         FROM
             mdm_form_rule_item
         WHERE
-            `status` = 1
+            deleted = 0
     </select>
 
     <select id="getFormRule4Check" parameterType="com.wkclz.micro.form.pojo.entity.MdmFormRule" resultType="com.wkclz.micro.form.pojo.entity.MdmFormRuleItem">
@@ -28,8 +28,8 @@
             mdm_form_rule fr
             INNER JOIN mdm_form_rule_item fri ON fri.form_rule_code = fr.form_rule_code
         WHERE
-            fr.`status` = 1
-          AND fri.`status` = 1
+            fr.deleted = 0
+          AND fri.deleted = 0
           AND fr.api_method = #{apiMethod}
           AND fr.api_uri = #{apiUri}
         ORDER BY

@@ -23,7 +23,7 @@
       FROM
           fun_function f
       WHERE
-          f.`status` = 1
+          f.deleted = 0
           <if test="ids != null and ids.size > 0">AND f.id IN ( <foreach collection="ids" item="item" separator=","> #{item} </foreach> ) </if>
           <if test="timeFrom != null">AND f.create_time &gt;= #{timeFrom} </if>
           <if test="timeTo != null">AND f.create_time &lt;= #{timeTo} </if>
@@ -56,7 +56,7 @@
         FROM
             fun_function
         WHERE
-            `status` = 1
+            deleted = 0
             AND visible = 1
             <if test="categoryCode != null">AND category_code = #{categoryCode} </if>
             <if test="funCode != null">AND fun_code = #{funCode} </if>

@@ -8,7 +8,7 @@
         FROM
             ${checkTableName}
         WHERE
-            `status` = 1
+            deleted = 0
             AND ${checkColumnName} = #{checkValue}
         LIMIT 1
     </select>

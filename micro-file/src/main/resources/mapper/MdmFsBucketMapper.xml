@@ -23,7 +23,7 @@
         FROM
             mdm_fs_bucket
         WHERE
-            `status` = 1
+            deleted = 0
             <if test="tenantCode != null">AND tenant_code = #{tenantCode} </if>
             <if test="bucket != null">AND bucket LIKE CONCAT('%', #{bucket}, '%') </if>
             <if test="ossSp != null">AND oss_sp = #{ossSp} </if>
@@ -47,7 +47,7 @@
         FROM
             mdm_fs_bucket
         WHERE
-            `status` = 1
+            deleted = 0
             <if test="tenantCode != null">AND tenant_code = #{tenantCode} </if>
             <if test="ossSp != null">AND oss_sp = #{ossSp} </if>
         ORDER BY

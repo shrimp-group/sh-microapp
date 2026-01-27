@@ -28,9 +28,9 @@
           COUNT(i.id) item_count
       FROM
           mdm_form f
-          LEFT JOIN mdm_form_item i ON i.form_code = f.form_code AND i.`status` = 1
+          LEFT JOIN mdm_form_item i ON i.form_code = f.form_code AND i.deleted = 0
       WHERE
-          f.`status` = 1
+          f.deleted = 0
           <if test="formCode != null">AND f.form_code LIKE CONCAT('%', #{formCode}, '%') </if>
           <if test="formName != null">AND f.form_name LIKE CONCAT('%', #{formName}, '%') </if>
       GROUP BY
@@ -49,7 +49,7 @@
         FROM
             mdm_form
         WHERE
-            `status` = 1
+            deleted = 0
           AND form_code = #{formCode};
     </select>
 
@@ -62,7 +62,7 @@
         FROM
             mdm_form
         WHERE
-            `status` = 1
+            deleted = 0
         ORDER BY
             sort ASC,
             id ASC

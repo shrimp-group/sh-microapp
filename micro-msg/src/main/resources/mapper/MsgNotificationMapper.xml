@@ -16,12 +16,12 @@
           n.update_by,
           n.version,
           count(ur.id) record_count,
-          SUM(IF(ur.read_status = 1, 1, 0)) read_count
+          SUM(IF(ur.read_deleted = 0, 1, 0)) read_count
       FROM
           msg_notification n
-          LEFT JOIN msg_user_record ur ON ur.notice_no = n.notice_no AND ur.`status` = 1
+          LEFT JOIN msg_user_record ur ON ur.notice_no = n.notice_no AND ur.deleted = 0
       WHERE
-          n.`status` = 1
+          n.deleted = 0
           <if test="timeFrom != null">AND n.create_time &gt;= #{timeFrom} </if>
           <if test="timeTo != null">AND n.create_time &lt;= #{timeTo} </if>
           <if test="noticeNo != null">AND n.notice_no = #{noticeNo} </if>

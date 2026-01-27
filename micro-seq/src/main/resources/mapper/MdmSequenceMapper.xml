@@ -18,7 +18,7 @@
       FROM
           mdm_sequence
       WHERE
-          `status` = 1
+          deleted = 0
           <if test="seqName != null">AND seq_name LIKE CONCAT('%', #{seqName}, '%') </if>
           <if test="prefix != null">AND prefix LIKE CONCAT('%', #{prefix}, '%') </if>
       ORDER BY
@@ -35,7 +35,7 @@
         FROM
             mdm_sequence
         WHERE
-            `status` = 1
+            deleted = 0
           AND prefix = #{prefix}
     </select>
 
@@ -59,7 +59,7 @@
             sequence = #{sequence},
             version = version + 1
         WHERE
-            `status` = 1
+            deleted = 0
           AND prefix = #{prefix}
           AND version = #{version}
     </update>

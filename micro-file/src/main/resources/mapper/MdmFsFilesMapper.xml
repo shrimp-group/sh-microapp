@@ -23,7 +23,7 @@
         FROM
             mdm_fs_files ff
         WHERE
-            `status` = 1
+            deleted = 0
             <if test="timeFrom != null">AND ff.create_time &gt;= #{timeFrom} </if>
             <if test="timeTo != null">AND ff.create_time &lt;= #{timeTo} </if>
             <if test="id != null">AND ff.id = #{id} </if>
@@ -53,7 +53,7 @@
         FROM
             mdm_fs_files
         WHERE
-            `status` = 1
+            deleted = 0
           AND file_id = #{fileId}
     </select>
 
@@ -71,7 +71,7 @@
       FROM
           mdm_fs_files
       WHERE
-          `status` = 1
+          deleted = 0
           AND file_id IN ( <foreach collection="fileIds" item="item" separator=","> #{item} </foreach> )
   </select>
 

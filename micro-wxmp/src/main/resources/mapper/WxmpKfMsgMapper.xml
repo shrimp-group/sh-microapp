@@ -24,10 +24,10 @@
           km.version
       FROM
           wxmp_kf_msg km
-          LEFT JOIN wxmp_user u1 ON u1.open_id = km.from_user AND u1.`status` = 1
-          LEFT JOIN wxmp_user u2 ON u2.open_id = km.to_user AND u2.`status` = 1
+          LEFT JOIN wxmp_user u1 ON u1.open_id = km.from_user AND u1.deleted = 0
+          LEFT JOIN wxmp_user u2 ON u2.open_id = km.to_user AND u2.deleted = 0
       WHERE
-          km.`status` = 1
+          km.deleted = 0
           <if test="timeFrom != null">AND km.create_time &gt;= #{timeFrom} </if>
           <if test="timeTo != null">AND km.create_time &lt;= #{timeTo} </if>
           <if test="tenantCode != null">AND km.tenant_code = #{tenantCode} </if>

@@ -17,7 +17,7 @@
       FROM
           mdm_change_log
       WHERE
-          `status` = 1
+          deleted = 0
           <if test="timeFrom != null">AND create_time &gt;= #{timeFrom} </if>
           <if test="timeTo != null">AND create_time &lt;= #{timeTo} </if>
           <if test="batchNo != null">AND batch_no = #{batchNo} </if>

@@ -9,7 +9,7 @@
         FROM
             pay_order
         WHERE
-            `status` = 1
+            deleted = 0
             AND pay_status != 'CANCEL'
             AND order_no = #{orderNo}
     </select>
@@ -21,7 +21,7 @@
         FROM
             pay_order
         WHERE
-            `status` = 1
+            deleted = 0
             AND order_no = #{orderNo}
             AND pay_status != 'CANCEL'
             AND username = #{username}
@@ -33,7 +33,7 @@
         FROM
             pay_order
         WHERE
-            `status` = 1
+            deleted = 0
             AND out_trade_no = #{outTradeNo}
     </select>
 
@@ -45,7 +45,7 @@
         FROM
             pay_order
         WHERE
-            `status` = 1
+            deleted = 0
           AND pay_method = 'WX_PAY'
           AND pay_status = 'PAYING'
           AND pay_flow_no IS NULL
@@ -62,7 +62,7 @@
         FROM
             pay_order
         WHERE
-            `status` = 1
+            deleted = 0
             AND pay_status IN ('NEW', 'PAYING')
             AND pay_flow_no IS NULL
             AND pay_time IS NULL

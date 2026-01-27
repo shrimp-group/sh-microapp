@@ -25,8 +25,8 @@
             pay_alipay_config ac
             INNER JOIN auth_tenant t ON t.tenant_code = ac.tenant_code
         WHERE
-            ac.`status` = 1
-            AND t.`status` = 1
+            ac.deleted = 0
+            AND t.deleted = 0
             <if test="tenantCode != null">AND ac.tenant_code = #{tenantCode} </if>
             <if test="appId != null">AND ac.app_id = #{appId} </if>
         ORDER BY

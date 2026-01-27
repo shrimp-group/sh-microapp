@@ -18,10 +18,10 @@
             COUNT(di.id)  count
         FROM
             mdm_dict d
-            LEFT JOIN mdm_dict_item di ON di.dict_type = d.dict_type and di.`status` = 1
+            LEFT JOIN mdm_dict_item di ON di.dict_type = d.dict_type and di.deleted = 0
         WHERE
             1 = 1
-            AND d.`status` = 1
+            AND d.deleted = 0
             <if test="dictCtg != null"> AND d.dict_ctg = #{dictCtg} </if>
             <if test="dictType != null"> AND d.dict_type LIKE concat('%', #{dictType},'%') </if>
             <if test="description != null"> AND d.description LIKE concat('%', #{description},'%') </if>
@@ -40,7 +40,7 @@
         FROM
             mdm_dict
         WHERE
-            `status` = 1
+            deleted = 0
         ORDER BY
             sort ASC,
             id ASC
@@ -57,7 +57,7 @@
         FROM
             mdm_dict
         WHERE
-            `status` = 1
+            deleted = 0
             <if test="dictCtg != null"> AND dict_ctg = #{dictCtg} </if>
             <if test="dictType != null"> AND dict_type = #{dictType} </if>
 
@@ -73,7 +73,7 @@
         FROM
             mdm_dict
         WHERE
-            `status` = 1
+            deleted = 0
             <if test="dictCtg != null"> AND dict_ctg = #{dictCtg} </if>
             <if test="dictType != null"> AND dict_type = #{dictType} </if>
 
@@ -90,9 +90,9 @@
             COUNT(di.id) count
         FROM
             mdm_dict d
-            LEFT JOIN mdm_dict_item di ON di.dict_type = d.dict_type AND di.`status` = 1
+            LEFT JOIN mdm_dict_item di ON di.dict_type = d.dict_type AND di.deleted = 0
         WHERE
-            d.`status` = 1
+            d.deleted = 0
         GROUP BY
             d.id
         ORDER BY

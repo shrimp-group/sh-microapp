@@ -15,11 +15,11 @@ liteflow:
     elDataField: el_data
     routeField: route
     namespaceField: namespace
-    chainCustomSql: SELECT chain_name,chain_desc,el_data,route,namespace FROM liteflow_chain WHERE status = 1 AND enable = 1
+    chainCustomSql: SELECT chain_name,chain_desc,el_data,route,namespace FROM liteflow_chain WHERE deleted = 0 AND enable = 1
     scriptTableName: liteflow_script
     scriptIdField: script_id
     scriptNameField: script_name
     scriptDataField: script_data
     scriptTypeField: script_type
     scriptLanguageField: script_language
-    scriptCustomSql: SELECT script_id,script_name,script_data,script_type,script_language FROM liteflow_script WHERE status = 1 AND enable = 1
+    scriptCustomSql: SELECT script_id,script_name,script_data,script_type,script_language FROM liteflow_script WHERE deleted = 0 AND enable = 1

@@ -92,7 +92,7 @@
   <!-- where 条件集 -->
   <sql id="where">
     WHERE
-      status = 1
+      deleted = 0
       <if test="ids != null and ids.size > 0">AND id IN ( <foreach collection="ids" item="item" separator=","> #{item} </foreach> ) </if>
       <if test="timeFrom != null">AND create_time &gt;= #{timeFrom} </if>
       <if test="timeTo != null">AND create_time &lt;= #{timeTo} </if>
@@ -126,7 +126,7 @@
     FROM
       mdm_sequence
     WHERE
-     status = 1
+     deleted = 0
      AND id = #{id}
   </select>
 
@@ -213,7 +213,7 @@
         version = version + 1,
       </trim>
     WHERE
-      status = 1
+      deleted = 0
       AND id = #{id}
       AND version = #{version}
   </update>
@@ -225,7 +225,7 @@
     SET
       <include refid="selectiveSets"/>
     WHERE
-      status = 1
+      deleted = 0
       AND id = #{id}
       AND version = #{version}
   </update>
@@ -237,7 +237,7 @@
     SET
       <include refid="selectiveSets"/>
     WHERE
-      status = 1
+      deleted = 0
       AND id = #{id}
   </update>
 
@@ -256,7 +256,7 @@
         remark = CASE id <foreach collection="list" item="item">WHEN #{item.id} THEN #{item.remark} </foreach> END,
       </trim>
     WHERE
-      status = 1
+      deleted = 0
       AND id IN ( <foreach collection="list" item="item" separator=",">#{item.id}</foreach> )
   </update>
 
@@ -268,7 +268,7 @@
       version = version + 1,
       update_by = #{updateBy}
     WHERE
-      status = 1
+      deleted = 0
       <if test="id != null">
         AND id = #{id}
       </if>

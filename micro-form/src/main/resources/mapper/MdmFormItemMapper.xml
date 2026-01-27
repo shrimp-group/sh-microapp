@@ -24,7 +24,7 @@
       FROM
           mdm_form_item
       WHERE
-          `status` = 1
+          deleted = 0
         AND form_code = #{formCode}
       ORDER BY
           sort ASC,
@@ -54,7 +54,7 @@
         FROM
             mdm_form_item
         WHERE
-            `status` = 1
+            deleted = 0
         ORDER BY
             sort ASC,
             id ASC

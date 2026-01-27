@@ -23,7 +23,7 @@
       FROM
           mdm_mask_rule
       WHERE
-          `status` = 1
+          deleted = 0
           <if test="timeFrom != null">AND create_time &gt;= #{timeFrom} </if>
           <if test="timeTo != null">AND create_time &lt;= #{timeTo} </if>
           <if test="requestMethod != null">AND request_method = #{requestMethod} </if>
@@ -47,7 +47,7 @@
         FROM
             mdm_mask_rule
         WHERE
-            `status` = 1
+            deleted = 0
           AND enable_flag = 1
         ORDER BY
             sort ASC,

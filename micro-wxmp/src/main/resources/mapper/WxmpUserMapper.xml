@@ -9,7 +9,7 @@
         FROM
             wxmp_user
         WHERE
-            `status` = 1
+            deleted = 0
             AND open_id = #{openId}
     </select>
 
@@ -20,7 +20,7 @@
         FROM
             wxmp_user
         WHERE
-            `status` = 1
+            deleted = 0
             AND user_code = #{userCode}
     </select>
 

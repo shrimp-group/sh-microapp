@@ -21,7 +21,7 @@
       FROM
           liteflow_chain
       WHERE
-          status = 1
+          deleted = 0
           <if test="timeFrom != null">AND create_time &gt;= #{timeFrom} </if>
           <if test="timeTo != null">AND create_time &lt;= #{timeTo} </if>
           <if test="id != null">AND id = #{id} </if>

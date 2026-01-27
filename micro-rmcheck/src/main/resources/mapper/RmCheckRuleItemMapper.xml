@@ -24,7 +24,7 @@
           LEFT JOIN information_schema.`TABLES` t ON t.table_schema = #{tableSchema} AND t.table_name = i.check_table_name
           LEFT JOIN information_schema.`COLUMNS` c ON c.table_schema = #{tableSchema} AND c.table_name = i.check_table_name AND c.column_name = i.check_column_name
       WHERE
-          i.`status` = 1
+          i.deleted = 0
           AND i.rule_code = #{ruleCode}
           <if test="enableFlag != null">AND i.enable_flag = #{enableFlag} </if>
       ORDER BY
@@ -40,7 +40,7 @@
         FROM
             rm_check_rule_item
         WHERE
-            `status` = 1
+            deleted = 0
             AND enable_flag = 1
             AND rule_code = #{ruleCode}
     </select>
