@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.form.dao.MdmFormRuleItemMapper">
+
+    <select id="get4Cache" resultType="com.wkclz.micro.form.pojo.entity.MdmFormRuleItem">
+        SELECT
+            *
+        FROM
+            mdm_form_rule_item
+        WHERE
+            `status` = 1
+    </select>
+
+    <select id="getFormRule4Check" parameterType="com.wkclz.micro.form.pojo.entity.MdmFormRule" resultType="com.wkclz.micro.form.pojo.entity.MdmFormRuleItem">
+        SELECT
+            fri.field_name,
+            fri.required,
+            fri.field_type,
+            fri.data_min,
+            fri.data_max,
+            fri.min_length,
+            fri.max_length,
+            fri.pattern,
+            fri.validator,
+            fri.rule_trigger,
+            fri.message
+        FROM
+            mdm_form_rule fr
+            INNER JOIN mdm_form_rule_item fri ON fri.form_rule_code = fr.form_rule_code
+        WHERE
+            fr.`status` = 1
+          AND fri.`status` = 1
+          AND fr.api_method = #{apiMethod}
+          AND fr.api_uri = #{apiUri}
+        ORDER BY
+            fri.sort ASC,
+            fri.id ASC
+    </select>
+
+
+</mapper>
+

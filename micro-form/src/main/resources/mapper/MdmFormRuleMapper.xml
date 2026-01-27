@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.form.dao.MdmFormRuleMapper">
+
+  <select id="getFormRuleList" parameterType="com.wkclz.micro.form.pojo.dto.MdmFormRuleDto" resultType="com.wkclz.micro.form.pojo.dto.MdmFormRuleDto">
+      SELECT
+          fr.id,
+          fr.form_rule_code,
+          fr.form_rule_name,
+          fr.api_method,
+          fr.api_uri,
+          fr.sort,
+          fr.create_time,
+          fr.create_by,
+          fr.update_time,
+          fr.update_by,
+          fr.remark,
+          fr.version,
+          COUNT( fri.id ) item_count
+      FROM
+          mdm_form_rule fr
+          LEFT JOIN mdm_form_rule_item fri ON fri.form_rule_code = fr.form_rule_code AND fri.`status` = 1
+      WHERE
+          fr.`status` = 1
+          <if test="formRuleCode != null">AND form_rule_code LIKE CONCAT('%', #{formRuleCode}, '%') </if>
+          <if test="formRuleName != null">AND form_rule_name LIKE CONCAT('%', #{formRuleName}, '%') </if>
+          <if test="apiMethod != null">AND api_method = #{apiMethod} </if>
+          <if test="apiUri != null">AND api_uri LIKE CONCAT('%', #{apiUri}, '%') </if>
+      GROUP BY
+          fr.id
+  </select>
+
+
+
+    <select id="get4Cache" resultType="com.wkclz.micro.form.pojo.entity.MdmFormRule">
+        SELECT
+            *
+        FROM
+            mdm_form_rule
+        WHERE
+            `status` = 1
+    </select>
+
+
+</mapper>
+

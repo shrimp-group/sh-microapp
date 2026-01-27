@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.rmcheck.dao.RmCheckRuleMapper">
+
+  <select id="getRmCheckRuleList" parameterType="com.wkclz.micro.rmcheck.pojo.dto.RmCheckRuleDto" resultType="com.wkclz.micro.rmcheck.pojo.dto.RmCheckRuleDto">
+      SELECT
+          r.id,
+          r.rule_code,
+          r.table_name,
+          r.column_name,
+          r.enable_flag,
+          r.sort,
+          r.create_time,
+          r.create_by,
+          r.update_time,
+          r.update_by,
+          r.remark,
+          r.version,
+          t.table_comment,
+          c.column_comment,
+          COUNT(i.id) item_count
+      FROM
+          rm_check_rule r
+          LEFT JOIN information_schema.`TABLES` t ON t.table_name = r.table_name AND t.table_schema = #{tableSchema}
+          LEFT JOIN information_schema.`COLUMNS` c ON c.table_name = r.table_name AND c.column_name = r.column_name AND t.table_schema = #{tableSchema}
+          LEFT JOIN rm_check_rule_item i ON i.rule_code = r.rule_code AND i.`status` = 1
+      WHERE
+          r.`status` = 1
+          <if test="ruleCode != null">AND r.rule_code LIKE CONCAT('%', #{ruleCode}, '%') </if>
+          <if test="tableName != null">AND r.table_name LIKE CONCAT('%', #{tableName}, '%') </if>
+          <if test="columnName != null">AND r.column_name LIKE CONCAT('%', #{columnName}, '%') </if>
+          <if test="enableFlag != null">AND r.enable_flag = #{enableFlag} </if>
+      GROUP BY
+          r.id,
+          t.table_comment,
+          c.column_comment
+  </select>
+
+
+
+    <select id="getRmCheckRules4Check" parameterType="com.wkclz.micro.rmcheck.pojo.entity.RmCheckRule" resultType="com.wkclz.micro.rmcheck.pojo.entity.RmCheckRule">
+        SELECT
+            rule_code,
+            table_name,
+            column_name
+        FROM
+            rm_check_rule
+        WHERE
+            `status` = 1
+            AND enable_flag = 1
+            AND table_name = #{tableName}
+    </select>
+
+
+
+
+</mapper>
+

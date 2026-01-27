@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.wxmp.dao.WxmpKfMsgMapper">
+
+  <select id="getKfMsgList" parameterType="com.wkclz.micro.wxmp.pojo.dto.WxmpKfMsgDto" resultType="com.wkclz.micro.wxmp.pojo.dto.WxmpKfMsgDto">
+      SELECT
+          km.id,
+          km.tenant_code,
+          km.app_id,
+          km.msg_type,
+          km.from_user,
+          u1.nickname from_user_nickname,
+          km.to_user,
+          u2.nickname to_user_nickname,
+          km.content,
+          km.msg_id,
+          km.msg_time,
+          km.sort,
+          km.create_time,
+          km.create_by,
+          km.update_time,
+          km.update_by,
+          km.remark,
+          km.version
+      FROM
+          wxmp_kf_msg km
+          LEFT JOIN wxmp_user u1 ON u1.open_id = km.from_user AND u1.`status` = 1
+          LEFT JOIN wxmp_user u2 ON u2.open_id = km.to_user AND u2.`status` = 1
+      WHERE
+          km.`status` = 1
+          <if test="timeFrom != null">AND km.create_time &gt;= #{timeFrom} </if>
+          <if test="timeTo != null">AND km.create_time &lt;= #{timeTo} </if>
+          <if test="tenantCode != null">AND km.tenant_code = #{tenantCode} </if>
+          <if test="appId != null">AND km.app_id = #{appId} </if>
+          <if test="msgType != null">AND km.msg_type = #{msgType} </if>
+          <if test="fromUser != null">AND km.from_user = #{fromUser} </if>
+          <if test="toUser != null">AND km.to_user = #{toUser} </if>
+          <if test="msgId != null">AND km.msg_id = #{msgId} </if>
+      ORDER BY
+          km.id DESC
+  </select>
+
+</mapper>
+

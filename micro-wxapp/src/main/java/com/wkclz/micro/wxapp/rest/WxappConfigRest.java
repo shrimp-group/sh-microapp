@@ -137,7 +137,7 @@ public class WxappConfigRest {
      */
     @GetMapping(Route.WXAPP_CONFIG_INFO)
     public R wxappConfigInfo(WxappConfig entity) {
-        Assert.notNull(entity.getId(), "请求错误！参数[id]不能为空");
+        Assert.notNull(entity.getId(), ResultCode.PARAM_NO_ID.getMessage());
         entity.setTenantCode(SessionHelper.getTenantCode());
         entity = wxappConfigService.getConfigInfo(entity);
         return R.ok(entity);

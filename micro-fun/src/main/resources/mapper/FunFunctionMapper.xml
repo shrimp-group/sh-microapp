@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.fun.dao.FunFunctionMapper">
+
+  <select id="getFunctionList" parameterType="com.wkclz.micro.fun.pojo.dto.FunFunctionDto" resultType="com.wkclz.micro.fun.pojo.dto.FunFunctionDto">
+      SELECT
+          f.id,
+          f.category_code,
+          f.fun_code,
+          f.fun_name,
+          f.fun_params,
+          f.fun_language,
+          f.fun_return,
+          f.visible,
+          f.default_flag,
+          f.sort,
+          f.create_time,
+          f.create_by,
+          f.update_time,
+          f.update_by,
+          f.remark,
+          f.version
+      FROM
+          fun_function f
+      WHERE
+          f.`status` = 1
+          <if test="ids != null and ids.size > 0">AND f.id IN ( <foreach collection="ids" item="item" separator=","> #{item} </foreach> ) </if>
+          <if test="timeFrom != null">AND f.create_time &gt;= #{timeFrom} </if>
+          <if test="timeTo != null">AND f.create_time &lt;= #{timeTo} </if>
+          <if test="id != null">AND f.id = #{id} </if>
+          <if test="categoryCode != null">AND f.category_code = #{categoryCode} </if>
+          <if test="funCode != null">AND f.fun_code LIKE CONCAT('%', #{funCode}, '%') </if>
+          <if test="funName != null">AND f.fun_name LIKE CONCAT('%', #{funName}, '%') </if>
+          <if test="funLanguage != null">AND f.fun_language = #{funLanguage} </if>
+          <if test="funReturn != null">AND f.fun_return = #{funReturn} </if>
+          <if test="visible != null">AND f.visible = #{visible} </if>
+          <if test="defaultFlag != null">AND f.default_flag = #{defaultFlag} </if>
+      ORDER BY
+          f.sort ASC,
+          f.id ASC
+  </select>
+
+
+    <select id="getFunctionOption" parameterType="com.wkclz.micro.fun.pojo.dto.FunFunctionDto" resultType="com.wkclz.micro.fun.pojo.dto.FunFunctionDto">
+        SELECT
+            id,
+            category_code,
+            fun_code,
+            fun_name,
+            fun_params,
+            fun_language,
+            fun_return,
+            fun_body,
+            fun_desc,
+            default_flag
+        FROM
+            fun_function
+        WHERE
+            `status` = 1
+            AND visible = 1
+            <if test="categoryCode != null">AND category_code = #{categoryCode} </if>
+            <if test="funCode != null">AND fun_code = #{funCode} </if>
+            <if test="funName != null">AND fun_name = #{funName} </if>
+            <if test="funLanguage != null">AND fun_language = #{funLanguage} </if>
+        ORDER BY
+            sort ASC,
+            id ASC
+    </select>
+
+
+</mapper>
+

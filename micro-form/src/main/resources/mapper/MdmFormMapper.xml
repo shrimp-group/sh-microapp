@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.form.dao.MdmFormMapper">
+
+    <select id="getFormOptions" resultType="com.wkclz.micro.form.pojo.entity.MdmForm">
+        SELECT
+            form_code,
+            form_name
+        FROM
+            mdm_form
+        ORDER BY
+            sort ASC,
+            id ASC
+    </select>
+
+  <select id="getFormList" parameterType="com.wkclz.micro.form.pojo.dto.MdmFormDto" resultType="com.wkclz.micro.form.pojo.dto.MdmFormDto">
+      SELECT
+          f.id,
+          f.form_code,
+          f.form_name,
+          f.sort,
+          f.create_time,
+          f.create_by,
+          f.update_time,
+          f.update_by,
+          f.remark,
+          f.version,
+          COUNT(i.id) item_count
+      FROM
+          mdm_form f
+          LEFT JOIN mdm_form_item i ON i.form_code = f.form_code AND i.`status` = 1
+      WHERE
+          f.`status` = 1
+          <if test="formCode != null">AND f.form_code LIKE CONCAT('%', #{formCode}, '%') </if>
+          <if test="formName != null">AND f.form_name LIKE CONCAT('%', #{formName}, '%') </if>
+      GROUP BY
+          f.id
+      ORDER BY
+          f.sort ASC,
+          f.id ASC
+  </select>
+
+
+
+    <select id="getCustomFormInfo" parameterType="java.lang.String" resultType="com.wkclz.micro.form.pojo.dto.MdmFormDto">
+        SELECT
+            form_code,
+            form_name
+        FROM
+            mdm_form
+        WHERE
+            `status` = 1
+          AND form_code = #{formCode};
+    </select>
+
+
+
+    <select id="getForm4Cache" resultType="com.wkclz.micro.form.pojo.dto.MdmFormDto">
+        SELECT
+            form_code,
+            form_name
+        FROM
+            mdm_form
+        WHERE
+            `status` = 1
+        ORDER BY
+            sort ASC,
+            id ASC
+    </select>
+
+
+</mapper>
+

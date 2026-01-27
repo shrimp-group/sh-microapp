@@ -26,8 +26,8 @@ public class WxappUserService extends BaseService<WxappUser, WxappUserMapper> {
 
     public WxappUser update(WxappUser entity) {
         duplicateCheck(entity);
-        Assert.notNull(entity.getId(), "请求错误！参数[id]不能为空");
-        Assert.notNull(entity.getVersion(), "请求错误！参数[version]不能为空");
+        Assert.notNull(entity.getId(), ResultCode.PARAM_NO_ID.getMessage());
+        Assert.notNull(entity.getId(), ResultCode.UPDATE_NO_VERSION.getMessage());
         WxappUser oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
             throw ValidationException.of(ResultCode.NOT_FOUND);

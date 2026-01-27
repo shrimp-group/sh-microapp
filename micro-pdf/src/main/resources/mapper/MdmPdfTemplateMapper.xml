@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.pdf.dao.MdmPdfTemplateMapper">
+
+  <select id="getPdfTemplateList" parameterType="com.wkclz.micro.pdf.pojo.entity.MdmPdfTemplate" resultType="com.wkclz.micro.pdf.pojo.entity.MdmPdfTemplate">
+      SELECT
+          id,
+          template_code,
+          template_name,
+          template_context,
+          sort,
+          create_time,
+          create_by,
+          update_time,
+          update_by,
+          remark,
+          version
+      FROM
+          mdm_pdf_template
+      WHERE
+          `status` = 1
+          <if test="templateCode != null">AND template_code LIKE CONCAT('%', #{templateCode}, '%') </if>
+          <if test="templateName != null">AND template_name LIKE CONCAT('%', #{templateName}, '%') </if>
+      ORDER BY
+          id DESC
+  </select>
+
+
+    <select id="get4Cache" resultType="com.wkclz.micro.pdf.pojo.entity.MdmPdfTemplate">
+        SELECT
+            *
+        FROM
+            mdm_pdf_template
+        WHERE
+            `status` = 1
+    </select>
+
+
+</mapper>
+

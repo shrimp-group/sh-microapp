@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.liteflow.dao.LiteflowScriptMapper">
+
+    <select id="getLiteflowScriptList4Page" parameterType="com.wkclz.micro.liteflow.pojo.entity.LiteflowScript" resultType="com.wkclz.micro.liteflow.pojo.entity.LiteflowScript">
+      SELECT
+          id,
+          script_id,
+          script_name,
+          script_type,
+          script_language,
+          enable,
+          sort,
+          create_time,
+          create_by,
+          update_time,
+          update_by,
+          remark,
+          version
+      FROM
+          liteflow_script
+      WHERE
+          `status` = 1
+          <if test="timeFrom != null">AND create_time &gt;= #{timeFrom} </if>
+          <if test="timeTo != null">AND create_time &lt;= #{timeTo} </if>
+          <if test="id != null">AND id = #{id} </if>
+          <if test="scriptId != null">AND script_id LIKE CONCAT('%', #{scriptId}, '%') </if>
+          <if test="scriptName != null">AND script_name LIKE CONCAT('%', #{scriptName}, '%') </if>
+          <if test="scriptType != null">AND script_type = #{scriptType} </if>
+          <if test="scriptLanguage != null">AND script_language = #{scriptLanguage} </if>
+          <if test="enable != null">AND enable = #{enable} </if>
+      ORDER BY
+          sort ASC,
+          id ASC
+  </select>
+
+</mapper>
+

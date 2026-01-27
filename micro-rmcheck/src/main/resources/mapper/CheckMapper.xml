@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.rmcheck.dao.CheckMapper">
+
+    <select id="rmCheck" parameterType="com.wkclz.micro.rmcheck.pojo.dto.RmCheckRuleItemDto" resultType="java.lang.Long">
+        SELECT
+            id
+        FROM
+            ${checkTableName}
+        WHERE
+            `status` = 1
+            AND ${checkColumnName} = #{checkValue}
+        LIMIT 1
+    </select>
+
+</mapper>
+

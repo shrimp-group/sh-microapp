@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.msg.dao.MsgNotificationMapper">
+
+  <select id="getNotificationList" parameterType="com.wkclz.micro.msg.pojo.dto.MsgNotificationDto" resultType="com.wkclz.micro.msg.pojo.dto.MsgNotificationDto">
+      SELECT
+          n.id,
+          n.notice_no,
+          n.user_code,
+          n.title,
+          n.content,
+          n.ext_url,
+          n.create_time,
+          n.create_by,
+          n.update_time,
+          n.update_by,
+          n.version,
+          count(ur.id) record_count,
+          SUM(IF(ur.read_status = 1, 1, 0)) read_count
+      FROM
+          msg_notification n
+          LEFT JOIN msg_user_record ur ON ur.notice_no = n.notice_no AND ur.`status` = 1
+      WHERE
+          n.`status` = 1
+          <if test="timeFrom != null">AND n.create_time &gt;= #{timeFrom} </if>
+          <if test="timeTo != null">AND n.create_time &lt;= #{timeTo} </if>
+          <if test="noticeNo != null">AND n.notice_no = #{noticeNo} </if>
+          <if test="userCode != null">AND n.user_code = #{userCode} </if>
+          <if test="title != null">AND n.title LIKE ('%', #{title}, '%') </if>
+      GROUP BY
+          n.id
+          LIMIT 10
+  </select>
+
+</mapper>
+

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.dict.dao.MdmDictMapper">
+
+    <select id="getDictList" parameterType="com.wkclz.micro.dict.pojo.entity.MdmDict" resultType="com.wkclz.micro.dict.pojo.entity.MdmDict">
+        SELECT
+            d.id,
+            d.dict_ctg,
+            d.dict_type,
+            d.description,
+            d.sort,
+            d.create_time,
+            d.create_by,
+            d.update_time,
+            d.update_by,
+            d.remark,
+            d.version,
+            COUNT(di.id)  count
+        FROM
+            mdm_dict d
+            LEFT JOIN mdm_dict_item di ON di.dict_type = d.dict_type and di.`status` = 1
+        WHERE
+            1 = 1
+            AND d.`status` = 1
+            <if test="dictCtg != null"> AND d.dict_ctg = #{dictCtg} </if>
+            <if test="dictType != null"> AND d.dict_type LIKE concat('%', #{dictType},'%') </if>
+            <if test="description != null"> AND d.description LIKE concat('%', #{description},'%') </if>
+        GROUP BY
+            d.id
+        ORDER BY
+            d.sort,
+            d.id DESC
+    </select>
+
+
+    <select id="dicts4Cache" resultType="com.wkclz.micro.dict.pojo.entity.MdmDict">
+        SELECT
+            dict_type,
+            description
+        FROM
+            mdm_dict
+        WHERE
+            `status` = 1
+        ORDER BY
+            sort ASC,
+            id ASC
+    </select>
+
+
+    <select id="dicts4Copy"  parameterType="com.wkclz.micro.dict.pojo.dto.MdmDictDto"  resultType="com.wkclz.micro.dict.pojo.dto.MdmDictDto">
+        SELECT
+            dict_ctg,
+            dict_type,
+            description,
+            sort,
+            remark
+        FROM
+            mdm_dict
+        WHERE
+            `status` = 1
+            <if test="dictCtg != null"> AND dict_ctg = #{dictCtg} </if>
+            <if test="dictType != null"> AND dict_type = #{dictType} </if>
+
+            <if test="dictTypes != null and dictTypes.size > 0">
+                AND dict_type IN ( <foreach collection="dictTypes" item="item" separator=","> #{item} </foreach> )
+            </if>
+    </select>
+
+
+    <select id="dicts4Update"  parameterType="com.wkclz.micro.dict.pojo.dto.MdmDictDto"  resultType="com.wkclz.micro.dict.pojo.dto.MdmDictDto">
+        SELECT
+            *
+        FROM
+            mdm_dict
+        WHERE
+            `status` = 1
+            <if test="dictCtg != null"> AND dict_ctg = #{dictCtg} </if>
+            <if test="dictType != null"> AND dict_type = #{dictType} </if>
+
+            <if test="dictTypes != null and dictTypes.size > 0">
+                AND dict_type IN ( <foreach collection="dictTypes" item="item" separator=","> #{item} </foreach> )
+            </if>
+    </select>
+
+
+    <select id="dictOptions" resultType="com.wkclz.micro.dict.pojo.entity.MdmDict">
+        SELECT
+            d.dict_type,
+            d.description,
+            COUNT(di.id) count
+        FROM
+            mdm_dict d
+            LEFT JOIN mdm_dict_item di ON di.dict_type = d.dict_type AND di.`status` = 1
+        WHERE
+            d.`status` = 1
+        GROUP BY
+            d.id
+        ORDER BY
+            d.sort,
+            d.id
+    </select>
+
+
+</mapper>
+

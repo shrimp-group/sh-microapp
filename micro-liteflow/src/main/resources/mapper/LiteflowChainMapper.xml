@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.liteflow.dao.LiteflowChainMapper">
+
+  <select id="getLiteflowChainList4Page" parameterType="com.wkclz.micro.liteflow.pojo.entity.LiteflowChain" resultType="com.wkclz.micro.liteflow.pojo.entity.LiteflowChain">
+      SELECT
+          id,
+          chain_name,
+          chain_desc,
+          el_data,
+          route,
+          namespace,
+          `enable`,
+          sort,
+          create_time,
+          create_by,
+          update_time,
+          update_by,
+          remark,
+          version
+      FROM
+          liteflow_chain
+      WHERE
+          status = 1
+          <if test="timeFrom != null">AND create_time &gt;= #{timeFrom} </if>
+          <if test="timeTo != null">AND create_time &lt;= #{timeTo} </if>
+          <if test="id != null">AND id = #{id} </if>
+          <if test="chainName != null">AND chain_name LIKE CONCAT('%', #{chainName}, '%') </if>
+          <if test="chainDesc != null">AND chain_desc = #{chainDesc} </if>
+          <if test="namespace != null">AND namespace = #{namespace} </if>
+          <if test="enable != null">AND enable = #{enable} </if>
+      ORDER BY
+          sort ASC,
+          id ASC
+  </select>
+
+</mapper>
+

@@ -26,7 +26,20 @@
     </properties>
 
     <modules>
+        <module>micro-audit</module>
+        <module>micro-dict</module>
+        <module>micro-file</module>
+        <module>micro-liteflow</module>
+        <module>micro-form</module>
+        <module>micro-fun</module>
+        <module>micro-mask</module>
+        <module>micro-msg</module>
+        <module>micro-pay</module>
+        <module>micro-pdf</module>
+        <module>micro-rmcheck</module>
+        <module>micro-seq</module>
         <module>micro-wxapp</module>
+        <module>micro-wxmp</module>
     </modules>
 
 </project>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.wkclz.microapp</groupId>
+        <artifactId>sh-microapp</artifactId>
+        <version>5.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>micro-fun</artifactId>
+    <version>${revision}</version>
+
+    <properties>
+        <graalvm.version>23.1.2</graalvm.version>
+    </properties>
+
+    <dependencies>
+
+        <!-- GraalVM 核心依赖【所有语言均共用，并且版本统一】 -->
+        <dependency>
+            <groupId>org.graalvm.polyglot</groupId>
+            <artifactId>polyglot</artifactId>
+            <version>${graalvm.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.graalvm.sdk</groupId>
+            <artifactId>graal-sdk</artifactId>
+            <version>${graalvm.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.graalvm.truffle</groupId>
+            <artifactId>truffle-api</artifactId>
+            <version>${graalvm.version}</version>
+        </dependency>
+
+
+        <!-- js 引擎 -->
+        <dependency>
+            <groupId>org.graalvm.js</groupId>
+            <artifactId>js</artifactId>
+            <version>23.0.7</version>
+        </dependency>
+
+        <!-- Python 实现 -->
+        <dependency>
+            <groupId>org.graalvm.polyglot</groupId>
+            <artifactId>python-community</artifactId>
+            <version>${graalvm.version}</version>
+            <type>pom</type>
+        </dependency>
+
+        <!-- Ruby 语言支持 -->
+        <dependency>
+            <groupId>org.graalvm.polyglot</groupId>
+            <artifactId>ruby-community</artifactId>
+            <version>${graalvm.version}</version>
+            <type>pom</type>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>QLExpress</artifactId>
+            <version>3.3.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy</artifactId>
+            <version>3.0.9</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.wkclz.iam</groupId>
+            <artifactId>iam-sdk</artifactId>
+            <version>${sh-iam.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.wkclz.framework</groupId>
+            <artifactId>sh-mybatis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.wkclz.framework</groupId>
+            <artifactId>sh-redis</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.wkclz.generator</groupId>
+                <artifactId>generator-client</artifactId>
+                <version>5.0.0-SNAPSHOT</version>
+                <configuration>
+                    <options>
+                        <option>fdd9f99973a1b7a1de7fe42119c22594</option>
+                    </options>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

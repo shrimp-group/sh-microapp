@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.form.dao.MdmFormItemMapper">
+
+  <select id="getCustomFormItemList" parameterType="java.lang.String" resultType="com.wkclz.micro.form.pojo.entity.MdmFormItem">
+      SELECT
+          form_code,
+          item_group,
+          item_code,
+          item_name,
+          input_type,
+          field_type,
+          dict_type,
+          label,
+          min,
+          max,
+          min_length,
+          max_length,
+          placeholder,
+          required,
+          default_value,
+          rules,
+          clearable
+      FROM
+          mdm_form_item
+      WHERE
+          `status` = 1
+        AND form_code = #{formCode}
+      ORDER BY
+          sort ASC,
+          id ASC
+  </select>
+
+
+    <select id="getFormItem4Cache" resultType="com.wkclz.micro.form.pojo.entity.MdmFormItem">
+        SELECT
+            form_code,
+            item_group,
+            item_code,
+            item_name,
+            input_type,
+            field_type,
+            dict_type,
+            label,
+            min,
+            max,
+            min_length,
+            max_length,
+            placeholder,
+            required,
+            default_value,
+            rules,
+            clearable
+        FROM
+            mdm_form_item
+        WHERE
+            `status` = 1
+        ORDER BY
+            sort ASC,
+            id ASC
+    </select>
+
+</mapper>
+

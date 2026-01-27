@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.rmcheck.dao.RmCheckRuleItemMapper">
+
+  <select id="getRmCheckRuleItem" parameterType="com.wkclz.micro.rmcheck.pojo.dto.RmCheckRuleItemDto" resultType="com.wkclz.micro.rmcheck.pojo.dto.RmCheckRuleItemDto">
+      SELECT
+          i.id,
+          i.rule_code,
+          i.check_table_name,
+          i.check_column_name,
+          i.notice_message,
+          i.enable_flag,
+          i.sort,
+          i.create_time,
+          i.create_by,
+          i.update_time,
+          i.update_by,
+          i.remark,
+          i.version,
+          t.table_comment check_table_comment,
+          c.column_comment check_column_comment
+      FROM
+          rm_check_rule_item i
+          LEFT JOIN information_schema.`TABLES` t ON t.table_schema = #{tableSchema} AND t.table_name = i.check_table_name
+          LEFT JOIN information_schema.`COLUMNS` c ON c.table_schema = #{tableSchema} AND c.table_name = i.check_table_name AND c.column_name = i.check_column_name
+      WHERE
+          i.`status` = 1
+          AND i.rule_code = #{ruleCode}
+          <if test="enableFlag != null">AND i.enable_flag = #{enableFlag} </if>
+      ORDER BY
+          c.ordinal_position ASC
+  </select>
+
+    <select id="getRmCheckRuleItem4Check" parameterType="com.wkclz.micro.rmcheck.pojo.entity.RmCheckRuleItem" resultType="com.wkclz.micro.rmcheck.pojo.entity.RmCheckRuleItem">
+        SELECT
+            rule_code,
+            check_table_name,
+            check_column_name,
+            notice_message
+        FROM
+            rm_check_rule_item
+        WHERE
+            `status` = 1
+            AND enable_flag = 1
+            AND rule_code = #{ruleCode}
+    </select>
+
+
+</mapper>
+

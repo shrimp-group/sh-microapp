@@ -1,0 +1,31 @@
+package com.wkclz.micro.audit.pojo.dto;
+
+import com.wkclz.micro.audit.pojo.entity.MdmChangeLog;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+/**
+ * Description Create by shrimp-gen
+ * @author wangkaicun
+ * @table mdm_change_log (变更记录) 数据库实例扩展，代码重新生成不覆盖
+ */
+
+@Data
+@EqualsAndHashCode(callSuper = false)
+public class MdmChangeLogDto extends MdmChangeLog {
+
+
+
+
+    /**
+     * entity 转 Dto
+     * @param source
+     * @return
+     */
+    public static MdmChangeLogDto copy(MdmChangeLog source) {
+        MdmChangeLogDto target = new MdmChangeLogDto();
+        MdmChangeLog.copy(source, target);
+        return target;
+    }
+}
+

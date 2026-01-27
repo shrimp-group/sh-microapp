@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.fun.dao.FunCategoryMapper">
+
+  <select id="getFunCategoryList" parameterType="com.wkclz.micro.fun.pojo.entity.FunCategory" resultType="com.wkclz.micro.fun.pojo.entity.FunCategory">
+      SELECT
+          id,
+          pcode,
+          category_code,
+          category_name,
+          description,
+          visible,
+          sort,
+          create_time,
+          create_by,
+          update_time,
+          update_by,
+          remark,
+          version
+      FROM
+          fun_category
+      WHERE
+          `status` = 1
+          <if test="ids != null and ids.size > 0">AND id IN ( <foreach collection="ids" item="item" separator=","> #{item} </foreach> ) </if>
+          <if test="timeFrom != null">AND create_time &gt;= #{timeFrom} </if>
+          <if test="timeTo != null">AND create_time &lt;= #{timeTo} </if>
+          <if test="id != null">AND id = #{id} </if>
+          <if test="pcode != null">AND pcode = #{pcode} </if>
+          <if test="categoryCode != null">AND category_code LIKE CONCAT('%', #{categoryCode}, '%') </if>
+          <if test="categoryName != null">AND category_name LIKE CONCAT('%', #{categoryName}, '%') </if>
+          <if test="visible != null">AND visible = #{visible} </if>
+      ORDER BY
+          sort ASC,
+          id ASC
+  </select>
+
+
+    <select id="getFunCategoryOptions" parameterType="com.wkclz.micro.fun.pojo.entity.FunCategory" resultType="com.wkclz.micro.fun.pojo.entity.FunCategory">
+        SELECT
+            pcode,
+            category_code,
+            category_name,
+            description
+        FROM
+            fun_category
+        WHERE
+            `status` = 1
+            <if test="pcode != null">AND pcode = #{pcode} </if>
+            <if test="visible != null">AND visible = #{visible} </if>
+        ORDER BY
+            sort ASC,
+            id ASC
+    </select>
+
+
+</mapper>
+

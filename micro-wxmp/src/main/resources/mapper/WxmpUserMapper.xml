@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.wxmp.dao.WxmpUserMapper">
+
+    <select id="getWxmpUserByOpenId" parameterType="java.lang.String"
+            resultType="com.wkclz.micro.wxmp.pojo.entity.WxmpUser">
+        SELECT
+            *
+        FROM
+            wxmp_user
+        WHERE
+            `status` = 1
+            AND open_id = #{openId}
+    </select>
+
+    <select id="getWxmpUserByUserCode" parameterType="java.lang.String"
+            resultType="com.wkclz.micro.wxmp.pojo.entity.WxmpUser">
+        SELECT
+            *
+        FROM
+            wxmp_user
+        WHERE
+            `status` = 1
+            AND user_code = #{userCode}
+    </select>
+
+</mapper>
+

@@ -30,8 +30,8 @@ public class WxappLoginLogService extends BaseService<WxappLoginLog, WxappLoginL
 
     public WxappLoginLog update(WxappLoginLog entity) {
         duplicateCheck(entity);
-        Assert.notNull(entity.getId(), "请求错误！参数[id]不能为空");
-        Assert.notNull(entity.getVersion(), "请求错误！参数[version]不能为空");
+        Assert.notNull(entity.getId(), ResultCode.PARAM_NO_ID.getMessage());
+        Assert.notNull(entity.getId(), ResultCode.UPDATE_NO_VERSION.getMessage());
         WxappLoginLog oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
             throw ValidationException.of(ResultCode.RECORD_NOT_EXIST);

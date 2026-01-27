@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.mask.dao.MdmMaskRuleMapper">
+
+  <select id="getMaskRuleList" parameterType="com.wkclz.micro.mask.pojo.entity.MdmMaskRule" resultType="com.wkclz.micro.mask.pojo.entity.MdmMaskRule">
+      SELECT
+          id,
+          mask_rule_code,
+          mask_rule_name,
+          request_method,
+          request_uri,
+          mask_rule_regular,
+          mask_json_path,
+          enable_flag,
+          mock_value,
+          sort,
+          create_time,
+          create_by,
+          update_time,
+          update_by,
+          remark,
+          version
+      FROM
+          mdm_mask_rule
+      WHERE
+          `status` = 1
+          <if test="timeFrom != null">AND create_time &gt;= #{timeFrom} </if>
+          <if test="timeTo != null">AND create_time &lt;= #{timeTo} </if>
+          <if test="requestMethod != null">AND request_method = #{requestMethod} </if>
+          <if test="requestUri != null">AND request_uri LIKE CONCAT('%', #{requestUri}, '%') </if>
+          <if test="maskRuleCode != null">AND mask_rule_code LIKE CONCAT('%', #{maskRuleCode}, '%') </if>
+          <if test="maskRuleName != null">AND mask_rule_name LIKE CONCAT('%', #{maskRuleName}, '%') </if>
+          <if test="enableFlag != null">AND enable_flag = #{enableFlag} </if>
+      ORDER BY
+          sort ASC,
+          id ASC
+  </select>
+
+    <select id="rules4Cache" resultType="com.wkclz.micro.mask.pojo.entity.MdmMaskRule">
+        SELECT
+            mask_rule_code,
+            request_method,
+            request_uri,
+            mask_json_path,
+            mask_rule_regular,
+            mask_rule_script
+        FROM
+            mdm_mask_rule
+        WHERE
+            `status` = 1
+          AND enable_flag = 1
+        ORDER BY
+            sort ASC,
+            id ASC
+    </select>
+
+</mapper>
+

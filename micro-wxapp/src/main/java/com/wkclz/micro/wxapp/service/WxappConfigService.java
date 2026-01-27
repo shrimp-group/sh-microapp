@@ -31,7 +31,7 @@ public class WxappConfigService extends BaseService<WxappConfig, WxappConfigMapp
     }
 
     public WxappConfig getConfigInfo(WxappConfig entity) {
-        Assert.notNull(entity.getId(), "请求错误！参数[id]不能为空");
+        Assert.notNull(entity.getId(), ResultCode.PARAM_NO_ID.getMessage());
         Assert.notNull(entity.getTenantCode(), "请求错误！参数[tenantCode]不能为空");
         WxappConfig config = selectOneByEntity(entity);
         if (config == null) {
@@ -63,8 +63,9 @@ public class WxappConfigService extends BaseService<WxappConfig, WxappConfigMapp
 
     public WxappConfig update(WxappConfig entity) {
         duplicateCheck(entity);
-        Assert.notNull(entity.getId(), "请求错误！参数[id]不能为空");
-        Assert.notNull(entity.getVersion(), "请求错误！参数[version]不能为空");
+        Assert.notNull(entity.getId(), ResultCode.PARAM_NO_ID.getMessage());
+        Assert.notNull(entity.getId(), ResultCode.UPDATE_NO_VERSION.getMessage());
+        Assert.notNull(entity.getId(), ResultCode.UPDATE_NO_VERSION.getMessage());
         WxappConfig oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
             throw ValidationException.of(ResultCode.RECORD_NOT_EXIST);
@@ -91,7 +92,6 @@ public class WxappConfigService extends BaseService<WxappConfig, WxappConfigMapp
     }
 
     private void duplicateCheck(WxappConfig entity) {
-        Assert.notNull(entity);
         // 唯一条件为空，直接通过
         if (StringUtils.isBlank(entity.getAppId())) {
             return;

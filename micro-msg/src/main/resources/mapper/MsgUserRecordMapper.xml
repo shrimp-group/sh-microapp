@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.msg.dao.MsgUserRecordMapper">
+
+  <select id="getPersonalRecordList" parameterType="com.wkclz.micro.msg.pojo.dto.MsgUserRecordDto" resultType="com.wkclz.micro.msg.pojo.dto.MsgUserRecordDto">
+      SELECT
+          ur.user_code,
+          ur.notice_no,
+          ur.read_status,
+          ur.read_time,
+          ur.create_time,
+          n.user_code sender,
+          n.title
+      FROM
+          msg_user_record ur
+          INNER JOIN msg_notification n ON n.notice_no = ur.notice_no
+      WHERE
+          ur.`status` = 1
+          AND n.`status` = 1
+          AND ur.user_code = #{userCode}
+          <if test="timeFrom != null">AND ur.create_time &gt;= #{timeFrom} </if>
+          <if test="timeTo != null">AND ur.create_time &lt;= #{timeTo} </if>
+          <if test="userCode != null">AND ur.user_code = #{userCode} </if>
+          <if test="noticeNo != null">AND ur.notice_no = #{noticeNo} </if>
+          <if test="readStatus != null">AND ur.read_status = #{readStatus} </if>
+          <if test="title != null">AND n.title LIKE CONCAT('%', #{title}, '%') </if>
+      ORDER BY
+          ur.id DESC
+      LIMIT #{size}
+  </select>
+
+
+    <select id="getPersonalRecordList4Page" parameterType="com.wkclz.micro.msg.pojo.dto.MsgUserRecordDto" resultType="com.wkclz.micro.msg.pojo.dto.MsgUserRecordDto">
+        SELECT
+            ur.user_code,
+            ur.notice_no,
+            ur.read_status,
+            ur.read_time,
+            ur.create_time,
+            n.user_code sender,
+            n.title
+        FROM
+            msg_user_record ur
+            INNER JOIN msg_notification n ON n.notice_no = ur.notice_no
+        WHERE
+            ur.`status` = 1
+            AND n.`status` = 1
+            AND ur.user_code = #{userCode}
+            <if test="timeFrom != null">AND ur.create_time &gt;= #{timeFrom} </if>
+            <if test="timeTo != null">AND ur.create_time &lt;= #{timeTo} </if>
+            <if test="userCode != null">AND ur.user_code = #{userCode} </if>
+            <if test="noticeNo != null">AND ur.notice_no = #{noticeNo} </if>
+            <if test="readStatus != null">AND ur.read_status = #{readStatus} </if>
+            <if test="title != null">AND n.title LIKE CONCAT('%', #{title}, '%') </if>
+        ORDER BY
+            ur.id DESC
+    </select>
+
+
+    <select id="getNoticeInfo" parameterType="com.wkclz.micro.msg.pojo.dto.MsgUserRecordDto" resultType="com.wkclz.micro.msg.pojo.dto.MsgUserRecordDto">
+        SELECT
+            ur.id,
+            ur.user_code,
+            ur.notice_no,
+            ur.read_status,
+            ur.read_time,
+            ur.create_time,
+            n.user_code sender,
+            n.title,
+            n.content,
+            n.ext_url
+        FROM
+            msg_user_record ur
+            INNER JOIN msg_notification n ON n.notice_no = ur.notice_no
+        WHERE
+            ur.`status` = 1
+           AND n.`status` = 1
+           AND ur.user_code = #{userCode}
+           AND ur.notice_no = #{noticeNo}
+       LIMIT 1
+    </select>
+
+    <update id="updateShowTimes" parameterType="java.lang.Long">
+        UPDATE
+            msg_user_record
+        SET
+            read_status = 1,
+            show_times = show_times + 1,
+            read_time = IFNULL(read_time, NOW())
+        WHERE
+            id = #{id}
+    </update>
+
+    <update id="markRecodeAsReaded" parameterType="com.wkclz.micro.msg.pojo.entity.MsgUserRecord">
+        UPDATE
+            msg_user_record
+        SET
+            read_status = 1
+        WHERE
+            `status` = 1
+            <if test="ids != null and ids.size > 0">AND id IN ( <foreach collection="ids" item="item" separator=","> #{item} </foreach> ) </if>
+            <if test="userCode != null">AND user_code = #{userCode} </if>
+    </update>
+
+
+</mapper>
+

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.file.dao.MdmFsFilesMapper">
+
+    <select id="getFileList4Page" parameterType="com.wkclz.micro.file.pojo.entity.MdmFsFiles" resultType="com.wkclz.micro.file.pojo.entity.MdmFsFiles">
+        SELECT
+            ff.id,
+            ff.tenant_code,
+            ff.busness_type,
+            ff.file_size,
+            ff.file_name,
+            ff.file_type,
+            ff.oss_sp,
+            ff.bucket,
+            ff.file_id,
+            ff.sort,
+            ff.create_time,
+            ff.create_by,
+            ff.update_time,
+            ff.update_by,
+            ff.remark,
+            ff.version
+        FROM
+            mdm_fs_files ff
+        WHERE
+            `status` = 1
+            <if test="timeFrom != null">AND ff.create_time &gt;= #{timeFrom} </if>
+            <if test="timeTo != null">AND ff.create_time &lt;= #{timeTo} </if>
+            <if test="id != null">AND ff.id = #{id} </if>
+            <if test="tenantCode != null">AND ff.tenant_code = #{tenantCode} </if>
+            <if test="busnessType != null">AND ff.busness_type = #{busnessType} </if>
+            <if test="fileName != null">AND ff.file_name LIKE CONCAT('%', #{fileName}, '%') </if>
+            <if test="fileType != null">AND ff.file_type = #{fileType} </if>
+            <if test="ossSp != null">AND ff.oss_sp = #{ossSp} </if>
+            <if test="bucket != null">AND ff.bucket = #{bucket} </if>
+            <if test="fileId != null">AND ff.file_id = #{fileId} </if>
+        ORDER BY
+            id DESC
+    </select>
+
+
+    <select id="getFilesByFileId" parameterType="java.lang.String" resultType="com.wkclz.micro.file.pojo.entity.MdmFsFiles">
+        SELECT
+            id,
+            tenant_code,
+            busness_type,
+            file_size,
+            file_name,
+            file_type,
+            oss_sp,
+            bucket,
+            file_id
+        FROM
+            mdm_fs_files
+        WHERE
+            `status` = 1
+          AND file_id = #{fileId}
+    </select>
+
+    <select id="getFilesByFileIds" parameterType="java.util.List" resultType="com.wkclz.micro.file.pojo.entity.MdmFsFiles">
+      SELECT
+          id,
+          tenant_code,
+          busness_type,
+          file_size,
+          file_name,
+          file_type,
+          oss_sp,
+          bucket,
+          file_id
+      FROM
+          mdm_fs_files
+      WHERE
+          `status` = 1
+          AND file_id IN ( <foreach collection="fileIds" item="item" separator=","> #{item} </foreach> )
+  </select>
+
+
+
+</mapper>
+

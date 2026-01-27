@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.pay.dao.PayOrderMapper">
+
+
+    <select id="getActivePayOrder" parameterType="com.wkclz.micro.pay.pojo.entity.PayOrder" resultType="com.wkclz.micro.pay.pojo.entity.PayOrder">
+        SELECT
+            *
+        FROM
+            pay_order
+        WHERE
+            `status` = 1
+            AND pay_status != 'CANCEL'
+            AND order_no = #{orderNo}
+    </select>
+
+    <select id="getOrderStatus" parameterType="com.wkclz.micro.pay.pojo.entity.PayOrder" resultType="com.wkclz.micro.pay.pojo.entity.PayOrder">
+        SELECT
+            order_no,
+            pay_status
+        FROM
+            pay_order
+        WHERE
+            `status` = 1
+            AND order_no = #{orderNo}
+            AND pay_status != 'CANCEL'
+            AND username = #{username}
+    </select>
+
+    <select id="getPayOrderByOutTradeNo" parameterType="java.lang.String" resultType="com.wkclz.micro.pay.pojo.entity.PayOrder">
+        SELECT
+            *
+        FROM
+            pay_order
+        WHERE
+            `status` = 1
+            AND out_trade_no = #{outTradeNo}
+    </select>
+
+
+
+    <select id="getPayingOrders" resultType="com.wkclz.micro.pay.pojo.entity.PayOrder">
+        SELECT
+            *
+        FROM
+            pay_order
+        WHERE
+            `status` = 1
+          AND pay_method = 'WX_PAY'
+          AND pay_status = 'PAYING'
+          AND pay_flow_no IS NULL
+          AND pay_time IS NULL
+          AND create_time > DATE_SUB( NOW(), INTERVAL 24 HOUR )
+          AND create_time &lt; DATE_SUB( NOW(), INTERVAL 2 MINUTE )
+    </select>
+
+
+
+    <select id="getTimeoutPayingOrders" parameterType="com.wkclz.micro.pay.pojo.dto.PayOrderDto" resultType="com.wkclz.micro.pay.pojo.entity.PayOrder">
+        SELECT
+            *
+        FROM
+            pay_order
+        WHERE
+            `status` = 1
+            AND pay_status IN ('NEW', 'PAYING')
+            AND pay_flow_no IS NULL
+            AND pay_time IS NULL
+            AND create_time > DATE_SUB(NOW(),INTERVAL 2 DAY)
+            AND create_time &lt; DATE_SUB(NOW(),INTERVAL #{timeoutMinute} MINUTE)
+    </select>
+
+</mapper>
+
