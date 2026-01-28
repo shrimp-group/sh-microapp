@@ -1,6 +1,7 @@
 package com.wkclz.micro.dict.service;
 
 import com.wkclz.core.base.PageData;
+import com.wkclz.core.exception.ValidationException;
 import com.wkclz.iam.sdk.helper.SessionHelper;
 import com.wkclz.micro.dict.dao.MdmDictItemMapper;
 import com.wkclz.micro.dict.dao.MdmDictMapper;
@@ -33,8 +34,39 @@ public class MdmDictService extends BaseService<MdmDict, MdmDictMapper> {
     @Autowired
     private MdmDictItemMapper dictItemMapper;
 
-    public PageData<MdmDict> getDictList(MdmDict model) {
+    public PageData<MdmDict> getDictPage(MdmDict model) {
         return PageQuery.page(model, mapper::getDictList);
+    }
+
+
+    public MdmDict dictUpdate(MdmDict entity) {
+        MdmDict mdmDict = selectById(entity.getId());
+        if (mdmDict == null) {
+            throw ValidationException.of("数据不存在");
+        }
+        // 如果把 dictType 都改了，要多加校验，子表也要改
+        if (!mdmDict.getDictType().equals(entity.getDictType())) {
+            // 校验
+            MdmDict param = new MdmDict();
+            param.setDictType(entity.getDictType());
+            long count = selectCountByEntity(param);
+            if (count > 0) {
+                throw ValidationException.of(entity.getDictType() + " 重复使用，请纠正");
+            }
+
+            // 修改子表
+            MdmDictItem itemParam = new MdmDictItem();
+            itemParam.setDictType(mdmDict.getDictType());
+            List<MdmDictItem> items = dictItemMapper.selectByEntity(itemParam);
+            if (!org.springframework.util.CollectionUtils.isEmpty(items)) {
+                items.forEach(l->{
+                    l.setDictType(entity.getDictType());
+                    dictItemMapper.updateByIdSelective(l);
+                });
+            }
+        }
+        updateById(entity);
+        return entity;
     }
 
 

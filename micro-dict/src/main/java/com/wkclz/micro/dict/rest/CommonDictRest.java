@@ -8,6 +8,7 @@ import com.wkclz.tool.utils.StringUtil;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
  * Created: wangkaicun @ 2018-10-30 15:11:51
  */
 @RestController
+@RequestMapping(Route.PREFIX)
 public class CommonDictRest {
 
     @Resource
@@ -28,7 +30,7 @@ public class CommonDictRest {
 
 
     /**
-     * @api {get} /common/dict1/list 21. 字典内容列表（单字典,不分页）
+     * @api {get} /common/dict/list 21. 字典内容列表（单字典,不分页）
      * @apiGroup DICT
      *
      * @apiVersion 0.0.1

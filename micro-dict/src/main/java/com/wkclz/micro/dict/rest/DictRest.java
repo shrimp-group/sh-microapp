@@ -15,10 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -26,6 +23,7 @@ import java.util.List;
  * Created: wangkaicun @ 2018-10-30 15:11:51
  */
 @RestController
+@RequestMapping(Route.PREFIX)
 public class DictRest {
 
     @Autowired
@@ -36,7 +34,7 @@ public class DictRest {
     private MdmDictItemService mdmDictItemService;
 
     /**
-     * @api {get} /dict/page 01. 字典类型列表分页
+     * @api {get} /dict/page 1. 字典类型列表分页
      * @apiGroup DICT
      *
      * @apiVersion 0.0.1
@@ -76,14 +74,14 @@ public class DictRest {
      *
      */
     @GetMapping(Route.DICT_PAGE)
-    public R dictPage(MdmDict model) {
-        PageData<MdmDict> dicts = mdmDictService.getDictList(model);
+    public R dictPage(MdmDict entity) {
+        PageData<MdmDict> dicts = mdmDictService.getDictPage(entity);
         return R.ok(dicts);
     }
 
 
     /**
-     * @api {get} /dict/info 02. 字典类型列表详情
+     * @api {get} /dict/info 2. 字典类型列表详情
      * @apiGroup DICT
      *
      * @apiVersion 0.0.1
@@ -105,7 +103,6 @@ public class DictRest {
      * @apiSuccess {Long} [updateBy] 更新人
      * @apiSuccess {String} [remark] 备注
      * @apiSuccess {Integer} [version] 版本号
-     * @apiSuccess {Integer} [status] status
      *
      * @apiSuccessExample {json} 返回样例:
      * {
@@ -122,32 +119,27 @@ public class DictRest {
      *          "updateBy": "updateBy",
      *          "remark": "remark",
      *          "version": "version",
-     *          "status": "status",
      *     }
      * }
      *
      */
     @GetMapping(Route.DICT_INFO)
-    public R dictDetail(MdmDict model) {
-        if (model.getId()==null) {
-            return R.error("id can not be null");
-        }
-        model = mdmDictService.selectById(model.getId());
-        if (model == null) {
+    public R dictInfo(MdmDict entity) {
+        Assert.notNull(entity.getId(), ResultCode.PARAM_NO_ID.getMessage());
+        entity = mdmDictService.selectById(entity.getId());
+        if (entity == null) {
             return R.error("id is error");
         }
-        return R.ok(model);
+        return R.ok(entity);
     }
 
-
     /**
-     * @api {post} /dict/save 03. 字典类型添加/修改
+     * @api {post} /dict/create 3. 字典类型添加
      * @apiGroup DICT
      *
      * @apiVersion 0.0.1
      * @apiDescription 新增信息
      *
-     * @apiParam {String} [id] <code>body</code>id【修改时必需】
      * @apiParam {String} dictCtg <code>body</code>字典分组
      * @apiParam {String} dictType <code>body</code>类型名称
      * @apiParam {String} [description] <code>body</code>描述信息
@@ -167,50 +159,60 @@ public class DictRest {
      * }
      *
      */
-    @PostMapping(Route.DICT_SAVE)
+    @PostMapping(Route.DICT_CREATE)
     @Transactional(rollbackFor = Exception.class)
-    public R dictSave(@RequestBody MdmDict model) {
-        Assert.notNull(model.getDictCtg(), "dictCtg 不能为空");
-        Assert.notNull(model.getDictType(), "dictType 不能为空");
+    public R dictCreate(@RequestBody MdmDict entity) {
 
-        if (model.getId() == null) {
-            mdmDictService.insert(model);
-            model.setId(model.getId());
-        } else {
-            MdmDict mdmDict = mdmDictService.selectById(model.getId());
-            if (mdmDict == null) {
-                throw ValidationException.of("数据不存在");
-            }
-            // 如果把 dictType 都改了，要多加校验，子表也要改
-            if (!mdmDict.getDictType().equals(model.getDictType())) {
-                // 校验
-                MdmDict param = new MdmDict();
-                param.setDictType(model.getDictType());
-                Long count = mdmDictService.selectCountByEntity(param);
-                if (count > 0) {
-                    throw ValidationException.of(model.getDictType() + " 重复使用，请纠正");
-                }
+        entity.setId(null);
+        paramCheck(entity);
 
-                // 修改子表
-                MdmDictItem itemParam = new MdmDictItem();
-                itemParam.setDictType(mdmDict.getDictType());
-                List<MdmDictItem> items = mdmDictItemService.selectByEntity(itemParam);
-                if (!CollectionUtils.isEmpty(items)) {
-                    items.forEach(l->{
-                        l.setDictType(model.getDictType());
-                        mdmDictItemService.updateByIdSelective(l);
-                    });
-                }
-            }
-            mdmDictService.updateById(model);
-        }
+        mdmDictService.insert(entity);
+        entity.setId(entity.getId());
         dictCache.clearCache();
-        return R.ok(model);
+        return R.ok(entity);
     }
 
 
     /**
-     * @api {post} /dict/remove 04. 字典类型删除
+     * @api {post} /dict/update 4. 字典类型修改
+     * @apiGroup DICT
+     *
+     * @apiVersion 0.0.1
+     * @apiDescription 新增信息
+     *
+     * @apiParam {String} id <code>body</code>ID
+     * @apiParam {String} dictCtg <code>body</code>字典分组
+     * @apiParam {String} dictType <code>body</code>类型名称
+     * @apiParam {String} [description] <code>body</code>描述信息
+     *
+     * @apiParamExample {json} 请求样例:
+     * {
+     *      "dictCtg": "dictCtg",
+     *      "dictType": "dictType",
+     *      "description": "description",
+     *      "sort": "sort"
+     * }
+     *
+     * @apiSuccessExample {json} 返回样例:
+     * {
+     *     "code": 1,
+     *     "data": ObjectDto
+     * }
+     *
+     */
+    @PostMapping(Route.DICT_UPDATE)
+    @Transactional(rollbackFor = Exception.class)
+    public R dictUpdate(@RequestBody MdmDict entity) {
+        Assert.notNull(entity.getId(), ResultCode.PARAM_NO_ID.getMessage());
+        paramCheck(entity);
+        entity = mdmDictService.dictUpdate(entity);
+        dictCache.clearCache();
+        return R.ok(entity);
+    }
+
+
+    /**
+     * @api {post} /dict/remove 5. 字典类型删除
      * @apiGroup DICT
      *
      * @apiVersion 0.0.1
@@ -234,6 +236,20 @@ public class DictRest {
     @Transactional(rollbackFor = Exception.class)
     public R dictRemove(@RequestBody MdmDict entity) {
         Assert.notNull(entity.getId(), ResultCode.PARAM_NO_ID.getMessage());
+
+        MdmDict mdmDict = mdmDictService.selectById(entity.getId());
+        if (mdmDict == null) {
+            throw ValidationException.of("数据不存在");
+        }
+
+        // 修改子表
+        MdmDictItem itemParam = new MdmDictItem();
+        itemParam.setDictType(mdmDict.getDictType());
+        long count = mdmDictItemService.selectCountByEntity(itemParam);
+        if (count > 0) {
+            throw ValidationException.of("请先删除字典枚举，再删除字典");
+        }
+
         Integer rt = mdmDictService.deleteById(entity);
         dictCache.clearCache();
         return R.ok(rt);
@@ -241,7 +257,7 @@ public class DictRest {
 
 
     /**
-     * @api {get} /dict/copy 05. 字典-COPY
+     * @api {get} /dict/copy 6. 字典-COPY
      * @apiGroup DICT
      *
      * @apiVersion 0.0.1
@@ -268,7 +284,7 @@ public class DictRest {
 
 
     /**
-     * @api {post} /dict/paste 06. 字典-PASTE
+     * @api {post} /dict/paste 7. 字典-PASTE
      * @apiGroup DICT
      *
      * @apiVersion 0.0.1
@@ -307,7 +323,6 @@ public class DictRest {
                 d.setSort(0);
             }
             for (MdmDictItem i : items) {
-
                 if (StringUtils.isBlank(i.getDictType())) {
                     return R.error("数据中缺少 dictType");
                 }
@@ -331,7 +346,7 @@ public class DictRest {
     }
 
     /**
-     * @api {get} /dict/options 07. 字典类型选项
+     * @api {get} /dict/options 8. 字典类型选项
      * @apiGroup DICT
      *
      * @apiVersion 0.0.1
@@ -355,6 +370,15 @@ public class DictRest {
     public R dictOptions() {
         List<MdmDict> dicts = mdmDictService.dictOptions();
         return R.ok(dicts);
+    }
+
+
+    private void paramCheck(MdmDict entity) {
+        if (entity.getId() != null) {
+            Assert.notNull(entity.getId(), ResultCode.UPDATE_NO_VERSION.getMessage());
+        }
+        Assert.notNull(entity.getDictCtg(), "dictCtg 不能为空");
+        Assert.notNull(entity.getDictType(), "dictType 不能为空");
     }
 
 }

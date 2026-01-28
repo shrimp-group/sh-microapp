@@ -1,8 +1,8 @@
 package com.wkclz.micro.dict.rest;
 
 import com.wkclz.core.base.R;
-import com.wkclz.core.enums.ResultCode;
 import com.wkclz.micro.dict.cache.DictCache;
+import com.wkclz.micro.dict.pojo.dto.MdmDictDto;
 import com.wkclz.micro.dict.pojo.dto.MdmDictItemDto;
 import com.wkclz.micro.dict.pojo.entity.MdmDictItem;
 import com.wkclz.micro.dict.service.MdmDictItemService;
@@ -11,11 +11,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -23,6 +21,7 @@ import java.util.List;
  * Created: wangkaicun @ 2018-10-30 15:11:51
  */
 @RestController
+@RequestMapping(Route.PREFIX)
 public class DictItemRest {
 
     @Autowired
@@ -123,75 +122,29 @@ public class DictItemRest {
      */
     @PostMapping(Route.DICT_ITEM_SAVE)
     @Transactional(rollbackFor = Exception.class)
-    public R dictItemSave(@RequestBody MdmDictItem model) {
-        if (model.getDictType() == null) {
-            return R.warn("字典类型不能为空");
-        }
-        if (StringUtils.isBlank(model.getDictValue())) {
-            return R.warn("字典值不能为空");
-        }
-        if (StringUtils.isBlank(model.getDictLabel())) {
-            return R.warn("字典标签不能为空");
-        }
-        if (model.getEnableFlag() == null) {
-            model.setEnableFlag(1);
-        }
-        MdmDictItemDto param = new MdmDictItemDto();
-        param.setDictType(model.getDictType());
-        param.setDictValue(model.getDictValue());
-        MdmDictItem mdmDictItem = mdmDictItemService.selectOneByEntity(param);
-        if (mdmDictItem != null && model.getId() == null) {
-            return R.error("键重复，添加失败");
-        }
-        if (mdmDictItem != null && model.getId() != null && !mdmDictItem.getId().equals(mdmDictItem.getId())) {
-            return R.error("键重复，修改失败");
-        }
-
-        if (model.getId() == null) {
-            mdmDictItemService.insert(model);
-            model.setId(model.getId());
-        } else {
-            MdmDictItem oldModel = mdmDictItemService.selectById(model.getId());
-            if (oldModel == null) {
-                return R.error("id不正确，数据不存在");
+    public R dictItemSave(@RequestBody MdmDictDto dto) {
+        Assert.notNull(dto.getDictType(), "字典类型不能为空");
+        if (dto.getItems() == null) {
+            dto.setItems(new ArrayList<>());
+        } else  {
+            for (MdmDictItem item : dto.getItems()) {
+                Assert.notNull(item.getDictType(), "字典类型不能为空");
+                Assert.notNull(item.getDictValue(), "字典值不能为空");
+                Assert.notNull(item.getDictLabel(), "字典标签不能为空");
+                if (item.getEnableFlag() == null) {
+                    item.setEnableFlag(1);
+                }
+                if (item.getSort() == null) {
+                    item.setSort(99);
+                }
+                item.setDictType(dto.getDictType());
             }
-            mdmDictItemService.updateById(model);
         }
-        dictCache.clearCache();
-        return R.ok(model);
-    }
-
-
-    /**
-     * @api {post} /dict/item/remove 13. 字典内容删除
-     * @apiGroup DICT
-     *
-     * @apiVersion 0.0.1
-     * @apiDescription 字典内容删除
-     *
-     * @apiParam {Integer} [id] <code>body</code> 主键 id
-     * @apiParam {Integer[]} [ids] <code>body</code> 主键 id组
-     *
-     * @apiParamExample {json} 请求样例:
-     * {
-     *     "id": 1,
-     *     "ids": [1]
-     * }
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * {
-     *     "code": 1,
-     *     "data": 1
-     * }
-     *
-     */
-    @PostMapping(Route.DICT_ITEM_REMOVE)
-    @Transactional(rollbackFor = Exception.class)
-    public R dictItemRemove(@RequestBody MdmDictItem entity) {
-        Assert.notNull(entity.getId(), ResultCode.PARAM_NO_ID.getMessage());
-        Integer rt = mdmDictItemService.deleteById(entity);
-        dictCache.clearCache();
-        return R.ok(rt);
+        Integer modifys = mdmDictItemService.dictItemSave(dto);
+        if (modifys > 0) {
+            dictCache.clearCache();
+        }
+        return R.ok(modifys);
     }
 
 }
