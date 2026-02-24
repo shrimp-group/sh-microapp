@@ -32,6 +32,7 @@
         <module>micro-liteflow</module>
         <module>micro-form</module>
         <module>micro-fun</module>
+        <module>micro-k8s</module>
         <module>micro-mask</module>
         <module>micro-msg</module>
         <module>micro-pay</module>
