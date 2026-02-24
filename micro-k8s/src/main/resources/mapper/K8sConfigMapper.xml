@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.k8s.mapper.K8sConfigMapper">
+
+    <select id="getClusterOptions" resultType="java.lang.String">
+        SELECT
+            cluster_name
+        FROM
+            k8s_config
+        WHERE
+            deleted = 0
+        ORDER BY
+            sort ASC,
+            id ASC
+    </select>
+
+</mapper>
+

@@ -251,7 +251,7 @@ public class AlipayHelper {
 
     // 发起退款【暂时只支持全额退款】
     public R tradeRefund(PayOrder payOrder, OmsOrderItem omsOrderItem, UserInfo user) {
-        Result result = new Result();
+        R result = new Result();
 
         // TODO 最多可退，应当与子单做对比，需要进一步优化
         BigDecimal paymentAmount = payOrder.getPaymentAmount();
@@ -298,7 +298,7 @@ public class AlipayHelper {
 
     // 整单退
     public R tradeRefund(PayOrder payOrder, UserInfo user) {
-        Result result = new Result();
+        R result = new Result();
 
         BigDecimal paymentAmount = payOrder.getPaymentAmount();
 

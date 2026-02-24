@@ -304,7 +304,7 @@ public class WxpayHelper {
     /*
     // 发起退款
     public R wxTradeRefund(PayOrder payOrder, OmsOrderItem omsOrderItem) {
-        Result result = new Result();
+        R result = new Result();
         if (StringUtils.isBlank(omsOrderItem.getRefundeReason())) {
             omsOrderItem.setRefundeReason("用户申请退款");
         }
