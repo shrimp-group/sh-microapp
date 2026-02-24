@@ -5,7 +5,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@MapperScan({"com.wkclz.micro.k8s.dao"})
+@MapperScan({"com.wkclz.micro.k8s.mapper"})
 @ComponentScan(basePackages = {"com.wkclz.micro.k8s"})
 public class K8sAutoConfig {
 }
