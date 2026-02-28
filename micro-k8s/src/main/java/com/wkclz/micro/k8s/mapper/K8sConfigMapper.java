@@ -15,6 +15,9 @@ import java.util.List;
 @Mapper
 public interface K8sConfigMapper extends BaseMapper<K8sConfig> {
 
+
+    List<K8sConfig> getClusterList(K8sConfig entity);
+
     List<String> getClusterOptions();
 
 }

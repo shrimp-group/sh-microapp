@@ -59,8 +59,7 @@ public class K8sConfigRest {
      */
     @GetMapping(Route.CONFIG_PAGE)
     public R configPage(K8sConfig entity) {
-        entity.setOrderBy("sort asc, id asc");
-        PageData<K8sConfig> page = k8sConfigService.selectPage(entity);
+        PageData<K8sConfig> page = k8sConfigService.getClusterPage(entity);
         return R.ok(page);
     }
 

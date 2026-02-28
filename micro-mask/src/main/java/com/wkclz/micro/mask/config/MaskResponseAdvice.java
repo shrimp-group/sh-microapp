@@ -3,7 +3,6 @@ package com.wkclz.micro.mask.config;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.JSONPath;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.wkclz.iam.sdk.helper.SessionHelper;
@@ -23,6 +22,7 @@ import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
+import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

@@ -3,10 +3,7 @@ package com.wkclz.micro.form.aop;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.JSONPath;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wkclz.core.base.R;
-import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.form.cache.FormRuleCache;
 import com.wkclz.micro.form.pojo.dto.MdmFormRuleDto;
 import com.wkclz.micro.form.pojo.entity.MdmFormRuleItem;
@@ -29,6 +26,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -131,11 +129,7 @@ public class FormRuleAop {
             return null;
         }
         Object first = params.get(0);
-        try {
-            return objectMapper.writeValueAsString(first);
-        } catch (JsonProcessingException e) {
-            throw ValidationException.of("can not get args!");
-        }
+        return objectMapper.writeValueAsString(first);
     }
 
     private R paramCheck(String args, List<MdmFormRuleItem> items) {

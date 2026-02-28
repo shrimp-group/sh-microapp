@@ -1,10 +1,12 @@
 package com.wkclz.micro.k8s.service;
 
+import com.wkclz.core.base.PageData;
 import com.wkclz.core.enums.ResultCode;
 import com.wkclz.core.exception.UserException;
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.micro.k8s.mapper.K8sConfigMapper;
 import com.wkclz.micro.k8s.bean.entity.K8sConfig;
+import com.wkclz.micro.k8s.mapper.K8sConfigMapper;
+import com.wkclz.mybatis.helper.PageQuery;
 import com.wkclz.mybatis.service.BaseService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,10 @@ import java.util.List;
  
 @Service
 public class K8sConfigService extends BaseService<K8sConfig, K8sConfigMapper> {
+
+    public PageData<K8sConfig> getClusterPage(K8sConfig entity) {
+        return PageQuery.page(entity, mapper::getClusterList);
+    }
 
     public List<String> getClusterOptions(){
         return mapper.getClusterOptions();

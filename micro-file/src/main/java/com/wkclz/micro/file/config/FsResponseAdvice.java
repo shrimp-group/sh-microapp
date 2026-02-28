@@ -2,11 +2,8 @@
 //
 //package com.wkclz.micro.file.config;
 //
-//import com.fasterxml.jackson.databind.JsonNode;
-//import com.fasterxml.jackson.databind.ObjectMapper;
-//import com.fasterxml.jackson.databind.node.ObjectNode;
-//import com.fasterxml.jackson.databind.node.TextNode;
-//import com.wkclz.micro.fs.api.FsApi;
+//
+//import com.wkclz.micro.file.api.FsApi;
 //import lombok.extern.slf4j.Slf4j;
 //import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.core.MethodParameter;
@@ -15,11 +12,13 @@
 //import org.springframework.http.server.ServerHttpResponse;
 //import org.springframework.web.bind.annotation.ControllerAdvice;
 //import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
+//import tools.jackson.databind.JsonNode;
+//import tools.jackson.databind.ObjectMapper;
+//import tools.jackson.databind.node.ObjectNode;
+//import tools.jackson.databind.node.StringNode;
 //
-//import java.lang.reflect.Field;
 //import java.util.Collection;
 //import java.util.Date;
-//import java.util.Iterator;
 //
 //@Slf4j
 //@ControllerAdvice
@@ -68,12 +67,11 @@
 //        }
 //        if (node.isObject()) {
 //            ObjectNode objectNode = (ObjectNode) node;
-//            Iterator<String> it = objectNode.fieldNames();
-//            while (it.hasNext()) {
-//                String fieldName = it.next();
+//            Collection<String> it = objectNode.propertyNames();
+//            for (String fieldName : it) {
 //                JsonNode fieldNode = objectNode.get(fieldName);
-//                if (fieldNode.isTextual() && fieldName.matches(pathExp)) {
-//                    String text = fieldNode.asText();
+//                if (fieldNode.isString() && fieldName.matches(pathExp)) {
+//                    String text = fieldNode.asString();
 //                    objectNode.put(fieldName, "aa:" + text);
 //                    objectNode.put(fieldName + "Mask", "aa:" + text);
 //                } else {
@@ -89,8 +87,8 @@
 //        }
 //        try {
 //            JsonNode at = jsonNode.at("/data/rows/0/imageUrl");
-//            if (at instanceof TextNode tn) {
-//                String text = tn.asText();
+//            if (at instanceof StringNode tn) {
+//                String text = tn.asString();
 //                // 转换
 //                String preview = fsApi.sign(text);
 //                System.out.println("找到了字段：" +preview);
@@ -100,6 +98,7 @@
 //            log.error("changeBody error: {}", e.getMessage());
 //        }
 //    }
+//    /*
 //    private void changeBody(Object body) {
 //        // 基本类型，不处理。自身已经是字符串了，不处理
 //        if (body == null || isPrimitive(body) || body instanceof String) {
@@ -140,6 +139,7 @@
 //            }
 //        }
 //    }
+//    */
 //    private static boolean isPrimitive(Object value) {
 //        if (value instanceof Integer
 //            || value instanceof Double

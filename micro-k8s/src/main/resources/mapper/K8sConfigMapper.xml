@@ -2,6 +2,28 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.wkclz.micro.k8s.mapper.K8sConfigMapper">
 
+    <select id="getClusterList" parameterType="com.wkclz.micro.k8s.bean.entity.K8sConfig" resultType="com.wkclz.micro.k8s.bean.entity.K8sConfig">
+        SELECT
+            id,
+            cluster_name,
+            sort,
+            create_time,
+            create_by,
+            update_time,
+            update_by,
+            remark,
+            version
+        FROM
+            k8s_config
+        WHERE
+            deleted = 0
+            <if test="clusterName != null">AND cluster_name LIKE CONCAT('%', #{clusterName}, '%') </if>
+        ORDER BY
+            sort ASC,
+            id ASC
+    </select>
+
+
     <select id="getClusterOptions" resultType="java.lang.String">
         SELECT
             cluster_name
