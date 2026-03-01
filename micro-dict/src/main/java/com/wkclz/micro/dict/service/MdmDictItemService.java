@@ -43,7 +43,7 @@ public class MdmDictItemService extends BaseService<MdmDictItem, MdmDictItemMapp
         List<MdmDictItem> newItems = dto.getItems();
 
         // 历史所有  items
-        MdmDictItemDto param = new MdmDictItemDto();
+        MdmDictItem param = new MdmDictItem();
         param.setDictType(dto.getDictType());
         List<MdmDictItem> oldItems = selectByEntity(param);
 
@@ -93,15 +93,15 @@ public class MdmDictItemService extends BaseService<MdmDictItem, MdmDictItemMapp
         }
 
 
-        if (!org.springframework.util.CollectionUtils.isEmpty(insers)) {
+        if (!CollectionUtils.isEmpty(insers)) {
             insertBatch(insers);
         }
-        if (!org.springframework.util.CollectionUtils.isEmpty(updates)) {
+        if (!CollectionUtils.isEmpty(updates)) {
             for (MdmDictItem update : updates) {
                 updateById(update);
             }
         }
-        if (!org.springframework.util.CollectionUtils.isEmpty(deletes)) {
+        if (!CollectionUtils.isEmpty(deletes)) {
             List<Long> ids = deletes.stream().map(DbColumnEntity::getId).toList();
             MdmDictItem delParam = new MdmDictItem();
             delParam.setIds(ids);
