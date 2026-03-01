@@ -27,6 +27,7 @@
 
     <modules>
         <module>micro-dict</module>
+        <module>micro-seq</module>
         <module>micro-wxapp</module>
     </modules>
 

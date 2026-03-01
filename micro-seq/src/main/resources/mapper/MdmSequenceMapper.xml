@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.seq.dao.MdmSequenceMapper">
+
+  <select id="getSequenceList" parameterType="com.wkclz.micro.seq.pojo.entity.MdmSequence" resultType="com.wkclz.micro.seq.pojo.entity.MdmSequence">
+      SELECT
+          id,
+          seq_name,
+          prefix,
+          sequence,
+          code_length,
+          create_time,
+          create_by,
+          update_time,
+          update_by,
+          remark,
+          version
+      FROM
+          mdm_sequence
+      WHERE
+          deleted = 0
+          <if test="seqName != null">AND seq_name LIKE CONCAT('%', #{seqName}, '%') </if>
+          <if test="prefix != null">AND prefix LIKE CONCAT('%', #{prefix}, '%') </if>
+      ORDER BY
+          id DESC
+  </select>
+
+    <select id="getSequenceInfo" parameterType="java.lang.String" resultType="com.wkclz.micro.seq.pojo.entity.MdmSequence">
+        SELECT
+          seq_name,
+          prefix,
+          sequence,
+          code_length,
+          version
+        FROM
+            mdm_sequence
+        WHERE
+            deleted = 0
+          AND prefix = #{prefix}
+    </select>
+
+    <insert id="insertSequenceInfo" parameterType="com.wkclz.micro.seq.pojo.entity.MdmSequence">
+        INSERT INTO mdm_sequence (
+            seq_name,
+            prefix,
+            sequence,
+            code_length
+        ) VALUES (
+            #{seqName},
+            #{prefix},
+            #{sequence},
+            #{codeLength}
+        )
+    </insert>
+
+    <update id="updateSequenceInfo" parameterType="com.wkclz.micro.seq.pojo.entity.MdmSequence">
+        UPDATE mdm_sequence
+        SET
+            sequence = #{sequence},
+            version = version + 1
+        WHERE
+            deleted = 0
+          AND prefix = #{prefix}
+          AND version = #{version}
+    </update>
+
+</mapper>
+

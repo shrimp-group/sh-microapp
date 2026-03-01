@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.seq.dao.MdmSequenceMapper">
+
+  <!-- baseColumns 字段集 -->
+  <sql id="baseColumns">
+    <trim suffixOverrides=",">
+      id,
+      seq_name,
+      prefix,
+      sequence,
+      code_length,
+      sort,
+      create_time,
+      create_by,
+      update_time,
+      update_by,
+      remark,
+      version,
+    </trim>
+  </sql>
+
+  <!-- selectiveColumns -->
+  <sql id="selectiveColumns">
+    <trim suffixOverrides=",">
+      <if test="seqName != null">seq_name, </if>
+      <if test="prefix != null">prefix, </if>
+      <if test="sequence != null">sequence, </if>
+      <if test="codeLength != null">code_length, </if>
+      <if test="sort != null">sort, </if>
+      <if test="createTime != null">create_time, </if>
+      <if test="createBy != null">create_by, </if>
+      <if test="updateTime != null">update_time, </if>
+      <if test="updateBy != null">update_by, </if>
+      <if test="remark != null">remark, </if>
+      <if test="version != null">version, </if>
+    </trim>
+  </sql>
+
+  <!-- selectiveSets -->
+  <sql id="selectiveSets">
+    <trim suffixOverrides=",">
+      <if test="seqName != null">seq_name = #{seqName}, </if>
+      <if test="prefix != null">prefix = #{prefix}, </if>
+      <if test="sequence != null">sequence = #{sequence}, </if>
+      <if test="codeLength != null">code_length = #{codeLength}, </if>
+      <if test="sort != null">sort = #{sort}, </if>
+      <if test="createTime != null">create_time = #{createTime}, </if>
+      <if test="createBy != null">create_by = #{createBy}, </if>
+      <if test="updateTime != null">update_time = #{updateTime}, </if>
+      <if test="updateBy != null">update_by = #{updateBy}, </if>
+      <if test="remark != null">remark = #{remark}, </if>
+      <if test="version != null">version = version + 1, </if>
+    </trim>
+  </sql>
+
+  <!-- selectiveValues -->
+  <sql id="selectiveValues">
+    <trim suffixOverrides=",">
+      <if test="seqName != null">#{seqName}, </if>
+      <if test="prefix != null">#{prefix}, </if>
+      <if test="sequence != null">#{sequence}, </if>
+      <if test="codeLength != null">#{codeLength}, </if>
+      <if test="sort != null">#{sort}, </if>
+      <if test="createTime != null">#{createTime}, </if>
+      <if test="createBy != null">#{createBy}, </if>
+      <if test="updateTime != null">#{updateTime}, </if>
+      <if test="updateBy != null">#{updateBy}, </if>
+      <if test="remark != null">#{remark}, </if>
+      <if test="version != null">#{version}, </if>
+    </trim>
+  </sql>
+
+  <!-- allColumns -->
+  <sql id="allColumns">
+    <trim suffixOverrides=",">
+      id,
+      seq_name,
+      prefix,
+      sequence,
+      code_length,
+      sort,
+      create_time,
+      create_by,
+      update_time,
+      update_by,
+      remark,
+      version,
+    </trim>
+  </sql>
+
+  <!-- where 条件集 -->
+  <sql id="where">
+    WHERE
+      deleted = 0
+      <if test="ids != null and ids.size > 0">AND id IN ( <foreach collection="ids" item="item" separator=","> #{item} </foreach> ) </if>
+      <if test="timeFrom != null">AND create_time &gt;= #{timeFrom} </if>
+      <if test="timeTo != null">AND create_time &lt;= #{timeTo} </if>
+      <if test="id != null">AND id = #{id} </if>
+      <if test="seqName != null">AND seq_name = #{seqName} </if>
+      <if test="prefix != null">AND prefix = #{prefix} </if>
+      <if test="sequence != null">AND sequence = #{sequence} </if>
+      <if test="codeLength != null">AND code_length = #{codeLength} </if>
+      <if test="sort != null">AND sort = #{sort} </if>
+      <if test="createTime != null">AND create_time = #{createTime} </if>
+      <if test="createBy != null">AND create_by = #{createBy} </if>
+      <if test="updateTime != null">AND update_time = #{updateTime} </if>
+      <if test="updateBy != null">AND update_by = #{updateBy} </if>
+      <if test="remark != null">AND remark = #{remark} </if>
+      <if test="version != null">AND version = #{version} </if>
+  </sql>
+
+  <!-- count 统计 -->
+  <select id="count" parameterType="com.wkclz.micro.seq.pojo.entity.MdmSequence" resultType="java.lang.Long">
+    SELECT
+      count(*) count
+    FROM
+      mdm_sequence
+    <include refid="where"/>
+  </select>
+
+  <!-- getById 主键查询 -->
+  <select id="getById" parameterType="java.lang.Long" resultType="com.wkclz.micro.seq.pojo.entity.MdmSequence">
+    SELECT
+      <include refid="allColumns"/>
+    FROM
+      mdm_sequence
+    WHERE
+     deleted = 0
+     AND id = #{id}
+  </select>
+
+  <!-- getByEntity 模型查询, 要求唯一 -->
+  <select id="getByEntity" parameterType="com.wkclz.micro.seq.pojo.entity.MdmSequence" resultType="com.wkclz.micro.seq.pojo.entity.MdmSequence">
+    SELECT
+      <include refid="allColumns"/>
+    FROM
+      mdm_sequence
+    <include refid="where"/>
+    LIMIT 1
+  </select>
+
+  <!-- list 列表查询, 不包含Blob -->
+  <select id="list" parameterType="com.wkclz.micro.seq.pojo.entity.MdmSequence" resultType="com.wkclz.micro.seq.pojo.entity.MdmSequence">
+    SELECT
+      <include refid="baseColumns"/>
+    FROM
+      mdm_sequence
+    <include refid="where"/>
+    <if test="orderBy != null">
+    ORDER BY
+      ${orderBy}
+    </if>
+    <if test="size != null and offset != null">
+    LIMIT
+      #{offset}, #{size}
+    </if>
+  </select>
+
+  <!-- insert (选择性)插入 -->
+  <insert id="insert" parameterType="com.wkclz.micro.seq.pojo.entity.MdmSequence">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    INSERT INTO mdm_sequence (
+      <include refid="selectiveColumns"/>
+    ) VALUES (
+      <include refid="selectiveValues"/>
+    )
+  </insert>
+  
+  <!-- insertBatch 全量批量插入 -->
+  <insert id="insertBatch" parameterType="java.util.List">
+    INSERT INTO mdm_sequence (
+      <trim suffixOverrides=",">
+        seq_name,
+        prefix,
+        sequence,
+        code_length,
+        sort,
+        create_by,
+        update_by,
+        remark,
+      </trim>
+    ) VALUES
+      <foreach collection="list" item="item" separator=",">
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+        #{item.seqName},
+        #{item.prefix},
+        #{item.sequence},
+        #{item.codeLength},
+        #{item.sort},
+        #{item.createBy},
+        #{item.updateBy},
+        #{item.remark},
+        </trim>
+      </foreach>
+  </insert>
+
+  <!-- updateAll 更新(带乐观锁) -->
+  <update id="updateAll" parameterType="com.wkclz.micro.seq.pojo.entity.MdmSequence">
+    UPDATE
+      mdm_sequence
+    SET
+      <trim suffixOverrides=",">
+        seq_name = #{seqName},
+        prefix = #{prefix},
+        sequence = #{sequence},
+        code_length = #{codeLength},
+        sort = #{sort},
+        update_by = #{updateBy},
+        remark = #{remark},
+        version = version + 1,
+      </trim>
+    WHERE
+      deleted = 0
+      AND id = #{id}
+      AND version = #{version}
+  </update>
+
+  <!-- updateByIdSelective 选择性更新(带乐观锁) -->
+  <update id="updateByIdSelective" parameterType="com.wkclz.micro.seq.pojo.entity.MdmSequence">
+    UPDATE
+      mdm_sequence
+    SET
+      <include refid="selectiveSets"/>
+    WHERE
+      deleted = 0
+      AND id = #{id}
+      AND version = #{version}
+  </update>
+
+  <!-- updateByIdSelectiveWithoutLock 选择性更新(不带乐观锁) -->
+  <update id="updateByIdSelectiveWithoutLock" parameterType="com.wkclz.micro.seq.pojo.entity.MdmSequence">
+    UPDATE
+      mdm_sequence
+    SET
+      <include refid="selectiveSets"/>
+    WHERE
+      deleted = 0
+      AND id = #{id}
+  </update>
+
+  <!-- updateBatch 批量更新(不带乐观锁) -->
+  <update id="updateBatch" parameterType="com.wkclz.micro.seq.pojo.entity.MdmSequence">
+    UPDATE mdm_sequence
+    SET
+      version = version + 1,
+      <trim suffixOverrides=",">
+        seq_name = CASE id <foreach collection="list" item="item">WHEN #{item.id} THEN #{item.seqName} </foreach> END,
+        prefix = CASE id <foreach collection="list" item="item">WHEN #{item.id} THEN #{item.prefix} </foreach> END,
+        sequence = CASE id <foreach collection="list" item="item">WHEN #{item.id} THEN #{item.sequence} </foreach> END,
+        code_length = CASE id <foreach collection="list" item="item">WHEN #{item.id} THEN #{item.codeLength} </foreach> END,
+        sort = CASE id <foreach collection="list" item="item">WHEN #{item.id} THEN #{item.sort} </foreach> END,
+        update_by = CASE id <foreach collection="list" item="item">WHEN #{item.id} THEN #{item.updateBy} </foreach> END,
+        remark = CASE id <foreach collection="list" item="item">WHEN #{item.id} THEN #{item.remark} </foreach> END,
+      </trim>
+    WHERE
+      deleted = 0
+      AND id IN ( <foreach collection="list" item="item" separator=",">#{item.id}</foreach> )
+  </update>
+
+  <!-- delete (逻辑)删除 -->
+  <update id="delete" parameterType="com.wkclz.micro.seq.pojo.entity.MdmSequence">
+    UPDATE mdm_sequence
+    SET
+      status = DATE_FORMAT(NOW(6), '%Y%m%d%H%i%s%m'),
+      version = version + 1,
+      update_by = #{updateBy}
+    WHERE
+      deleted = 0
+      <if test="id != null">
+        AND id = #{id}
+      </if>
+      <if test="ids != null and ids.size > 0">
+        AND id IN ( <foreach collection="ids" item="item" separator=",">#{item}</foreach> )
+      </if>
+  </update>
+
+</mapper>
+
