@@ -3,7 +3,6 @@ package com.wkclz.micro.dict.rest;
 import com.wkclz.core.base.R;
 import com.wkclz.micro.dict.cache.DictCache;
 import com.wkclz.micro.dict.pojo.dto.MdmDictDto;
-import com.wkclz.micro.dict.pojo.dto.MdmDictItemDto;
 import com.wkclz.micro.dict.pojo.entity.MdmDictItem;
 import com.wkclz.micro.dict.service.MdmDictItemService;
 import com.wkclz.tool.utils.StringUtil;
@@ -72,18 +71,15 @@ public class DictItemRest {
      *
      */
     @GetMapping(Route.DICT_ITEM_LIST)
-    public R dictItemList(MdmDictItemDto dto) {
-        String dictType = dto.getDictType();
-
+    public R dictItemList(MdmDictItem entity) {
+        String dictType = entity.getDictType();
         if (StringUtils.isBlank(dictType)) {
             return R.error("dictType 不能为空");
         }
         if (!dictType.equals(dictType.toUpperCase())) {
-            dto.setDictType(StringUtil.camelToUnderline(dto.getDictType()).toUpperCase());
+            dictType = StringUtil.camelToUnderline(dictType).toUpperCase();
         }
-
-        dto.setOrderBy("sort ASC, id ASC");
-        List<MdmDictItem> dictItemList = mdmDictItemService.selectByEntity(dto);
+        List<MdmDictItem> dictItemList = mdmDictItemService.getDictItemList(dictType);
         return R.ok(dictItemList);
     }
 
