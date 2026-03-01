@@ -23,8 +23,8 @@ import java.util.List;
 @Service
 public class MdmDictItemService extends BaseService<MdmDictItem, MdmDictItemMapper> {
 
-    public List<MdmDictItemDto> getDictItemList(MdmDictItem model) {
-        return mapper.getDictItemList(model);
+    public List<MdmDictItem> getDictItemList(String dictZtype) {
+        return mapper.getDictItemList(dictZtype);
     }
 
     public List<MdmDictItemDto> getAllDictItem() {

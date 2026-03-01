@@ -17,7 +17,7 @@ import java.util.List;
 @Mapper
 public interface MdmDictItemMapper extends BaseMapper<MdmDictItem> {
 
-    List<MdmDictItemDto> getDictItemList(MdmDictItem entity);
+    List<MdmDictItem> getDictItemList(@Param("dictType") String dictType);
 
     List<MdmDictItemDto> getAllDictItem();
 

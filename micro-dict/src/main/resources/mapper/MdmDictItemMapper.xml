@@ -2,30 +2,30 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.wkclz.micro.dict.dao.MdmDictItemMapper">
 
-    <select id="getDictItemList" parameterType="com.wkclz.micro.dict.pojo.entity.MdmDictItem" resultType="com.wkclz.micro.dict.pojo.dto.MdmDictItemDto">
+    <select id="getDictItemList" parameterType="java.lang.String" resultType="com.wkclz.micro.dict.pojo.entity.MdmDictItem">
         SELECT
-            di.id,
-            d.dict_type,
-            di.description,
-            di.dict_value,
-            di.dict_label,
-            di.el_type,
-            di.enable_flag
+            id,
+            dict_type,
+            dict_value,
+            dict_label,
+            el_type,
+            description,
+            enable_flag,
+            sort,
+            create_time,
+            create_by,
+            update_time,
+            update_by,
+            remark,
+            version
         FROM
-            mdm_dict d
-            INNER JOIN mdm_dict_item di ON di.dict_type = d.dict_type
+            mdm_dict_item
         WHERE
-            1 = 1
-            AND d.deleted = 0
-            AND di.deleted = 0
-            <if test="dictType != null"> AND d.dict_type = #{dictType} </if>
-            <if test="dictValue != null"> AND di.dict_value = #{dictValue} </if>
-            <if test="enableFlag != null"> AND di.enable_flag = #{enableFlag} </if>
-            <if test="dictLabel != null"> AND di.dict_label = LIKE concat('%',#{dictLabel},'%') </if>
-            <if test="description != null"> AND di.description LIKE concat('%',#{description},'%') </if>
+            deleted = 0
+            AND dict_type = #{dictType}
         ORDER BY
-            di.sort ASC,
-            di.id DESC
+            sort ASC,
+            id ASC
     </select>
 
 
