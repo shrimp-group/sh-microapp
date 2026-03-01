@@ -73,12 +73,11 @@ public class DictItemRest {
     @GetMapping(Route.DICT_ITEM_LIST)
     public R dictItemList(MdmDictItem entity) {
         String dictType = entity.getDictType();
-
         if (StringUtils.isBlank(dictType)) {
             return R.error("dictType 不能为空");
         }
         if (!dictType.equals(dictType.toUpperCase())) {
-            entity.setDictType(StringUtil.camelToUnderline(entity.getDictType()).toUpperCase());
+            dictType = StringUtil.camelToUnderline(dictType).toUpperCase();
         }
         List<MdmDictItem> dictItemList = mdmDictItemService.getDictItemList(dictType);
         return R.ok(dictItemList);
