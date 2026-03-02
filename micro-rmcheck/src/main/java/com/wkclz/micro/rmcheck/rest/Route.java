@@ -9,10 +9,10 @@ import com.wkclz.core.annotation.Router;
  * @author wangkaicun @ 2017-10-19 上午12:46
  */
 
-@Router(module = "micro-rm", prefix = Route.PREFIX)
+@Router(module = "micro-rmcheck", prefix = Route.PREFIX)
 public interface Route {
 
-    String PREFIX = "/micro-rm";
+    String PREFIX = "/micro-rmcheck";
 
 
     @Desc("1. 删除检查规则-分页")
