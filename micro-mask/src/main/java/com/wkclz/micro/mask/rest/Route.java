@@ -20,20 +20,20 @@ public interface Route {
      */
 
     @Desc("1. 脱敏规则-分页")
-    String MASK_RULE_PAGE = "/mask/rule/page";
+    String RULE_PAGE = "/rule/page";
     @Desc("2. 脱敏规则-详情")
-    String MASK_RULE_INFO = "/mask/rule/info";
+    String RULE_INFO = "/rule/info";
     @Desc("3. 脱敏规则-新增")
-    String MASK_RULE_CREATE = "/mask/rule/create";
+    String RULE_CREATE = "/rule/create";
     @Desc("4. 脱敏规则-修改")
-    String MASK_RULE_UPDATE = "/mask/rule/update";
+    String RULE_UPDATE = "/rule/update";
     @Desc("5. 脱敏规则-删除")
-    String MASK_RULE_REMOVE = "/mask/rule/remove";
+    String RULE_REMOVE = "/rule/remove";
 
 
     @Desc("1. 脱敏规则-测试")
-    String MASK_RULE_TEST = "/mask/rule/test";
+    String RULE_TEST = "/rule/test";
     @Desc("2. 脱敏规则-验证")
-    String MASK_RULE_VERIFY = "/mask/rule/verify";
+    String RULE_VERIFY = "/rule/verify";
 
 }

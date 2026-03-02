@@ -12,10 +12,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Description Create by shrimp-gen
@@ -23,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @table msg_notification (消息通知) 示例rest 接口，代码重新生成会覆盖
  */
 @RestController
+@RequestMapping(Route.PREFIX)
 public class ManagerNotificationRest {
 
     @Autowired
@@ -32,7 +30,7 @@ public class ManagerNotificationRest {
 
 
     /**
-     * @api {get} /manager/msg/page 01. 管理员消息分页
+     * @api {get} /micro-msg/manager/page 01. 管理员消息分页
      * @apiGroup MSG
      *
      * @apiVersion 0.0.1
@@ -90,7 +88,7 @@ public class ManagerNotificationRest {
 
 
     /**
-     * @api {post} /manager/msg/sent 02. 管理员消息发布
+     * @api {post} /micro-msg/manager/sent 02. 管理员消息发布
      * @apiGroup MSG
      *
      * @apiVersion 0.0.1
@@ -134,7 +132,7 @@ public class ManagerNotificationRest {
 
 
     /**
-     * @api {get} /manager/msg/info 03. 管理员消息详情
+     * @api {get} /micro-msg/manager/info 03. 管理员消息详情
      * @apiGroup MSG
      *
      * @apiVersion 0.0.1
@@ -189,7 +187,7 @@ public class ManagerNotificationRest {
 
 
     /**
-     * @api {get} /manager/msg/record/page 04. 管理员消息阅读记录
+     * @api {get} /micro-msg/manager/record/page 04. 管理员消息阅读记录
      * @apiGroup MSG
      *
      * @apiVersion 0.0.1

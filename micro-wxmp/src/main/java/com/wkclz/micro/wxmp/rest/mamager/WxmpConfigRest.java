@@ -10,10 +10,7 @@ import com.wkclz.micro.wxmp.service.WxmpConfigService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Description Create by shrimp-gen
@@ -21,13 +18,14 @@ import org.springframework.web.bind.annotation.RestController;
  * @table wxmp_config (公众号) 示例rest 接口，代码重新生成会覆盖
  */
 @RestController
+@RequestMapping(Route.PREFIX)
 public class WxmpConfigRest {
 
     @Autowired
     private WxmpConfigService wxmpConfigService;
 
     /**
-     * @api {get} /wxmp/config/page 1. 微信公众号-配置-分页
+     * @api {get} /micro-wxmp/config/page 1. 微信公众号-配置-分页
      * @apiGroup WXMP_CONFIG
      *
      * @apiVersion 0.0.1
@@ -88,7 +86,7 @@ public class WxmpConfigRest {
 
 
     /**
-     * @api {get} /wxmp/config/info 2. 微信公众号-配置-详情
+     * @api {get} /micro-wxmp/config/info 2. 微信公众号-配置-详情
      * @apiGroup WXMP_CONFIG
      *
      * @apiVersion 0.0.1
@@ -148,7 +146,7 @@ public class WxmpConfigRest {
 
 
     /**
-     * @api {post} /wxmp/config/create 3. 微信公众号-配置-创建
+     * @api {post} /micro-wxmp/config/create 3. 微信公众号-配置-创建
      * @apiGroup WXMP_CONFIG
      *
      * @apiVersion 0.0.1
@@ -194,7 +192,7 @@ public class WxmpConfigRest {
 
 
     /**
-     * @api {post} /wxmp/config/update 4. 微信公众号-配置-更新
+     * @api {post} /micro-wxmp/config/update 4. 微信公众号-配置-更新
      * @apiGroup WXMP_CONFIG
      *
      * @apiVersion 0.0.1
@@ -244,7 +242,7 @@ public class WxmpConfigRest {
 
 
     /**
-     * @api {post} /wxmp/config/remove 5. 微信公众号-配置-删除
+     * @api {post} /micro-wxmp/config/remove 5. 微信公众号-配置-删除
      * @apiGroup WXMP_CONFIG
      *
      * @apiVersion 0.0.1

@@ -16,13 +16,13 @@ import org.springframework.web.bind.annotation.*;
  */
 @Slf4j
 @RestController
-@RequestMapping(Route.PUBLIC_WXMP_PORTAL_APPID)
+@RequestMapping(Route.PREFIX)
 public class WxPortalRest {
 
     @Resource
     private WxMpConfiguration wxMpConfiguration;
 
-    @GetMapping(produces = "text/plain;charset=utf-8")
+    @GetMapping(value = Route.PUBLIC_WXMP_PORTAL_APPID, produces = "text/plain;charset=utf-8")
     public String wxmpPortalAppidGet(
                 @PathVariable String appid,
                 @RequestParam(name = "signature", required = false) String signature,
@@ -48,7 +48,7 @@ public class WxPortalRest {
         return "非法请求";
     }
 
-    @PostMapping(produces = "application/xml; charset=UTF-8")
+    @PostMapping(value = Route.PUBLIC_WXMP_PORTAL_APPID, produces = "text/plain;charset=utf-8")
     public String wxmpPortalAppidPost(
                 @PathVariable String appid,
                 @RequestBody String requestBody,

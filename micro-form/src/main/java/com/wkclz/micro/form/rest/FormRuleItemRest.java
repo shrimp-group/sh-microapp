@@ -8,10 +8,7 @@ import com.wkclz.micro.form.service.MdmFormRuleItemService;
 import io.jsonwebtoken.lang.Assert;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -21,6 +18,7 @@ import java.util.List;
  * @table mdm_form_rule_item (表单校验规则-校验项) 示例rest 接口，代码重新生成会覆盖
  */
 @RestController
+@RequestMapping(Route.PREFIX)
 public class FormRuleItemRest {
 
     @Resource
@@ -29,7 +27,7 @@ public class FormRuleItemRest {
     private MdmFormRuleItemService mdmFormRuleItemService;
 
     /**
-     * @api {get} /form/rule/item/list 1. 表单校验规则-检查项-列表
+     * @api {get} /micro-form/rule/item/list 1. 表单校验规则-检查项-列表
      * @apiGroup MDM_FORM_RULE_ITEM
      *
      * @apiVersion 0.0.1
@@ -95,7 +93,7 @@ public class FormRuleItemRest {
     }
 
     /**
-     * @api {get} /form/rule/item/info 2. 表单校验规则-检查项-详情
+     * @api {get} /micro-form/rule/item/info 2. 表单校验规则-检查项-详情
      * @apiGroup MDM_FORM_RULE_ITEM
      *
      * @apiVersion 0.0.1
@@ -157,7 +155,7 @@ public class FormRuleItemRest {
     }
 
     /**
-     * @api {post} /form/rule/item/create 3. 表单校验规则-检查项-新增
+     * @api {post} /micro-form/rule/item/create 3. 表单校验规则-检查项-新增
      * @apiGroup MDM_FORM_RULE_ITEM
      *
      * @apiVersion 0.0.1
@@ -206,7 +204,7 @@ public class FormRuleItemRest {
     }
 
     /**
-     * @api {post} /form/rule/item/update 4. 表单校验规则-检查项-更新
+     * @api {post} /micro-form/rule/item/update 4. 表单校验规则-检查项-更新
      * @apiGroup MDM_FORM_RULE_ITEM
      *
      * @apiVersion 0.0.1
@@ -261,7 +259,7 @@ public class FormRuleItemRest {
     }
 
     /**
-     * @api {post} /form/rule/item/remove 5. 表单校验规则-检查项-移除
+     * @api {post} /micro-form/rule/item/remove 5. 表单校验规则-检查项-移除
      * @apiGroup MDM_FORM_RULE_ITEM
      *
      * @apiVersion 0.0.1

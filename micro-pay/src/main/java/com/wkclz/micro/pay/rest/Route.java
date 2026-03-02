@@ -11,7 +11,7 @@ import com.wkclz.core.annotation.Router;
 @Router(module = "micro-pay", prefix = Route.PREFIX)
 public interface Route {
 
-    String PREFIX = "/micro-pay";
+    String PREFIX = "";
 
     /**
      * 微信支付配置

@@ -10,10 +10,7 @@ import com.wkclz.micro.file.service.MdmFsFilesService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,6 +21,7 @@ import java.util.stream.Collectors;
  * @table mdm_fs_files (附件) 示例rest 接口，代码重新生成会覆盖
  */
 @RestController
+@RequestMapping(Route.PREFIX)
 public class FsFilesRest {
 
     @Autowired
@@ -32,7 +30,7 @@ public class FsFilesRest {
     private MdmFsFilesService mdmFsFilesService;
 
     /**
-     * @api {get} /fs/files/page 6. 附件-获取分页
+     * @api {get} /micro-fs/files/page 6. 附件-获取分页
      * @apiGroup FS
      *
      * @apiVersion 0.0.1
@@ -109,7 +107,7 @@ public class FsFilesRest {
     }
 
     /**
-     * @api {get} /fs/files/info 7. 附件-获取详情
+     * @api {get} /micro-fs/files/info 7. 附件-获取详情
      * @apiGroup FS
      *
      * @apiVersion 0.0.1
@@ -172,7 +170,7 @@ public class FsFilesRest {
     }
 
     /**
-     * @api {post} /fs/files/remove 8. 附件-删除
+     * @api {post} /micro-fs/files/remove 8. 附件-删除
      * @apiGroup FS
      *
      * @apiVersion 0.0.1

@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
  * Created: wangkaicun @ 2017-10-29 上午11:20
  */
 @RestController
+@RequestMapping(Route.PREFIX)
 public class FsCommonRest {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());

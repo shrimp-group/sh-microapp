@@ -8,6 +8,7 @@ import com.wkclz.micro.wxmp.rest.Route;
 import com.wkclz.micro.wxmp.service.WxmpKfMsgService;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -16,13 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
  * @table wxmp_kf_msg (公众号-客服消息) 示例rest 接口，代码重新生成会覆盖
  */
 @RestController
+@RequestMapping(Route.PREFIX)
 public class WxmpKfMsgRest {
 
     @Resource
     private WxmpKfMsgService wxmpKfMsgService;
 
     /**
-     * @api {get} /wxmp/kf/msg/page 1. 公众号-客服消息-获取分页
+     * @api {get} /micro-wxmp/kf/msg/page 1. 公众号-客服消息-获取分页
      * @apiGroup WXMP_KF_MSG
      *
      * @apiVersion 0.0.1
@@ -86,7 +88,7 @@ public class WxmpKfMsgRest {
     }
 
     /**
-     * @api {get} /wxmp/kf/msg/info 2. 公众号-客服消息-获取详情
+     * @api {get} /micro-wxmp/kf/msg/info 2. 公众号-客服消息-获取详情
      * @apiGroup WXMP_KF_MSG
      *
      * @apiVersion 0.0.1

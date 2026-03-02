@@ -9,9 +9,11 @@ import com.wkclz.micro.wxmp.rest.Route;
 import com.wkclz.micro.wxmp.service.WxmpUserService;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping(Route.PREFIX)
 public class WxUserRest {
 
     @Resource

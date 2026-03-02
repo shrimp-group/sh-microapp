@@ -1,10 +1,13 @@
 package com.wkclz.micro.liteflow.demo;
 
+import com.wkclz.micro.liteflow.rest.Route;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping(Route.PREFIX)
 public class LiteFlowTestRest {
 
     @Autowired

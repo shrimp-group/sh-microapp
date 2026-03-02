@@ -9,10 +9,7 @@ import com.wkclz.micro.msg.service.MsgUserRecordService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -22,6 +19,7 @@ import java.util.List;
  * @table msg_user_record (用户消息记录) 示例rest 接口，代码重新生成会覆盖
  */
 @RestController
+@RequestMapping(Route.PREFIX)
 public class PersonalUserRecordRest {
 
     @Autowired
@@ -30,7 +28,7 @@ public class PersonalUserRecordRest {
 
 
     /**
-     * @api {get} /personal/msg/list 11. 个人消息列表(最多99,展示为99+)
+     * @api {get} /micro-msg/personal/list 11. 个人消息列表(最多99,展示为99+)
      * @apiGroup MSG
      *
      * @apiVersion 0.0.1
@@ -79,7 +77,7 @@ public class PersonalUserRecordRest {
 
 
     /**
-     * @api {get} /personal/msg/page 12. 个人消息分页
+     * @api {get} /micro-msg/personal/page 12. 个人消息分页
      * @apiGroup MSG
      *
      * @apiVersion 0.0.1
@@ -131,7 +129,7 @@ public class PersonalUserRecordRest {
 
 
     /**
-     * @api {get} /personal/msg/info 13. 个人消息详情(阅读)
+     * @api {get} /micro-msg/personal/info 13. 个人消息详情(阅读)
      * @apiGroup MSG
      *
      * @apiVersion 0.0.1
@@ -179,7 +177,7 @@ public class PersonalUserRecordRest {
 
 
     /**
-     * @api {post} /personal/msg/readed 14. 个人消息，批量标注已读
+     * @api {post} /micro-msg/personal/readed 14. 个人消息，批量标注已读
      * @apiGroup MSG
      *
      * @apiVersion 0.0.1

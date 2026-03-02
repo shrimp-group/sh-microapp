@@ -12,10 +12,7 @@ import com.wkclz.micro.pay.service.PayAlipayConfigService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Description Create by shrimp-gen
@@ -23,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @table pay_alipay_config (支付-支付宝配置) 示例rest 接口，代码重新生成会覆盖
  */
 @RestController
+@RequestMapping(Route.PREFIX)
 public class AlipayConfigRest {
 
     @Autowired

@@ -7,6 +7,7 @@ import com.wkclz.micro.form.service.MdmFormRuleService;
 import jakarta.annotation.Resource;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.Map;
  * @table mdm_form (表单) 示例rest 接口，代码重新生成会覆盖
  */
 @RestController
+@RequestMapping(Route.PREFIX)
 public class CommonFormRuleRest {
 
     @Resource

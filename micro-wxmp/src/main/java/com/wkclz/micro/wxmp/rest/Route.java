@@ -21,33 +21,33 @@ public interface Route {
      */
 
     @Desc("1. 微信公众号-配置-分页")
-    String WXMP_CONFIG_PAGE = "/wxmp/config/page";
+    String WXMP_CONFIG_PAGE = "/config/page";
     @Desc("2. 微信公众号-配置-详情")
-    String WXMP_CONFIG_INFO = "/wxmp/config/info";
+    String WXMP_CONFIG_INFO = "/config/info";
     @Desc("3. 微信公众号-配置-创建")
-    String WXMP_CONFIG_CREATE = "/wxmp/config/create";
+    String WXMP_CONFIG_CREATE = "/config/create";
     @Desc("4. 微信公众号-配置-更新")
-    String WXMP_CONFIG_UPDATE = "/wxmp/config/update";
+    String WXMP_CONFIG_UPDATE = "/config/update";
     @Desc("5. 微信公众号-配置-删除")
-    String WXMP_CONFIG_REMOVE = "/wxmp/config/remove";
+    String WXMP_CONFIG_REMOVE = "/config/remove";
 
 
     @Desc("1. 客服消息-分页")
-    String WXMP_KF_MSG_PAGE = "/wxmp/kf/msg/page";
+    String WXMP_KF_MSG_PAGE = "/kf/msg/page";
     @Desc("2. 客服消息-详情")
-    String WXMP_KF_MSG_INFO = "/wxmp/kf/msg/info";
+    String WXMP_KF_MSG_INFO = "/kf/msg/info";
 
 
 
 
 
     @Desc("微信公众号-获取永久素材")
-    String WXMP_MATERIAL_BATCHGET_MATERIAL = "/wxmp/material/batchget_material/{appid}";
+    String WXMP_MATERIAL_BATCHGET_MATERIAL = "/material/batchget_material/{appid}";
 
     @Desc("微信公众号-菜单-设置")
-    String WXMP_MENU_UPDATE = "/wxmp/menu/update/{appid}";
+    String WXMP_MENU_UPDATE = "/menu/update/{appid}";
     @Desc("微信公众号-菜单-删除")
-    String WXMP_MENU_DELETE = "/wxmp/menu/delete/{appid}";
+    String WXMP_MENU_DELETE = "/menu/delete/{appid}";
 
 
 
@@ -56,9 +56,9 @@ public interface Route {
      */
 
     @Desc("微信公众号-验签")
-    String PUBLIC_WXMP_PORTAL_APPID = "/public/wxmp/portal/{appid}";
+    String PUBLIC_WXMP_PORTAL_APPID = "/public/portal/{appid}";
     @Desc("微信公众号请求登录")
-    String PUBLIC_WXMP_LOGIN_APPID = "/public/wxmp/login/{appid}";
+    String PUBLIC_WXMP_LOGIN_APPID = "/public/login/{appid}";
 
     /**
      * 客户端相关接口

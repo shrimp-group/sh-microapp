@@ -13,10 +13,7 @@ import com.wkclz.mybatis.bean.ColumnQuery;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -26,6 +23,7 @@ import java.util.List;
  * @table mdm_form (表单) 示例rest 接口，代码重新生成会覆盖
  */
 @RestController
+@RequestMapping(Route.PREFIX)
 public class FormRest {
 
     @Autowired
@@ -36,7 +34,7 @@ public class FormRest {
     private FormTableInfoService formTableInfoService;
 
     /**
-     * @api {get} /form/page 01. 表单-分页
+     * @api {get} /micro-form/page 01. 表单-分页
      * @apiGroup FORM
      *
      * @apiVersion 0.0.1
@@ -87,7 +85,7 @@ public class FormRest {
 
 
     /**
-     * @api {get} /form/info 02. 表单-详情
+     * @api {get} /micro-form/info 02. 表单-详情
      * @apiGroup FORM
      *
      * @apiVersion 0.0.1
@@ -137,7 +135,7 @@ public class FormRest {
 
 
     /**
-     * @api {post} /form/create 03. 表单创建
+     * @api {post} /micro-form/create 03. 表单创建
      * @apiGroup FORM
      *
      * @apiVersion 0.0.1
@@ -174,7 +172,7 @@ public class FormRest {
     }
 
     /**
-     * @api {post} /form/update 04. 表单-修改
+     * @api {post} /micro-form/update 04. 表单-修改
      * @apiGroup FORM
      *
      * @apiVersion 0.0.1
@@ -219,7 +217,7 @@ public class FormRest {
 
 
     /**
-     * @api {post} /form/remove 05. 表单-删除
+     * @api {post} /micro-form/remove 05. 表单-删除
      * @apiGroup FORM
      *
      * @apiVersion 0.0.1
@@ -249,7 +247,7 @@ public class FormRest {
 
 
     /**
-     * @api {get} /form/db/columns 07. 表单输入项-数据库字段
+     * @api {get} /micro-form/db/columns 07. 表单输入项-数据库字段
      * @apiGroup FORM
      *
      * @apiVersion 0.0.1

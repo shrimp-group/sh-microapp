@@ -7,10 +7,7 @@ import com.wkclz.micro.rmcheck.pojo.entity.RmCheckRuleItem;
 import com.wkclz.micro.rmcheck.service.RmCheckRuleItemService;
 import io.jsonwebtoken.lang.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -20,13 +17,14 @@ import java.util.List;
  * @table rm_check_rule_item (删除检查规则-检查项) 示例rest 接口，代码重新生成会覆盖
  */
 @RestController
+@RequestMapping(Route.PREFIX)
 public class RmCheckRuleItemRest {
 
     @Autowired
     private RmCheckRuleItemService rmCheckRuleItemService;
 
     /**
-     * @api {get} /rm/check/rule/item/page 1. 删除检查规则-检查项-列表
+     * @api {get} /micro-rmcheck/rule/item/page 1. 删除检查规则-检查项-列表
      * @apiGroup RM_CHECK_RULE_ITEM
      *
      * @apiVersion 0.0.1
@@ -74,7 +72,7 @@ public class RmCheckRuleItemRest {
 
 
     /**
-     * @api {get} /rm/check/rule/item/info 2. 删除检查规则-检查项-详情
+     * @api {get} /micro-rmcheck/rule/item/info 2. 删除检查规则-检查项-详情
      * @apiGroup RM_CHECK_RULE_ITEM
      *
      * @apiVersion 0.0.1
@@ -126,7 +124,7 @@ public class RmCheckRuleItemRest {
 
 
     /**
-     * @api {post} /rm/check/rule/item/create 3. 删除检查规则-检查项-新增
+     * @api {post} /micro-rmcheck/rule/item/create 3. 删除检查规则-检查项-新增
      * @apiGroup RM_CHECK_RULE_ITEM
      *
      * @apiVersion 0.0.1
@@ -163,7 +161,7 @@ public class RmCheckRuleItemRest {
 
 
     /**
-     * @api {post} /rm/check/rule/item/update 4. 删除检查规则-检查项-更新
+     * @api {post} /micro-rmcheck/rule/item/update 4. 删除检查规则-检查项-更新
      * @apiGroup RM_CHECK_RULE_ITEM
      *
      * @apiVersion 0.0.1
@@ -206,7 +204,7 @@ public class RmCheckRuleItemRest {
 
 
     /**
-     * @api {post} /rm/check/rule/item/remove 5. 删除检查规则-检查项-移除
+     * @api {post} /micro-rmcheck/rule/item/remove 5. 删除检查规则-检查项-移除
      * @apiGroup RM_CHECK_RULE_ITEM
      *
      * @apiVersion 0.0.1

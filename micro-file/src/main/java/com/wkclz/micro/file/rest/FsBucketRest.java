@@ -9,10 +9,7 @@ import com.wkclz.micro.file.service.MdmFsBucketService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -22,13 +19,14 @@ import java.util.List;
  * @table mdm_fs_bucket (Bucket管理) 示例rest 接口，代码重新生成会覆盖
  */
 @RestController
+@RequestMapping(Route.PREFIX)
 public class FsBucketRest {
 
     @Autowired
     private MdmFsBucketService mdmFsBucketService;
 
     /**
-     * @api {get} /fs/bucket/page 1. Bucket管理-获取分页
+     * @api {get} /micro-fs/bucket/page 1. Bucket管理-获取分页
      * @apiGroup FS
      *
      * @apiVersion 0.0.1
@@ -93,7 +91,7 @@ public class FsBucketRest {
     }
 
     /**
-     * @api {get} /fs/bucket/info 2. Bucket管理-获取详情
+     * @api {get} /micro-fs/bucket/info 2. Bucket管理-获取详情
      * @apiGroup FS
      *
      * @apiVersion 0.0.1
@@ -152,7 +150,7 @@ public class FsBucketRest {
     }
 
     /**
-     * @api {post} /fs/bucket/create 3. Bucket管理-创建
+     * @api {post} /micro-fs/bucket/create 3. Bucket管理-创建
      * @apiGroup FS
      *
      * @apiVersion 0.0.1
@@ -209,7 +207,7 @@ public class FsBucketRest {
     }
 
     /**
-     * @api {post} /fs/bucket/update 4. Bucket管理-更新
+     * @api {post} /micro-fs/bucket/update 4. Bucket管理-更新
      * @apiGroup FS
      *
      * @apiVersion 0.0.1
@@ -271,7 +269,7 @@ public class FsBucketRest {
     }
 
     /**
-     * @api {post} /fs/bucket/remove 6. Bucket管理-删除
+     * @api {post} /micro-fs/bucket/remove 6. Bucket管理-删除
      * @apiGroup FS
      *
      * @apiVersion 0.0.1
@@ -300,7 +298,7 @@ public class FsBucketRest {
 
 
     /**
-     * @api {get} /fs/bucket/options 6. 文件系统-Bucket-选项
+     * @api {get} /micro-fs/bucket/options 6. 文件系统-Bucket-选项
      * @apiGroup FS
      *
      * @apiVersion 0.0.1

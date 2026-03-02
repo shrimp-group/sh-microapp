@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
  * @table pay_wxpay_config (支付-微信支付配置) 示例rest 接口，代码重新生成会覆盖
  */
 @RestController
+@RequestMapping(Route.PREFIX)
 public class WxpayConfigRest {
 
     @Autowired

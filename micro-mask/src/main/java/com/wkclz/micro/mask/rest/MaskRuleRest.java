@@ -9,10 +9,7 @@ import com.wkclz.micro.mask.pojo.entity.MdmMaskRule;
 import com.wkclz.micro.mask.service.MdmMaskRuleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Description Create by shrimp-gen
@@ -20,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @table mdm_mask_rule (脱敏规则) 示例rest 接口，代码重新生成会覆盖
  */
 @RestController
+@RequestMapping(Route.PREFIX)
 public class MaskRuleRest {
 
     @Autowired
@@ -28,7 +26,7 @@ public class MaskRuleRest {
     private MdmMaskRuleService mdmMaskRuleService;
 
     /**
-     * @api {get} /mask/rule/page 1. 脱敏规则-分页
+     * @api {get} /micro-mask/rule/page 1. 脱敏规则-分页
      * @apiGroup MASK
      *
      * @apiVersion 0.0.1
@@ -72,7 +70,7 @@ public class MaskRuleRest {
      * }
      *
      */
-    @GetMapping(Route.MASK_RULE_PAGE)
+    @GetMapping(Route.RULE_PAGE)
     public R mdmMaskRulePage(MdmMaskRule entity) {
         PageData<MdmMaskRule> page = mdmMaskRuleService.getMaskRulePage(entity);
         return R.ok(page);
@@ -80,7 +78,7 @@ public class MaskRuleRest {
 
 
     /**
-     * @api {get} /mask/rule/info 2. 脱敏规则-详情
+     * @api {get} /micro-mask/rule/info 2. 脱敏规则-详情
      * @apiGroup MASK
      *
      * @apiVersion 0.0.1
@@ -125,7 +123,7 @@ public class MaskRuleRest {
      * }
      *
      */
-    @GetMapping(Route.MASK_RULE_INFO)
+    @GetMapping(Route.RULE_INFO)
     public R mdmMaskRuleInfo(MdmMaskRule entity) {
         Assert.notNull(entity.getId(), ResultCode.PARAM_NO_ID.getMessage());
         Assert.notNull(entity.getId(), ResultCode.UPDATE_NO_VERSION.getMessage());
@@ -135,7 +133,7 @@ public class MaskRuleRest {
 
 
     /**
-     * @api {post} /mask/rule/create 3. 脱敏规则-新增
+     * @api {post} /micro-mask/rule/create 3. 脱敏规则-新增
      * @apiGroup MASK
      *
      * @apiVersion 0.0.1
@@ -165,7 +163,7 @@ public class MaskRuleRest {
      * }
      *
      */
-    @PostMapping(Route.MASK_RULE_CREATE)
+    @PostMapping(Route.RULE_CREATE)
     public R mdmMaskRuleCreate(@RequestBody MdmMaskRule entity) {
         Assert.notNull(entity.getMaskRuleName(), "maskRuleName 不能为空");
         Assert.notNull(entity.getRequestMethod(), "requestMethod 不能为空");
@@ -182,7 +180,7 @@ public class MaskRuleRest {
 
 
     /**
-     * @api {post} /mask/rule/update 4. 脱敏规则-修改
+     * @api {post} /micro-mask/rule/update 4. 脱敏规则-修改
      * @apiGroup MASK
      *
      * @apiVersion 0.0.1
@@ -216,7 +214,7 @@ public class MaskRuleRest {
      * }
      *
      */
-    @PostMapping(Route.MASK_RULE_UPDATE)
+    @PostMapping(Route.RULE_UPDATE)
     public R mdmMaskRuleUpdate(@RequestBody MdmMaskRule entity) {
         Assert.notNull(entity.getId(), ResultCode.PARAM_NO_ID.getMessage());
         Assert.notNull(entity.getVersion(), ResultCode.UPDATE_NO_VERSION.getMessage());
@@ -235,7 +233,7 @@ public class MaskRuleRest {
 
 
     /**
-     * @api {post} /mask/rule/remove 5. 脱敏规则-删除
+     * @api {post} /micro-mask/rule/remove 5. 脱敏规则-删除
      * @apiGroup MASK
      *
      * @apiVersion 0.0.1
@@ -255,7 +253,7 @@ public class MaskRuleRest {
      * }
      *
      */
-    @PostMapping(Route.MASK_RULE_REMOVE)
+    @PostMapping(Route.RULE_REMOVE)
     public R mdmMaskRuleRemove(@RequestBody MdmMaskRule entity) {
         Assert.notNull(entity.getId(), ResultCode.PARAM_NO_ID.getMessage());
         mdmMaskRuleService.deleteById(entity);

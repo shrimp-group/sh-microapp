@@ -9,10 +9,7 @@ import com.wkclz.micro.form.pojo.entity.MdmFormRule;
 import com.wkclz.micro.form.service.MdmFormRuleService;
 import jakarta.annotation.Resource;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Description Create by shrimp-gen
@@ -20,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @table mdm_form_rule (表单校验规则) 示例rest 接口，代码重新生成会覆盖
  */
 @RestController
+@RequestMapping(Route.PREFIX)
 public class FormRuleRest {
 
     @Resource
@@ -29,7 +27,7 @@ public class FormRuleRest {
 
 
     /**
-     * @api {get} /form/rule/page 1. 表单校验规则-分页
+     * @api {get} /micro-form/rule/page 1. 表单校验规则-分页
      * @apiGroup MDM_FORM_RULE
      *
      * @apiVersion 0.0.1
@@ -79,7 +77,7 @@ public class FormRuleRest {
 
 
     /**
-     * @api {get} /form/rule/info 2. 表单校验规则-详情
+     * @api {get} /micro-form/rule/info 2. 表单校验规则-详情
      * @apiGroup MDM_FORM_RULE
      *
      * @apiVersion 0.0.1
@@ -128,7 +126,7 @@ public class FormRuleRest {
 
 
     /**
-     * @api {post} /form/rule/create 3. 表单校验规则-新增
+     * @api {post} /micro-form/rule/create 3. 表单校验规则-新增
      * @apiGroup MDM_FORM_RULE
      *
      * @apiVersion 0.0.1
@@ -164,7 +162,7 @@ public class FormRuleRest {
 
 
     /**
-     * @api {post} /form/rule/update 4. 表单校验规则-更新
+     * @api {post} /micro-form/rule/update 4. 表单校验规则-更新
      * @apiGroup MDM_FORM_RULE
      *
      * @apiVersion 0.0.1
@@ -206,7 +204,7 @@ public class FormRuleRest {
 
 
     /**
-     * @api {post} /form/rule/remove 5. 表单校验规则-移除
+     * @api {post} /micro-form/rule/remove 5. 表单校验规则-移除
      * @apiGroup MDM_FORM_RULE
      *
      * @apiVersion 0.0.1

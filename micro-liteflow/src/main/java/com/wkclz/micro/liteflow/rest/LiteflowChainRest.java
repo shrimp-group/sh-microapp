@@ -8,10 +8,7 @@ import com.wkclz.micro.liteflow.pojo.entity.LiteflowChain;
 import com.wkclz.micro.liteflow.service.LiteflowChainService;
 import io.jsonwebtoken.lang.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Description Create by shrimp-gen
@@ -19,13 +16,14 @@ import org.springframework.web.bind.annotation.RestController;
  * @table liteflow_chain (liteflow-规则) 示例rest 接口，代码重新生成会覆盖
  */
 @RestController
+@RequestMapping(Route.PREFIX)
 public class LiteflowChainRest {
 
     @Autowired
     private LiteflowChainService liteflowChainService;
 
     /**
-     * @api {get} /liteflow/chain/page 1. liteflow-规则-获取分页
+     * @api {get} /micro-liteflow/chain/page 1. liteflow-规则-获取分页
      * @apiGroup LITEFLOW_CHAIN
      *
      * @apiVersion 0.0.1
@@ -80,7 +78,7 @@ public class LiteflowChainRest {
     }
 
     /**
-     * @api {get} /liteflow/chain/info 2. liteflow-规则-获取详情
+     * @api {get} /micro-liteflow/chain/info 2. liteflow-规则-获取详情
      * @apiGroup LITEFLOW_CHAIN
      *
      * @apiVersion 0.0.1
@@ -136,7 +134,7 @@ public class LiteflowChainRest {
     }
 
     /**
-     * @api {post} /liteflow/chain/create 3. liteflow-规则-创建
+     * @api {post} /micro-liteflow/chain/create 3. liteflow-规则-创建
      * @apiGroup LITEFLOW_CHAIN
      *
      * @apiVersion 0.0.1
@@ -178,7 +176,7 @@ public class LiteflowChainRest {
     }
 
     /**
-     * @api {post} /liteflow/chain/update 4. liteflow-规则-更新
+     * @api {post} /micro-liteflow/chain/update 4. liteflow-规则-更新
      * @apiGroup LITEFLOW_CHAIN
      *
      * @apiVersion 0.0.1
@@ -226,7 +224,7 @@ public class LiteflowChainRest {
     }
 
     /**
-     * @api {post} /liteflow/chain/remove 6. liteflow-规则-删除
+     * @api {post} /micro-liteflow/chain/remove 6. liteflow-规则-删除
      * @apiGroup LITEFLOW_CHAIN
      *
      * @apiVersion 0.0.1

@@ -10,10 +10,7 @@ import com.wkclz.micro.fun.pojo.entity.FunFunction;
 import com.wkclz.micro.fun.service.FunFunctionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -23,6 +20,7 @@ import java.util.List;
  * @table fun_function (函数-函数体) 示例rest 接口，代码重新生成会覆盖
  */
 @RestController
+@RequestMapping(Route.PREFIX)
 public class FunFunctionRest {
 
     @Autowired
@@ -31,7 +29,7 @@ public class FunFunctionRest {
     private FunFunctionService funFunctionService;
 
     /**
-     * @api {get} /fun/function/page 1. 函数体-分页
+     * @api {get} /micro-fun/function/page 1. 函数体-分页
      * @apiGroup FUN_FUNCTION
      *
      * @apiVersion 0.0.1
@@ -98,7 +96,7 @@ public class FunFunctionRest {
     }
 
     /**
-     * @api {get} /fun/function/info 2. 函数体-详情
+     * @api {get} /micro-fun/function/info 2. 函数体-详情
      * @apiGroup FUN_FUNCTION
      *
      * @apiVersion 0.0.1
@@ -164,7 +162,7 @@ public class FunFunctionRest {
     }
 
     /**
-     * @api {post} /fun/function/create 3. 函数体-创建
+     * @api {post} /micro-fun/function/create 3. 函数体-创建
      * @apiGroup FUN_FUNCTION
      *
      * @apiVersion 0.0.1
@@ -216,7 +214,7 @@ public class FunFunctionRest {
     }
 
     /**
-     * @api {post} /fun/function/update 4. 函数体-修改
+     * @api {post} /micro-fun/function/update 4. 函数体-修改
      * @apiGroup FUN_FUNCTION
      *
      * @apiVersion 0.0.1
@@ -274,7 +272,7 @@ public class FunFunctionRest {
     }
 
     /**
-     * @api {post} /fun/function/remove 5. 函数体-删除
+     * @api {post} /micro-fun/function/remove 5. 函数体-删除
      * @apiGroup FUN_FUNCTION
      *
      * @apiVersion 0.0.1
@@ -302,7 +300,7 @@ public class FunFunctionRest {
     }
 
     /**
-     * @api {get} /fun/function/options 6. 函数体-选项
+     * @api {get} /micro-fun/function/options 6. 函数体-选项
      * @apiGroup FUN_FUNCTION
      *
      * @apiVersion 0.0.1

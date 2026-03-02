@@ -12,15 +12,15 @@ public interface Route {
 
 
     @Desc("1. 微信小程序-配置-分页")
-    String WXAPP_CONFIG_PAGE = "/wxapp/config/page";
+    String WXAPP_CONFIG_PAGE = "/config/page";
     @Desc("2. 微信小程序-配置-详情")
-    String WXAPP_CONFIG_INFO = "/wxapp/config/info";
+    String WXAPP_CONFIG_INFO = "/config/info";
     @Desc("3. 微信小程序-配置-创建")
-    String WXAPP_CONFIG_CREATE = "/wxapp/config/create";
+    String WXAPP_CONFIG_CREATE = "/config/create";
     @Desc("4. 微信小程序-配置-更新")
-    String WXAPP_CONFIG_UPDATE = "/wxapp/config/update";
+    String WXAPP_CONFIG_UPDATE = "/config/update";
     @Desc("5. 微信小程序-配置-删除")
-    String WXAPP_CONFIG_REMOVE = "/wxapp/config/remove";
+    String WXAPP_CONFIG_REMOVE = "/config/remove";
 
 
 

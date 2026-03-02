@@ -26,7 +26,7 @@ public class K8sConfigRest {
     private K8sConfigService k8sConfigService;
 
     /**
-     * @api {get} /config/page 1. k8s配置-获取分页
+     * @api {get} /micro-config/page 1. k8s配置-获取分页
      * @apiGroup CONFIG
      *
      * @apiVersion 0.0.1
@@ -64,7 +64,7 @@ public class K8sConfigRest {
     }
 
     /**
-     * @api {get} /config/info 2. k8s配置-获取详情
+     * @api {get} /micro-config/info 2. k8s配置-获取详情
      * @apiGroup CONFIG
      *
      * @apiVersion 0.0.1
@@ -114,7 +114,7 @@ public class K8sConfigRest {
     }
 
     /**
-     * @api {post} /config/create 3. k8s配置-创建
+     * @api {post} /micro-config/create 3. k8s配置-创建
      * @apiGroup CONFIG
      *
      * @apiVersion 0.0.1
@@ -160,7 +160,7 @@ public class K8sConfigRest {
     }
 
     /**
-     * @api {post} /config/update 4. k8s配置-更新
+     * @api {post} /micro-config/update 4. k8s配置-更新
      * @apiGroup CONFIG
      *
      * @apiVersion 0.0.1
@@ -210,7 +210,7 @@ public class K8sConfigRest {
     }
 
     /**
-     * @api {post} /config/remove 6. k8s配置-删除
+     * @api {post} /micro-config/remove 6. k8s配置-删除
      * @apiGroup CONFIG
      *
      * @apiVersion 0.0.1

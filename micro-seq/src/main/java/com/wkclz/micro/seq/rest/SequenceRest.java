@@ -7,10 +7,7 @@ import com.wkclz.micro.seq.pojo.entity.MdmSequence;
 import com.wkclz.micro.seq.service.MdmSequenceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Description Create by shrimp-gen
@@ -18,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @table mdm_sequence (序列生成) 示例rest 接口，代码重新生成会覆盖
  */
 @RestController
+@RequestMapping(Route.PREFIX)
 public class SequenceRest {
 
     @Autowired
@@ -25,7 +23,7 @@ public class SequenceRest {
 
 
     /**
-     * @api {get} /sequence/page 1. 序列生成-获取分页
+     * @api {get} /micro-seq/sequence/page 1. 序列生成-获取分页
      * @apiGroup SEQ
      *
      * @apiVersion 0.0.1
@@ -80,7 +78,7 @@ public class SequenceRest {
     }
 
     /**
-     * @api {get} /sequence/info 2. 序列生成-获取详情
+     * @api {get} /micro-seq/sequence/info 2. 序列生成-获取详情
      * @apiGroup SEQ
      *
      * @apiVersion 0.0.1
@@ -132,7 +130,7 @@ public class SequenceRest {
     }
 
     /**
-     * @api {post} /sequence/update 3. 序列生成-更新
+     * @api {post} /micro-seq/sequence/update 3. 序列生成-更新
      * @apiGroup SEQ
      *
      * @apiVersion 0.0.1

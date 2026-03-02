@@ -4,10 +4,7 @@ import com.wkclz.core.base.R;
 import com.wkclz.micro.msg.pojo.entity.MsgUserSettings;
 import com.wkclz.micro.msg.service.MsgUserSettingsService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Description Create by shrimp-gen
@@ -15,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @table msg_user_settings (用户消息设置) 示例rest 接口，代码重新生成会覆盖
  */
 @RestController
+@RequestMapping(Route.PREFIX)
 public class PersonalUserSettingsRest {
 
     @Autowired
@@ -23,7 +21,7 @@ public class PersonalUserSettingsRest {
 
 
     /**
-     * @api {get} /personal/msg/settings 21. 个人消息获取配置
+     * @api {get} /micro-msg/personal/settings 21. 个人消息获取配置
      * @apiGroup MSG
      *
      * @apiVersion 0.0.1
@@ -54,7 +52,7 @@ public class PersonalUserSettingsRest {
 
 
     /**
-     * @api {post} /personal/msg/settings/save 22. 个人消息保存配置
+     * @api {post} /micro-msg/personal/settings/save 22. 个人消息保存配置
      * @apiGroup MSG
      *
      * @apiVersion 0.0.1

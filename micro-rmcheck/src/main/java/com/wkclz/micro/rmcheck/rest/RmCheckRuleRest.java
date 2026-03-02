@@ -8,10 +8,7 @@ import com.wkclz.micro.rmcheck.pojo.entity.RmCheckRule;
 import com.wkclz.micro.rmcheck.service.RmCheckRuleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Description Create by shrimp-gen
@@ -19,13 +16,14 @@ import org.springframework.web.bind.annotation.RestController;
  * @table rm_check_rule (删除检查规则) 示例rest 接口，代码重新生成会覆盖
  */
 @RestController
+@RequestMapping(Route.PREFIX)
 public class RmCheckRuleRest {
 
     @Autowired
     private RmCheckRuleService rmCheckRuleService;
 
     /**
-     * @api {get} /rm/check/rule/page 1. 删除检查规则-分页
+     * @api {get} /micro-rmcheck/rule/page 1. 删除检查规则-分页
      * @apiGroup RM_CHECK_RULE
      *
      * @apiVersion 0.0.1
@@ -72,7 +70,7 @@ public class RmCheckRuleRest {
 
 
     /**
-     * @api {get} /rm/check/rule/info 2. 删除检查规则-详情
+     * @api {get} /micro-rmcheck/rule/info 2. 删除检查规则-详情
      * @apiGroup RM_CHECK_RULE
      *
      * @apiVersion 0.0.1
@@ -120,7 +118,7 @@ public class RmCheckRuleRest {
 
 
     /**
-     * @api {post} /rm/check/rule/create 3. 删除检查规则-新增
+     * @api {post} /micro-rmcheck/rule/create 3. 删除检查规则-新增
      * @apiGroup RM_CHECK_RULE
      *
      * @apiVersion 0.0.1
@@ -154,7 +152,7 @@ public class RmCheckRuleRest {
 
 
     /**
-     * @api {post} /rm/check/rule/update 4. 删除检查规则-更新
+     * @api {post} /micro-rmcheck/rule/update 4. 删除检查规则-更新
      * @apiGroup RM_CHECK_RULE
      *
      * @apiVersion 0.0.1
@@ -194,7 +192,7 @@ public class RmCheckRuleRest {
 
 
     /**
-     * @api {post} /rm/check/rule/remove 5. 删除检查规则-移除
+     * @api {post} /micro-rmcheck/rule/remove 5. 删除检查规则-移除
      * @apiGroup RM_CHECK_RULE
      *
      * @apiVersion 0.0.1

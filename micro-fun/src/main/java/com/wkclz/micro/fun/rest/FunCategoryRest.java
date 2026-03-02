@@ -7,10 +7,7 @@ import com.wkclz.micro.fun.pojo.entity.FunCategory;
 import com.wkclz.micro.fun.service.FunCategoryService;
 import io.jsonwebtoken.lang.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -20,13 +17,14 @@ import java.util.List;
  * @table fun_category (函数-分类) 示例rest 接口，代码重新生成会覆盖
  */
 @RestController
+@RequestMapping(Route.PREFIX)
 public class FunCategoryRest {
 
     @Autowired
     private FunCategoryService funCategoryService;
 
     /**
-     * @api {get} /fun/category/list 1. 函数分类-列表
+     * @api {get} /micro-fun/category/list 1. 函数分类-列表
      * @apiGroup FUN_CATEGORY
      *
      * @apiVersion 0.0.1
@@ -70,7 +68,7 @@ public class FunCategoryRest {
     }
 
     /**
-     * @api {get} /fun/category/tree 2. 函数分类-树
+     * @api {get} /micro-fun/category/tree 2. 函数分类-树
      * @apiGroup FUN_CATEGORY
      *
      * @apiVersion 0.0.1
@@ -113,7 +111,7 @@ public class FunCategoryRest {
 
 
     /**
-     * @api {get} /fun/category/info 3. 函数分类-详情
+     * @api {get} /micro-fun/category/info 3. 函数分类-详情
      * @apiGroup FUN_CATEGORY
      *
      * @apiVersion 0.0.1
@@ -168,7 +166,7 @@ public class FunCategoryRest {
 
 
     /**
-     * @api {post} /fun/category/create 4. 函数分类-创建
+     * @api {post} /micro-fun/category/create 4. 函数分类-创建
      * @apiGroup FUN_CATEGORY
      *
      * @apiVersion 0.0.1
@@ -208,7 +206,7 @@ public class FunCategoryRest {
     }
 
     /**
-     * @api {post} /fun/category/update 5. 函数分类-update
+     * @api {post} /micro-fun/category/update 5. 函数分类-update
      * @apiGroup FUN_CATEGORY
      *
      * @apiVersion 0.0.1
@@ -256,7 +254,7 @@ public class FunCategoryRest {
 
 
     /**
-     * @api {post} /fun/category/remove 6. 函数分类-删除
+     * @api {post} /micro-fun/category/remove 6. 函数分类-删除
      * @apiGroup FUN_CATEGORY
      *
      * @apiVersion 0.0.1
@@ -286,7 +284,7 @@ public class FunCategoryRest {
 
 
     /**
-     * @api {get} /fun/category/options 5. 函数分类-获取下拉选项
+     * @api {get} /micro-fun/category/options 5. 函数分类-获取下拉选项
      * @apiGroup FUN_CATEGORY
      *
      * @apiVersion 0.0.1

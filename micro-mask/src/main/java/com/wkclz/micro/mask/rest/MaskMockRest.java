@@ -5,10 +5,7 @@ import com.wkclz.core.base.R;
 import com.wkclz.micro.mask.config.MaskResponseAdvice;
 import com.wkclz.micro.mask.pojo.dto.MdmMaskRuleDto;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Description Create by shrimp-gen
@@ -16,10 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
  * @table mdm_mask_rule (脱敏规则) 示例rest 接口，代码重新生成会覆盖
  */
 @RestController
+@RequestMapping(Route.PREFIX)
 public class MaskMockRest {
 
     /**
-     * @api {post} /mask/rule/test 1. 脱敏规则-测试
+     * @api {post} /micro-mask/rule/test 1. 脱敏规则-测试
      * @apiGroup MASK
      *
      * @apiVersion 0.0.1
@@ -39,7 +37,7 @@ public class MaskMockRest {
      * }
      *
      */
-    @PostMapping(Route.MASK_RULE_TEST)
+    @PostMapping(Route.RULE_TEST)
     public R maskRuleTest(@RequestBody MdmMaskRuleDto dto) {
         String mockValue = dto.getMockValue();
         if (StringUtils.isBlank(mockValue)) {
@@ -61,7 +59,7 @@ public class MaskMockRest {
 
 
     /**
-     * @api {get} /mask/rule/verify 2. 脱敏规则-验证
+     * @api {get} /micro-mask/rule/verify 2. 脱敏规则-验证
      * @apiGroup MASK
      *
      * @apiVersion 0.0.1
@@ -74,7 +72,7 @@ public class MaskMockRest {
      * }
      *
      */
-    @GetMapping(Route.MASK_RULE_VERIFY)
+    @GetMapping(Route.RULE_VERIFY)
     public Object maskRuleVerify() {
         JSONObject jsonObject = mockJson();
         return R.ok(jsonObject);

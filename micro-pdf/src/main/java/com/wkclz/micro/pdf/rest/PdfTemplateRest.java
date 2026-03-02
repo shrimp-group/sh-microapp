@@ -10,10 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.context.Context;
 
 /**
@@ -23,6 +20,7 @@ import org.thymeleaf.context.Context;
  */
 @Slf4j
 @RestController
+@RequestMapping(Route.PREFIX)
 public class PdfTemplateRest {
 
     @Autowired
@@ -32,7 +30,7 @@ public class PdfTemplateRest {
 
     
     /**
-     * @api {get} /pdf/template/page 1. PDF-模板-分页
+     * @api {get} /micro-pdf/template/page 1. PDF-模板-分页
      * @apiGroup PDF
      *
      * @apiVersion 0.0.1
@@ -81,7 +79,7 @@ public class PdfTemplateRest {
     }
 
     /**
-     * @api {get} /pdf/template/info 2. PDF-模板-详情
+     * @api {get} /micro-pdf/template/info 2. PDF-模板-详情
      * @apiGroup PDF
      *
      * @apiVersion 0.0.1
@@ -131,7 +129,7 @@ public class PdfTemplateRest {
     }
 
     /**
-     * @api {post} /pdf/template/create 3. PDF-模板-新增
+     * @api {post} /micro-pdf/template/create 3. PDF-模板-新增
      * @apiGroup PDF
      *
      * @apiVersion 0.0.1
@@ -167,7 +165,7 @@ public class PdfTemplateRest {
     }
 
     /**
-     * @api {post} /pdf/template/update 4. PDF-模板-修改
+     * @api {post} /micro-pdf/template/update 4. PDF-模板-修改
      * @apiGroup PDF
      *
      * @apiVersion 0.0.1
@@ -210,7 +208,7 @@ public class PdfTemplateRest {
     }
 
     /**
-     * @api {post} /pdf/template/remove 5. PDF-模板-删除
+     * @api {post} /micro-pdf/template/remove 5. PDF-模板-删除
      * @apiGroup PDF
      *
      * @apiVersion 0.0.1
@@ -240,7 +238,7 @@ public class PdfTemplateRest {
 
 
     /**
-     * @api {post} /pdf/template/mock 6. PDF-模板-Mock
+     * @api {post} /micro-pdf/template/mock 6. PDF-模板-Mock
      * @apiGroup PDF
      *
      * @apiVersion 0.0.1
