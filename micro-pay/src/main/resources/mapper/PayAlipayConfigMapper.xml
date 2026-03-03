@@ -7,7 +7,6 @@
         SELECT
             ac.id,
             ac.tenant_code,
-            t.tenant_name,
             ac.app_id,
             ac.notify_url,
             ac.return_url,
@@ -23,10 +22,8 @@
             ac.version
         FROM
             pay_alipay_config ac
-            INNER JOIN auth_tenant t ON t.tenant_code = ac.tenant_code
         WHERE
             ac.deleted = 0
-            AND t.deleted = 0
             <if test="tenantCode != null">AND ac.tenant_code = #{tenantCode} </if>
             <if test="appId != null">AND ac.app_id = #{appId} </if>
         ORDER BY

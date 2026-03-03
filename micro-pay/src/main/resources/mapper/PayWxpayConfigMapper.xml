@@ -7,7 +7,6 @@
         SELECT
             wc.id,
             wc.tenant_code,
-            t.tenant_name,
             wc.app_id,
             wc.mch_id,
             wc.sort,
@@ -19,10 +18,8 @@
             wc.version
         FROM
             pay_wxpay_config wc
-            INNER JOIN auth_tenant t ON t.tenant_code = wc.tenant_code
         WHERE
             wc.deleted = 0
-            AND t.deleted = 0
             <if test="tenantCode != null">AND wc.tenant_code = #{tenantCode} </if>
             <if test="appId != null">AND wc.app_id = #{appId} </if>
             <if test="mchId != null">AND wc.mch_id = #{mchId} </if>

@@ -354,8 +354,8 @@ public class WxpayConfigRest {
         Assert.notNull(entity.getNotifyUrl(), "notifyUrl");
         Assert.notNull(entity.getReturnUrl(), "returnUrl");
         Assert.notNull(entity.getRefundNotifyUrl(), "refundNotifyUrl");
-        Assert.notNull(entity.getApiclientKey(), "privateKey");
-        Assert.notNull(entity.getApiclientCert(), "privateCert");
+        Assert.notNull(entity.getApiclientKey(), "apiclientKey");
+        Assert.notNull(entity.getApiclientCert(), "ApiclientCert");
         if (StringUtils.isBlank(entity.getTenantCode())) {
             entity.setTenantCode(SessionHelper.getTenantCode());
         }
