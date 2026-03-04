@@ -13,7 +13,7 @@ import com.wkclz.core.annotation.Router;
 @Router(module = "micro-file", prefix = Route.PREFIX)
 public interface Route {
 
-    String PREFIX = "/micro-fs";
+    String PREFIX = "/micro-file";
 
 
     @Desc("0. common-文件上传")

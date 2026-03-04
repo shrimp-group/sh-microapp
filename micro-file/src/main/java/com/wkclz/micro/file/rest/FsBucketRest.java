@@ -26,7 +26,7 @@ public class FsBucketRest {
     private MdmFsBucketService mdmFsBucketService;
 
     /**
-     * @api {get} /micro-fs/bucket/page 1. Bucket管理-获取分页
+     * @api {get} /micro-file/bucket/page 1. Bucket管理-获取分页
      * @apiGroup FS
      *
      * @apiVersion 0.0.1
@@ -91,7 +91,7 @@ public class FsBucketRest {
     }
 
     /**
-     * @api {get} /micro-fs/bucket/info 2. Bucket管理-获取详情
+     * @api {get} /micro-file/bucket/info 2. Bucket管理-获取详情
      * @apiGroup FS
      *
      * @apiVersion 0.0.1
@@ -150,7 +150,7 @@ public class FsBucketRest {
     }
 
     /**
-     * @api {post} /micro-fs/bucket/create 3. Bucket管理-创建
+     * @api {post} /micro-file/bucket/create 3. Bucket管理-创建
      * @apiGroup FS
      *
      * @apiVersion 0.0.1
@@ -207,7 +207,7 @@ public class FsBucketRest {
     }
 
     /**
-     * @api {post} /micro-fs/bucket/update 4. Bucket管理-更新
+     * @api {post} /micro-file/bucket/update 4. Bucket管理-更新
      * @apiGroup FS
      *
      * @apiVersion 0.0.1
@@ -269,7 +269,7 @@ public class FsBucketRest {
     }
 
     /**
-     * @api {post} /micro-fs/bucket/remove 6. Bucket管理-删除
+     * @api {post} /micro-file/bucket/remove 6. Bucket管理-删除
      * @apiGroup FS
      *
      * @apiVersion 0.0.1
@@ -298,7 +298,7 @@ public class FsBucketRest {
 
 
     /**
-     * @api {get} /micro-fs/bucket/options 6. 文件系统-Bucket-选项
+     * @api {get} /micro-file/bucket/options 6. 文件系统-Bucket-选项
      * @apiGroup FS
      *
      * @apiVersion 0.0.1

@@ -30,7 +30,7 @@ public class FsFilesRest {
     private MdmFsFilesService mdmFsFilesService;
 
     /**
-     * @api {get} /micro-fs/files/page 6. 附件-获取分页
+     * @api {get} /micro-file/files/page 6. 附件-获取分页
      * @apiGroup FS
      *
      * @apiVersion 0.0.1
@@ -107,7 +107,7 @@ public class FsFilesRest {
     }
 
     /**
-     * @api {get} /micro-fs/files/info 7. 附件-获取详情
+     * @api {get} /micro-file/files/info 7. 附件-获取详情
      * @apiGroup FS
      *
      * @apiVersion 0.0.1
@@ -170,7 +170,7 @@ public class FsFilesRest {
     }
 
     /**
-     * @api {post} /micro-fs/files/remove 8. 附件-删除
+     * @api {post} /micro-file/files/remove 8. 附件-删除
      * @apiGroup FS
      *
      * @apiVersion 0.0.1
