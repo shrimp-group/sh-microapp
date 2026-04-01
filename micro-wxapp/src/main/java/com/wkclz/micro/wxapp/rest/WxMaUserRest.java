@@ -7,6 +7,7 @@ import com.wkclz.core.base.UserInfo;
 import com.wkclz.core.exception.ValidationException;
 import com.wkclz.iam.sdk.helper.SessionHelper;
 import com.wkclz.iam.sdk.model.LoginResponse;
+import com.wkclz.micro.file.api.FileApi;
 import com.wkclz.micro.wxapp.Route;
 import com.wkclz.micro.wxapp.bean.entity.WxappUser;
 import com.wkclz.micro.wxapp.bean.vo.WxMaAppUserLoginVo;
@@ -31,8 +32,8 @@ import org.springframework.web.bind.annotation.*;
 public class WxMaUserRest {
 
 
-//    @Resource
-//    private FsApi fsApi;
+    @Resource
+    private FileApi fileApi;
     @Resource
     private WxMaConfiguration configuration;
     @Resource
@@ -127,7 +128,7 @@ public class WxMaUserRest {
         UserInfo ui = new UserInfo();
         ui.setUserCode(user.getUserCode());
         ui.setNickname(user.getNickname());
-        // ui.setAvatar(fsApi.sign(user.getAvatar()));
+        ui.setAvatar(fileApi.sign(user.getAvatar()));
         ui.setOpenId(user.getOpenId());
         return R.ok(ui);
     }

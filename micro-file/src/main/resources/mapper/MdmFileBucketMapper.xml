@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.file.mapper.MdmFileBucketMapper">
+
+
+    <select id="getBucketList" parameterType="com.wkclz.micro.file.pojo.entity.MdmFileBucket" resultType="com.wkclz.micro.file.pojo.entity.MdmFileBucket">
+        SELECT
+            id,
+            tenant_code,
+            bucket,
+            oss_sp,
+            endpoint_inner,
+            endpoint_outer,
+            region,
+            access_key,
+            default_flag,
+            sort,
+            create_time,
+            create_by,
+            update_time,
+            update_by,
+            remark,
+            version
+        FROM
+            mdm_file_bucket
+        WHERE
+            deleted = 0
+            <if test="tenantCode != null">AND tenant_code = #{tenantCode} </if>
+            <if test="bucket != null">AND bucket LIKE CONCAT('%', #{bucket}, '%') </if>
+            <if test="ossSp != null">AND oss_sp = #{ossSp} </if>
+            <if test="endpointInner != null">AND endpoint_inner = #{endpointInner} </if>
+            <if test="endpointOuter != null">AND endpoint_outer = #{endpointOuter} </if>
+            <if test="region != null">AND region = #{region} </if>
+            <if test="accessKey != null">AND access_key LIKE CONCAT('%', #{accessKey}, '%') </if>
+            <if test="defaultFlag != null">AND default_flag = #{defaultFlag} </if>
+        ORDER BY
+            sort ASC,
+            id ASC
+    </select>
+
+
+    <select id="getBucketOptions" parameterType="com.wkclz.micro.file.pojo.entity.MdmFileBucket" resultType="com.wkclz.micro.file.pojo.entity.MdmFileBucket">
+        SELECT
+            tenant_code,
+            bucket,
+            oss_sp,
+            default_flag
+        FROM
+            mdm_file_bucket
+        WHERE
+            deleted = 0
+            <if test="tenantCode != null">AND tenant_code = #{tenantCode} </if>
+            <if test="ossSp != null">AND oss_sp = #{ossSp} </if>
+        ORDER BY
+            sort ASC,
+            id ASC
+    </select>
+
+    
+</mapper>
+
