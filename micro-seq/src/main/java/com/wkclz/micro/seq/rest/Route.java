@@ -9,10 +9,10 @@ import com.wkclz.core.annotation.Router;
  * Created: wangkaicun @ 2017-10-19 上午12:46
  */
 
-@Router(module = "micro-sequence", prefix = Route.PREFIX)
+@Router(module = "micro-seq", prefix = Route.PREFIX)
 public interface Route {
 
-    String PREFIX = "/micro-sequence";
+    String PREFIX = "/micro-seq";
 
 
     @Desc("1. 序列生成-分页")

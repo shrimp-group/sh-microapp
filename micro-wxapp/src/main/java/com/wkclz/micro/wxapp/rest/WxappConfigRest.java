@@ -25,7 +25,7 @@ public class WxappConfigRest {
     private WxappConfigService wxappConfigService;
 
     /**
-     * @api {get} /wxmp/config/page 1. 微信小程序-配置-分页
+     * @api {get} /micro-wxappp/config/page 1. 微信小程序-配置-分页
      * @apiGroup WXMP_CONFIG
      *
      * @apiVersion 0.0.1
@@ -86,7 +86,7 @@ public class WxappConfigRest {
 
 
     /**
-     * @api {get} /wxmp/config/info 2. 微信小程序-配置-详情
+     * @api {get} /micro-wxappp/config/info 2. 微信小程序-配置-详情
      * @apiGroup WXMP_CONFIG
      *
      * @apiVersion 0.0.1
@@ -146,7 +146,7 @@ public class WxappConfigRest {
 
 
     /**
-     * @api {post} /wxmp/config/create 3. 微信小程序-配置-创建
+     * @api {post} /micro-wxappp/config/create 3. 微信小程序-配置-创建
      * @apiGroup WXMP_CONFIG
      *
      * @apiVersion 0.0.1
@@ -192,7 +192,7 @@ public class WxappConfigRest {
 
 
     /**
-     * @api {post} /wxmp/config/update 4. 微信小程序-配置-更新
+     * @api {post} /micro-wxappp/config/update 4. 微信小程序-配置-更新
      * @apiGroup WXMP_CONFIG
      *
      * @apiVersion 0.0.1
@@ -242,7 +242,7 @@ public class WxappConfigRest {
 
 
     /**
-     * @api {post} /wxmp/config/remove 5. 微信小程序-配置-删除
+     * @api {post} /micro-wxappp/config/remove 5. 微信小程序-配置-删除
      * @apiGroup WXMP_CONFIG
      *
      * @apiVersion 0.0.1
