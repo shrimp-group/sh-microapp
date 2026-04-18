@@ -10,6 +10,7 @@ import com.wkclz.micro.wxapp.bean.entity.WxappLoginLog;
 import com.wkclz.micro.wxapp.bean.entity.WxappUser;
 import com.wkclz.micro.wxapp.bean.vo.WxMaAppUserLoginVo;
 import com.wkclz.micro.wxapp.config.WxMaConfiguration;
+import com.wkclz.micro.wxapp.helper.Checker;
 import com.wkclz.micro.wxapp.mapper.WxappLoginLogMapper;
 import com.wkclz.micro.wxapp.mapper.WxappUserMapper;
 import com.wkclz.redis.helper.RedisIdGenerator;
@@ -39,6 +40,10 @@ public class WxMiniappService {
 
     @Transactional(rollbackFor = Exception.class)
     public LoginResponse miniappLogin(@RequestBody WxMaAppUserLoginVo vo, HttpServletRequest req) {
+        Assert.notNull(vo.getAppId(), "appId 不能为空!");
+        if (!Checker.isValidWxAppId(vo.getAppId())) {
+            throw ValidationException.of("appId 格式错误!");
+        }
 
         // 用户信息选填，若只要传了其中一个，其他都必填，
         int withUserInfo = 0;

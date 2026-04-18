@@ -12,15 +12,19 @@ import com.wkclz.micro.wxapp.Route;
 import com.wkclz.micro.wxapp.bean.entity.WxappUser;
 import com.wkclz.micro.wxapp.bean.vo.WxMaAppUserLoginVo;
 import com.wkclz.micro.wxapp.config.WxMaConfiguration;
+import com.wkclz.micro.wxapp.helper.Checker;
 import com.wkclz.micro.wxapp.service.WxappUserService;
 import com.wkclz.micro.wxapp.service.custom.WxMiniappService;
 import com.wkclz.tool.tools.RegularTool;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import me.chanjar.weixin.common.error.WxErrorException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * 微信小程序用户接口
@@ -39,7 +43,7 @@ public class WxMaUserRest {
     @Resource
     private WxMiniappService wxMiniappService;
     @Resource
-    private WxappUserService wxappBindMobile;
+    private WxappUserService wxappUserService;
 
 
 
@@ -93,6 +97,10 @@ public class WxMaUserRest {
         Assert.notNull(vo.getAppId(), "appId 不能为空");
         Assert.notNull(vo.getCode(), "code 不能为空");
 
+        if (!Checker.isValidWxAppId(vo.getAppId())) {
+            throw ValidationException.of("appId 格式错误!");
+        }
+
         LoginResponse response = wxMiniappService.miniappLogin(vo, request);
         return R.ok(response);
     }
@@ -125,11 +133,16 @@ public class WxMaUserRest {
     @GetMapping(Route.MINIAPP_USERINFO)
     public R customerMiniappUserinfo() {
         WxappUser user = wxMiniappService.miniappUserInfo();
+        String mobile = user.getMobile();
+        if (StringUtils.isNotBlank(mobile)) {
+            mobile = maskByRegular(mobile, "(?<=^.{3}).{4}");
+        }
         UserInfo ui = new UserInfo();
         ui.setUserCode(user.getUserCode());
         ui.setNickname(user.getNickname());
         ui.setAvatar(fileApi.sign(user.getAvatar()));
         ui.setOpenId(user.getOpenId());
+        ui.setMobile(mobile);
         return R.ok(ui);
     }
 
@@ -173,11 +186,11 @@ public class WxMaUserRest {
      * @apiGroup MINIAPP
      * @apiVersion 0.0.1
      *
-     * @apiParam {String} mobile 手机号
+     * @apiParam {String} code 用于获取手机号的Code
      *
      * @apiParamExample {json} 请求样例:
      * {
-     *     "mobile": "13838381438"
+     *     "code": "xxxxxxxxxxxxxxxx"
      * }
      *
      * @apiSuccessExample {json} 返回样例:
@@ -188,16 +201,27 @@ public class WxMaUserRest {
      *
      */
     @PostMapping(Route.MINIAPP_MOBILE_BIND)
-    public R miniappMobileBind(HttpServletRequest req, HttpServletResponse rep, @RequestBody WxappUser user) {
-        Assert.notNull(user.getMobile(), "mobile can not be null");
-        if (!RegularTool.isMobile(user.getMobile())) {
+    public R miniappMobileBind(@RequestBody Map<String, String> param) throws WxErrorException {
+        String code = param.get("code");
+        String appId = param.get("appId");
+        if (StringUtils.isBlank(code)) {
+            return R.error("code can not be null");
+        }
+        if (StringUtils.isBlank(appId)) {
+            return R.error("appId can not be null");
+        }
+        WxMaService wxMaService = configuration.getMaService(appId);
+        WxMaPhoneNumberInfo phoneNumberInfo = wxMaService.getUserService().getPhoneNumber(code);
+        String mobile = phoneNumberInfo.getPhoneNumber();
+
+        if (!RegularTool.isMobile(mobile)) {
             return R.error("手机号格式错误");
         }
-        WxappUser param = new WxappUser();
-        param.setUserCode(SessionHelper.getUserCode());
-        WxappUser wxappUser = wxappBindMobile.selectOneByEntity(param);
-        wxappUser.setMobile(user.getMobile());
-        wxappBindMobile.updateByIdSelective(wxappUser);
+        WxappUser wu = new WxappUser();
+        wu.setUserCode(SessionHelper.getUserCode());
+        wu = wxappUserService.selectOneByEntity(wu);
+        wu.setMobile(mobile);
+        wxappUserService.updateByIdSelective(wu);
         return R.ok();
     }
 
@@ -243,5 +267,12 @@ public class WxMaUserRest {
     }
 
 
+    private static String maskByRegular(String str, String regular) {
+        List<String> rts = RegularTool.find(str, regular);
+        for (String rt : rts) {
+            str = RegularTool.replaceAll(str, regular, "*".repeat(rt.length()));
+        }
+        return str;
+    }
 
 }

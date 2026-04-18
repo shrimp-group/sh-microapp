@@ -3,9 +3,11 @@ package com.wkclz.micro.wxapp.rest;
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.base.R;
 import com.wkclz.core.enums.ResultCode;
+import com.wkclz.core.exception.ValidationException;
 import com.wkclz.iam.sdk.helper.SessionHelper;
 import com.wkclz.micro.wxapp.Route;
 import com.wkclz.micro.wxapp.bean.entity.WxappConfig;
+import com.wkclz.micro.wxapp.helper.Checker;
 import com.wkclz.micro.wxapp.service.WxappConfigService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -273,9 +275,15 @@ public class WxappConfigRest {
     private void paramCheck(WxappConfig entity) {
         Assert.notNull(entity.getAppId(), "appId 不能为空");
         Assert.notNull(entity.getAppSecret(), "appSecret 不能为空");
+
+        if (!Checker.isValidWxAppId(entity.getAppId())) {
+            throw ValidationException.of("appId 格式错误!");
+        }
+
         if (StringUtils.isBlank(entity.getTenantCode())) {
             entity.setTenantCode(SessionHelper.getTenantCode());
         }
+
     }
 
 
