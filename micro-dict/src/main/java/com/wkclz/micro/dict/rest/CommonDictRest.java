@@ -1,8 +1,8 @@
 package com.wkclz.micro.dict.rest;
 
 import com.wkclz.core.base.R;
-import com.wkclz.micro.dict.pojo.dto.MdmDictDto;
-import com.wkclz.micro.dict.pojo.entity.MdmDictItem;
+import com.wkclz.micro.dict.beam.dto.MdmDictDto;
+import com.wkclz.micro.dict.beam.entity.MdmDictItem;
 import com.wkclz.micro.dict.service.MdmDictItemService;
 import com.wkclz.tool.utils.StringUtil;
 import jakarta.annotation.Resource;

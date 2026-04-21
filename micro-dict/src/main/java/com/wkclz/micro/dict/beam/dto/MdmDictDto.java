@@ -1,7 +1,7 @@
-package com.wkclz.micro.dict.pojo.dto;
+package com.wkclz.micro.dict.beam.dto;
 
-import com.wkclz.micro.dict.pojo.entity.MdmDict;
-import com.wkclz.micro.dict.pojo.entity.MdmDictItem;
+import com.wkclz.micro.dict.beam.entity.MdmDict;
+import com.wkclz.micro.dict.beam.entity.MdmDictItem;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

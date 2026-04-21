@@ -1,9 +1,9 @@
 package com.wkclz.micro.dict.cache;
 
-import com.wkclz.micro.dict.dao.MdmDictItemMapper;
-import com.wkclz.micro.dict.dao.MdmDictMapper;
-import com.wkclz.micro.dict.pojo.entity.MdmDict;
-import com.wkclz.micro.dict.pojo.entity.MdmDictItem;
+import com.wkclz.micro.dict.mapper.MdmDictItemMapper;
+import com.wkclz.micro.dict.mapper.MdmDictMapper;
+import com.wkclz.micro.dict.beam.entity.MdmDict;
+import com.wkclz.micro.dict.beam.entity.MdmDictItem;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;

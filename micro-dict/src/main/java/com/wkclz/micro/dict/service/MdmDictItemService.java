@@ -2,10 +2,10 @@ package com.wkclz.micro.dict.service;
 
 import cn.hutool.core.comparator.CompareUtil;
 import com.wkclz.core.base.DbColumnEntity;
-import com.wkclz.micro.dict.dao.MdmDictItemMapper;
-import com.wkclz.micro.dict.pojo.dto.MdmDictDto;
-import com.wkclz.micro.dict.pojo.dto.MdmDictItemDto;
-import com.wkclz.micro.dict.pojo.entity.MdmDictItem;
+import com.wkclz.micro.dict.mapper.MdmDictItemMapper;
+import com.wkclz.micro.dict.beam.dto.MdmDictDto;
+import com.wkclz.micro.dict.beam.dto.MdmDictItemDto;
+import com.wkclz.micro.dict.beam.entity.MdmDictItem;
 import com.wkclz.mybatis.service.BaseService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;

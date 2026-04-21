@@ -1,4 +1,4 @@
-package com.wkclz.micro.dict.pojo.entity;
+package com.wkclz.micro.dict.beam.entity;
 
 import com.wkclz.core.annotation.Desc;
 import com.wkclz.core.base.BaseEntity;
@@ -11,18 +11,12 @@ import lombok.EqualsAndHashCode;
 /**
  * Description Create by shrimp-gen
  * @author wangkaicun
- * @table mdm_dict (字典) 重新生成代码会覆盖
+ * @table mdm_dict_item (字典内容) 重新生成代码会覆盖
  */
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class MdmDict extends BaseEntity {
-
-    /**
-     * 字典分类
-     */
-    @Desc("字典分类")
-    private String dictCtg;
+public class MdmDictItem extends BaseEntity {
 
     /**
      * 字典类型
@@ -31,19 +25,46 @@ public class MdmDict extends BaseEntity {
     private String dictType;
 
     /**
-     * 类型描述信息
+     * 字典值
      */
-    @Desc("类型描述信息")
+    @Desc("字典值")
+    private String dictValue;
+
+    /**
+     * 字典标签
+     */
+    @Desc("字典标签")
+    private String dictLabel;
+
+    /**
+     * el类型
+     */
+    @Desc("el类型")
+    private String elType;
+
+    /**
+     * 描述
+     */
+    @Desc("描述")
     private String description;
 
+    /**
+     * 生效状态
+     */
+    @Desc("生效状态")
+    private Integer enableFlag;
 
-    public static MdmDict copy(MdmDict source, MdmDict target) {
-        if (target == null ) { target = new MdmDict();}
+
+    public static MdmDictItem copy(MdmDictItem source, MdmDictItem target) {
+        if (target == null ) { target = new MdmDictItem();}
         if (source == null) { return target; }
         target.setId(source.getId());
-        target.setDictCtg(source.getDictCtg());
         target.setDictType(source.getDictType());
+        target.setDictValue(source.getDictValue());
+        target.setDictLabel(source.getDictLabel());
+        target.setElType(source.getElType());
         target.setDescription(source.getDescription());
+        target.setEnableFlag(source.getEnableFlag());
         target.setSort(source.getSort());
         target.setCreateTime(source.getCreateTime());
         target.setCreateBy(source.getCreateBy());
@@ -54,13 +75,16 @@ public class MdmDict extends BaseEntity {
         return target;
     }
 
-    public static MdmDict copyIfNotNull(MdmDict source, MdmDict target) {
-        if (target == null ) { target = new MdmDict();}
+    public static MdmDictItem copyIfNotNull(MdmDictItem source, MdmDictItem target) {
+        if (target == null ) { target = new MdmDictItem();}
         if (source == null) { return target; }
         if (source.getId() != null) { target.setId(source.getId()); }
-        if (source.getDictCtg() != null) { target.setDictCtg(source.getDictCtg()); }
         if (source.getDictType() != null) { target.setDictType(source.getDictType()); }
+        if (source.getDictValue() != null) { target.setDictValue(source.getDictValue()); }
+        if (source.getDictLabel() != null) { target.setDictLabel(source.getDictLabel()); }
+        if (source.getElType() != null) { target.setElType(source.getElType()); }
         if (source.getDescription() != null) { target.setDescription(source.getDescription()); }
+        if (source.getEnableFlag() != null) { target.setEnableFlag(source.getEnableFlag()); }
         if (source.getSort() != null) { target.setSort(source.getSort()); }
         if (source.getCreateTime() != null) { target.setCreateTime(source.getCreateTime()); }
         if (source.getCreateBy() != null) { target.setCreateBy(source.getCreateBy()); }

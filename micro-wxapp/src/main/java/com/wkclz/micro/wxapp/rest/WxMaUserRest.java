@@ -18,6 +18,7 @@ import com.wkclz.micro.wxapp.service.custom.WxMiniappService;
 import com.wkclz.tool.tools.RegularTool;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxErrorException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.Assert;
@@ -31,6 +32,7 @@ import java.util.Map;
  *
  * @author <a href="https://github.com/binarywang">Binary Wang</a>
  */
+@Slf4j
 @RestController
 @RequestMapping(Route.PREFIX)
 public class WxMaUserRest {
@@ -210,9 +212,12 @@ public class WxMaUserRest {
         if (StringUtils.isBlank(appId)) {
             return R.error("appId can not be null");
         }
+        String userCode = SessionHelper.getUserCode();
+
         WxMaService wxMaService = configuration.getMaService(appId);
         WxMaPhoneNumberInfo phoneNumberInfo = wxMaService.getUserService().getPhoneNumber(code);
         String mobile = phoneNumberInfo.getPhoneNumber();
+        log.info("user wxapp mobile: appId: {}, userCode: {}, mobile: {}", appId, userCode, mobile);
 
         if (!RegularTool.isMobile(mobile)) {
             return R.error("手机号格式错误");

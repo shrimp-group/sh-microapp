@@ -1,7 +1,7 @@
-package com.wkclz.micro.dict.dao;
+package com.wkclz.micro.dict.mapper;
 
-import com.wkclz.micro.dict.pojo.dto.MdmDictItemDto;
-import com.wkclz.micro.dict.pojo.entity.MdmDictItem;
+import com.wkclz.micro.dict.beam.dto.MdmDictItemDto;
+import com.wkclz.micro.dict.beam.entity.MdmDictItem;
 import com.wkclz.mybatis.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;

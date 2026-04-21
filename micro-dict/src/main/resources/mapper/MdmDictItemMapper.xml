@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.wkclz.micro.dict.dao.MdmDictItemMapper">
+<mapper namespace="com.wkclz.micro.dict.mapper.MdmDictItemMapper">
 
-    <select id="getDictItemList" parameterType="java.lang.String" resultType="com.wkclz.micro.dict.pojo.entity.MdmDictItem">
+    <select id="getDictItemList" parameterType="java.lang.String" resultType="com.wkclz.micro.dict.beam.entity.MdmDictItem">
         SELECT
             id,
             dict_type,
@@ -29,7 +29,7 @@
     </select>
 
 
-    <select id="getAllDictItem" resultType="com.wkclz.micro.dict.pojo.dto.MdmDictItemDto">
+    <select id="getAllDictItem" resultType="com.wkclz.micro.dict.beam.dto.MdmDictItemDto">
         SELECT
             d.dict_type,
             d.description type_description,
@@ -49,7 +49,7 @@
             di.sort
     </select>
 
-    <select id="getDictItemsByDictTypes" parameterType="java.util.List" resultType="com.wkclz.micro.dict.pojo.entity.MdmDictItem">
+    <select id="getDictItemsByDictTypes" parameterType="java.util.List" resultType="com.wkclz.micro.dict.beam.entity.MdmDictItem">
         SELECT
             dict_type,
             dict_label,
@@ -69,7 +69,7 @@
 
 
 
-    <select id="dictItems4Cache" resultType="com.wkclz.micro.dict.pojo.entity.MdmDictItem">
+    <select id="dictItems4Cache" resultType="com.wkclz.micro.dict.beam.entity.MdmDictItem">
         SELECT
             dict_type,
             dict_value,
@@ -85,7 +85,7 @@
     </select>
 
 
-    <select id="dictItems4Copy" parameterType="com.wkclz.micro.dict.pojo.dto.MdmDictItemDto" resultType="com.wkclz.micro.dict.pojo.entity.MdmDictItem">
+    <select id="dictItems4Copy" parameterType="com.wkclz.micro.dict.beam.dto.MdmDictItemDto" resultType="com.wkclz.micro.dict.beam.entity.MdmDictItem">
         SELECT
             dict_type,
             dict_value,
@@ -107,7 +107,7 @@
     </select>
 
 
-    <select id="dictItems4Update" parameterType="com.wkclz.micro.dict.pojo.dto.MdmDictItemDto" resultType="com.wkclz.micro.dict.pojo.entity.MdmDictItem">
+    <select id="dictItems4Update" parameterType="com.wkclz.micro.dict.beam.dto.MdmDictItemDto" resultType="com.wkclz.micro.dict.beam.entity.MdmDictItem">
         SELECT
             *
         FROM
