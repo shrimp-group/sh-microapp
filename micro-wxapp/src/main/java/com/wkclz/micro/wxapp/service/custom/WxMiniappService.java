@@ -17,6 +17,7 @@ import com.wkclz.redis.helper.RedisIdGenerator;
 import com.wkclz.web.helper.IpHelper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxErrorException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -26,11 +27,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestBody;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class WxMiniappService {
-
-    private static final Logger logger = LoggerFactory.getLogger(WxMiniappService.class);
 
     private final WxMaConfiguration configuration;
     private final WxappUserMapper wxappUserMapper;
@@ -77,7 +77,7 @@ public class WxMiniappService {
         String openid = session.getOpenid();
         String unionid = session.getUnionid();
         String sessionKey = session.getSessionKey();
-        logger.info("openid:{}, unionid:{}, sessionKey:{}", openid, unionid, sessionKey);
+        log.info("openid:{}, unionid:{}, sessionKey:{}", openid, unionid, sessionKey);
 
         WxMaUserInfo wxMaUserInfo = null;
         if (withUserInfo == 4) {

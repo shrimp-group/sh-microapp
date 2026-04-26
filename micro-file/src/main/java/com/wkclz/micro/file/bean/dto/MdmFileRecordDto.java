@@ -1,6 +1,6 @@
-package com.wkclz.micro.file.pojo.dto;
+package com.wkclz.micro.file.bean.dto;
 
-import com.wkclz.micro.file.pojo.entity.MdmFileRecord;
+import com.wkclz.micro.file.bean.entity.MdmFileRecord;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -16,15 +16,9 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = false)
 public class MdmFileRecordDto extends MdmFileRecord {
 
-
     private List<String> fileIds;
 
     private String previewUrl;
-
-    private String fileName;
-    private String fileType;
-
-
 
     /**
      * entity 转 Dto
@@ -37,4 +31,3 @@ public class MdmFileRecordDto extends MdmFileRecord {
         return target;
     }
 }
-

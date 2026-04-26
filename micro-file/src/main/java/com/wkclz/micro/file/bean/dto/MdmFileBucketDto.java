@@ -1,6 +1,6 @@
-package com.wkclz.micro.file.pojo.dto;
+package com.wkclz.micro.file.bean.dto;
 
-import com.wkclz.micro.file.pojo.entity.MdmFileBucket;
+import com.wkclz.micro.file.bean.entity.MdmFileBucket;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

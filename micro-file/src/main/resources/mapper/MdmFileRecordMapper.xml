@@ -3,11 +3,11 @@
 <mapper namespace="com.wkclz.micro.file.mapper.MdmFileRecordMapper">
 
 
-    <select id="getFileList4Page" parameterType="com.wkclz.micro.file.pojo.entity.MdmFileRecord" resultType="com.wkclz.micro.file.pojo.entity.MdmFileRecord">
+    <select id="getFileList4Page" parameterType="com.wkclz.micro.file.bean.entity.MdmFileRecord" resultType="com.wkclz.micro.file.bean.entity.MdmFileRecord">
         SELECT
             id,
             tenant_code,
-            busness_type,
+            business_type,
             file_size,
             file_name,
             file_type,
@@ -29,7 +29,7 @@
             <if test="timeTo != null">AND create_time &lt;= #{timeTo} </if>
             <if test="id != null">AND id = #{id} </if>
             <if test="tenantCode != null">AND tenant_code = #{tenantCode} </if>
-            <if test="busnessType != null">AND busness_type = #{busnessType} </if>
+            <if test="businessType != null">AND business_type = #{businessType} </if>
             <if test="fileName != null">AND file_name LIKE CONCAT('%', #{fileName}, '%') </if>
             <if test="fileType != null">AND file_type = #{fileType} </if>
             <if test="ossSp != null">AND oss_sp = #{ossSp} </if>
@@ -40,11 +40,11 @@
     </select>
 
 
-    <select id="getFilesByFileId" parameterType="java.lang.String" resultType="com.wkclz.micro.file.pojo.entity.MdmFileRecord">
+    <select id="getFilesByFileId" resultType="com.wkclz.micro.file.bean.entity.MdmFileRecord">
         SELECT
             id,
             tenant_code,
-            busness_type,
+            business_type,
             file_size,
             file_name,
             file_type,
@@ -56,13 +56,14 @@
         WHERE
             deleted = 0
             AND file_id = #{fileId}
+            <if test="tenantCode != null">AND tenant_code = #{tenantCode}</if>
     </select>
 
-    <select id="getFilesByFileIds" parameterType="java.util.List" resultType="com.wkclz.micro.file.pojo.entity.MdmFileRecord">
+    <select id="getFilesByFileIds" resultType="com.wkclz.micro.file.bean.entity.MdmFileRecord">
         SELECT
             id,
             tenant_code,
-            busness_type,
+            business_type,
             file_size,
             file_name,
             file_type,
@@ -73,10 +74,9 @@
             mdm_file_record
         WHERE
             deleted = 0
+            <if test="tenantCode != null">AND tenant_code = #{tenantCode}</if>
             AND file_id IN ( <foreach collection="fileIds" item="item" separator=","> #{item} </foreach> )
     </select>
 
 
-
 </mapper>
-

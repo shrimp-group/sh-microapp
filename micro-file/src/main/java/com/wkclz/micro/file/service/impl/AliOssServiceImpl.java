@@ -6,15 +6,18 @@ import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.OSSException;
 import com.aliyun.oss.common.auth.CredentialsProviderFactory;
 import com.aliyun.oss.common.auth.DefaultCredentialProvider;
+import com.aliyun.oss.model.CannedAccessControlList;
 import com.aliyun.oss.model.DeleteObjectsRequest;
 import com.aliyun.oss.model.DeleteObjectsResult;
 import com.aliyun.oss.model.ObjectMetadata;
 import com.aliyun.oss.model.PutObjectRequest;
-import com.wkclz.micro.file.pojo.FileConstant;
-import com.wkclz.micro.file.pojo.dto.MdmFileRecordDto;
-import com.wkclz.micro.file.pojo.entity.MdmFileBucket;
+import com.wkclz.core.exception.ValidationException;
+import com.wkclz.micro.file.bean.FileConstant;
+import com.wkclz.micro.file.bean.dto.MdmFileRecordDto;
+import com.wkclz.micro.file.bean.entity.MdmFileBucket;
 import com.wkclz.micro.file.service.FileService;
 import com.wkclz.micro.file.utils.OssUtil;
+import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,12 +25,19 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service("AliOssService")
 public class AliOssServiceImpl implements FileService {
+
+    private final ConcurrentHashMap<String, OSS> ossClientCache = new ConcurrentHashMap<>();
 
     @Override
     public MdmFileRecordDto upload(MultipartFile file, MdmFileBucket fsBucket, String businessType) {
@@ -44,7 +54,7 @@ public class AliOssServiceImpl implements FileService {
     }
 
     private MdmFileRecordDto uploadCommon(MultipartFile file, MdmFileBucket fsBucket, String fileId) {
-        OSS ossClient = getOssClient(fsBucket);
+        OSS ossClient = getOrCreateOssClient(fsBucket);
         String bucket = fsBucket.getBucket();
         String filename = file.getOriginalFilename();
         String contentType = OssUtil.getContentType(filename);
@@ -53,12 +63,12 @@ public class AliOssServiceImpl implements FileService {
         metadata.setContentType(contentType);
         metadata.setContentLength(file.getSize());
         if (fileId.startsWith(FileConstant.PUBLIC_PREFIX)) {
-            metadata.setObjectAcl(com.aliyun.oss.model.CannedAccessControlList.PublicRead);
+            metadata.setObjectAcl(CannedAccessControlList.PublicRead);
         }
         try {
             PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, fileId, file.getInputStream(), metadata);
             ossClient.putObject(putObjectRequest);
-            String previewUrl = sign(fileId, fsBucket, 10, TimeUnit.MINUTES, ossClient);
+            String previewUrl = sign(fileId, fsBucket, 10, TimeUnit.MINUTES);
 
             MdmFileRecordDto dto = new MdmFileRecordDto();
             dto.setFileId(fileId);
@@ -67,46 +77,34 @@ public class AliOssServiceImpl implements FileService {
             dto.setPreviewUrl(previewUrl);
             return dto;
         } catch (OSSException oe) {
-            log.error("upload file to ali oss faild: errCode: {}, requestId: {}, hostId: {}, msg: {}",
+            log.error("Upload file to Ali OSS failed: errCode: {}, requestId: {}, hostId: {}, msg: {}",
                 oe.getErrorCode(), oe.getRequestId(), oe.getHostId(), oe.getErrorMessage());
-            throw new RuntimeException(oe);
+            throw ValidationException.of("文件上传失败: {}", oe.getErrorCode());
         } catch (ClientException ce) {
-            log.error("upload file to ali oss faild: {}", ce.getMessage());
-            throw new RuntimeException(ce);
+            log.error("Upload file to Ali OSS client failed: {}", ce.getMessage());
+            throw ValidationException.of("文件上传失败，OSS客户端异常");
         } catch (IOException e) {
-            throw new RuntimeException(e);
-        } finally {
-            ossClient.shutdown();
+            log.error("Upload file to Ali OSS IO failed: {}", e.getMessage());
+            throw ValidationException.of("文件上传失败: {}", e.getMessage());
         }
     }
 
     @Override
     public String sign(String fileId, MdmFileBucket fsBucket, Integer expire, TimeUnit timeUnit) {
-        List<String> signs = sign(Collections.singletonList(fileId), fsBucket, expire, timeUnit, null);
+        List<String> signs = sign(Collections.singletonList(fileId), fsBucket, expire, timeUnit);
         return signs.get(0);
     }
 
     @Override
     public List<String> sign(List<String> fileIds, MdmFileBucket fsBucket, Integer expire, TimeUnit timeUnit) {
-        return sign(fileIds, fsBucket, expire, timeUnit, null);
-    }
-
-    private String sign(String fileId, MdmFileBucket fsBucket, Integer expire, TimeUnit timeUnit, OSS ossClient) {
-        List<String> signs = sign(Collections.singletonList(fileId), fsBucket, expire, timeUnit, ossClient);
-        return signs.get(0);
-    }
-
-    private List<String> sign(List<String> fileIds, MdmFileBucket fsBucket, Integer expire, TimeUnit timeUnit, OSS ossClient) {
         List<String> result = new ArrayList<>();
         String bucket = fsBucket.getBucket();
         String endpointOuter = fsBucket.getEndpointOuter();
-        boolean needShutdown = false;
 
         long millis = timeUnit.toMillis(expire);
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.MILLISECOND, (int)millis);
-        Date expireTime = calendar.getTime();
+        Date expireTime = Date.from(Instant.now().plusMillis(millis));
 
+        OSS ossClient = getOrCreateOssClient(fsBucket);
         try {
             for (String fileId : fileIds) {
                 if (fileId.startsWith("http")) {
@@ -125,11 +123,6 @@ public class AliOssServiceImpl implements FileService {
                     continue;
                 }
 
-                if (ossClient == null) {
-                    needShutdown = true;
-                    ossClient = getOssClient(fsBucket);
-                }
-
                 // 签名访问 【域名要更换】
                 URL url = ossClient.generatePresignedUrl(bucket, fileId, expireTime);
                 String newUrl = endpointOuter
@@ -139,11 +132,8 @@ public class AliOssServiceImpl implements FileService {
                 result.add(newUrl);
             }
         } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (needShutdown && ossClient != null) {
-                ossClient.shutdown();
-            }
+            log.error("Sign URL parse failed: {}", e.getMessage());
+            throw ValidationException.of("签名URL生成失败: {}", e.getMessage());
         }
         return result;
     }
@@ -155,8 +145,7 @@ public class AliOssServiceImpl implements FileService {
     @Override
     public Integer delete(List<String> fileIds, MdmFileBucket fsBucket) {
         String bucket = fsBucket.getBucket();
-        OSS ossClient = getOssClient(fsBucket);
-
+        OSS ossClient = getOrCreateOssClient(fsBucket);
         try {
             // 删除文件
             DeleteObjectsRequest request = new DeleteObjectsRequest(bucket);
@@ -165,29 +154,34 @@ public class AliOssServiceImpl implements FileService {
             List<String> objects = objectsResult.getDeletedObjects();
             return objects.size();
         } catch (OSSException oe) {
-            log.error("delete file from ali oss faild: errCode: {}, requestId: {}, hostId: {}, msg: {}",
+            log.error("Delete file from Ali OSS failed: errCode: {}, requestId: {}, hostId: {}, msg: {}",
                 oe.getErrorCode(), oe.getRequestId(), oe.getHostId(), oe.getErrorMessage());
+            throw ValidationException.of("文件删除失败: {}", oe.getErrorCode());
         } catch (ClientException ce) {
-            log.error("delete file from ali oss faild: {}", ce.getMessage());
-        } finally {
-            ossClient.shutdown();
+            log.error("Delete file from Ali OSS client failed: {}", ce.getMessage());
+            throw ValidationException.of("文件删除失败，OSS客户端异常");
         }
-        return 0;
     }
 
+    private OSS getOrCreateOssClient(MdmFileBucket fsBucket) {
+        return ossClientCache.computeIfAbsent(fsBucket.getBucket(), k -> createOssClient(fsBucket));
+    }
 
-    private static OSS getOssClient(MdmFileBucket fsBucket) {
+    private static OSS createOssClient(MdmFileBucket fsBucket) {
         String endpointInner = fsBucket.getEndpointInner();
         String accessKey = fsBucket.getAccessKey();
         String secretKey = fsBucket.getSecretKey();
         if (!endpointInner.startsWith("http")) {
             endpointInner = "https://" + endpointInner;
         }
-        DefaultCredentialProvider credentialProvider = getCredentialProvider(accessKey, secretKey);
+        DefaultCredentialProvider credentialProvider = CredentialsProviderFactory.newDefaultCredentialProvider(accessKey, secretKey);
         return new OSSClientBuilder().build(endpointInner, credentialProvider);
     }
 
-    private static DefaultCredentialProvider getCredentialProvider(String accessKeyId, String accessKeySecret) {
-        return CredentialsProviderFactory.newDefaultCredentialProvider(accessKeyId, accessKeySecret);
+    @PreDestroy
+    public void destroy() {
+        ossClientCache.values().forEach(OSS::shutdown);
+        ossClientCache.clear();
     }
+
 }

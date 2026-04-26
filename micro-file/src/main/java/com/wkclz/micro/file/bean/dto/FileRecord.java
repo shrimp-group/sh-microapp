@@ -1,6 +1,6 @@
-package com.wkclz.micro.file.pojo.dto;
+package com.wkclz.micro.file.bean.dto;
 
-import com.wkclz.micro.file.pojo.entity.MdmFileRecord;
+import com.wkclz.micro.file.bean.entity.MdmFileRecord;
 import lombok.Data;
 
 @Data

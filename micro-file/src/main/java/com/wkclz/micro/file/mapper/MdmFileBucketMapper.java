@@ -1,6 +1,6 @@
 package com.wkclz.micro.file.mapper;
 
-import com.wkclz.micro.file.pojo.entity.MdmFileBucket;
+import com.wkclz.micro.file.bean.entity.MdmFileBucket;
 import com.wkclz.mybatis.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 

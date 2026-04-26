@@ -41,17 +41,4 @@ public class ContentFileHelper {
         return text;
     }
 
-
-    public static void main(String[] args) {
-        String text = """
-            <p>下面是一些图片：</p>
-             <img src='https://example.com/image1.jpg' alt='Image 1'>
-             <img src="https://example.com/image2.png" alt='Image 2'>
-             <div><img src='/local/path/to/image3.gif'></div>
-            """;
-
-        List<String> strings = extractUrls(text);
-        System.out.println(strings);
-    }
-
 }

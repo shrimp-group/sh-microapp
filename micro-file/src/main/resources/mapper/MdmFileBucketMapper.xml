@@ -3,7 +3,7 @@
 <mapper namespace="com.wkclz.micro.file.mapper.MdmFileBucketMapper">
 
 
-    <select id="getBucketList" parameterType="com.wkclz.micro.file.pojo.entity.MdmFileBucket" resultType="com.wkclz.micro.file.pojo.entity.MdmFileBucket">
+    <select id="getBucketList" parameterType="com.wkclz.micro.file.bean.entity.MdmFileBucket" resultType="com.wkclz.micro.file.bean.entity.MdmFileBucket">
         SELECT
             id,
             tenant_code,
@@ -39,7 +39,7 @@
     </select>
 
 
-    <select id="getBucketOptions" parameterType="com.wkclz.micro.file.pojo.entity.MdmFileBucket" resultType="com.wkclz.micro.file.pojo.entity.MdmFileBucket">
+    <select id="getBucketOptions" parameterType="com.wkclz.micro.file.bean.entity.MdmFileBucket" resultType="com.wkclz.micro.file.bean.entity.MdmFileBucket">
         SELECT
             tenant_code,
             bucket,

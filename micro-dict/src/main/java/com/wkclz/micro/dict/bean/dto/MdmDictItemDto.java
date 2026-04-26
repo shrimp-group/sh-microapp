@@ -1,6 +1,6 @@
-package com.wkclz.micro.dict.beam.dto;
+package com.wkclz.micro.dict.bean.dto;
 
-import com.wkclz.micro.dict.beam.entity.MdmDictItem;
+import com.wkclz.micro.dict.bean.entity.MdmDictItem;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -13,7 +13,7 @@ import java.util.List;
  */
 
 @Data
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = true)
 public class MdmDictItemDto extends MdmDictItem {
 
 

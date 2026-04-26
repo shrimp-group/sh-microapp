@@ -1,4 +1,4 @@
-package com.wkclz.micro.file.pojo;
+package com.wkclz.micro.file.bean;
 
 public interface FileConstant {
 

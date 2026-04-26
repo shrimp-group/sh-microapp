@@ -5,9 +5,9 @@ import com.wkclz.core.base.R;
 import com.wkclz.core.enums.ResultCode;
 import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.dict.cache.DictCache;
-import com.wkclz.micro.dict.beam.dto.MdmDictDto;
-import com.wkclz.micro.dict.beam.entity.MdmDict;
-import com.wkclz.micro.dict.beam.entity.MdmDictItem;
+import com.wkclz.micro.dict.bean.dto.MdmDictDto;
+import com.wkclz.micro.dict.bean.entity.MdmDict;
+import com.wkclz.micro.dict.bean.entity.MdmDictItem;
 import com.wkclz.micro.dict.service.MdmDictItemService;
 import com.wkclz.micro.dict.service.MdmDictService;
 import org.apache.commons.lang3.StringUtils;
@@ -162,12 +162,17 @@ public class DictRest {
     @PostMapping(Route.DICT_CREATE)
     @Transactional(rollbackFor = Exception.class)
     public R dictCreate(@RequestBody MdmDict entity) {
-
         entity.setId(null);
         paramCheck(entity);
 
+        MdmDict param = new MdmDict();
+        param.setDictType(entity.getDictType());
+        long count = mdmDictService.selectCountByEntity(param);
+        if (count > 0) {
+            throw ValidationException.of(entity.getDictType() + " 已存在，不可重复");
+        }
+
         mdmDictService.insert(entity);
-        entity.setId(entity.getId());
         dictCache.clearCache();
         return R.ok(entity);
     }
@@ -341,7 +346,7 @@ public class DictRest {
             }
         }
 
-        Integer paste = mdmDictService.paste(dto);
+        Integer paste = mdmDictService.parse(dto);
         return R.ok(paste);
     }
 
@@ -375,7 +380,7 @@ public class DictRest {
 
     private void paramCheck(MdmDict entity) {
         if (entity.getId() != null) {
-            Assert.notNull(entity.getId(), ResultCode.UPDATE_NO_VERSION.getMessage());
+            Assert.notNull(entity.getVersion(), ResultCode.UPDATE_NO_VERSION.getMessage());
         }
         Assert.notNull(entity.getDictCtg(), "dictCtg 不能为空");
         Assert.notNull(entity.getDictType(), "dictType 不能为空");

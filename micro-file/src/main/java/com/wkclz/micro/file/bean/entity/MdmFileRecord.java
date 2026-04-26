@@ -1,6 +1,6 @@
-package com.wkclz.micro.file.pojo.entity;
+package com.wkclz.micro.file.bean.entity;
 
-import com.wkclz.core.annotation.Desc;
+import com.wkclz.core.annotation.FieldDesc;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,49 +21,49 @@ public class MdmFileRecord extends BaseEntity {
     /**
      * 租户编码
      */
-    @Desc("租户编码")
+    @FieldDesc("租户编码")
     private String tenantCode;
 
     /**
      * 业务类型
      */
-    @Desc("业务类型")
-    private String busnessType;
+    @FieldDesc("业务类型")
+    private String businessType;
 
     /**
      * 文件大小
      */
-    @Desc("文件大小")
+    @FieldDesc("文件大小")
     private Long fileSize;
 
     /**
      * 文件名
      */
-    @Desc("文件名")
+    @FieldDesc("文件名")
     private String fileName;
 
     /**
      * 文件类型
      */
-    @Desc("文件类型")
+    @FieldDesc("文件类型")
     private String fileType;
 
     /**
      * OSS服务商
      */
-    @Desc("OSS服务商")
+    @FieldDesc("OSS服务商")
     private String ossSp;
 
     /**
      * Bucket
      */
-    @Desc("Bucket")
+    @FieldDesc("Bucket")
     private String bucket;
 
     /**
      * 文件ID/路径
      */
-    @Desc("文件ID/路径")
+    @FieldDesc("文件ID/路径")
     private String fileId;
 
 
@@ -72,7 +72,7 @@ public class MdmFileRecord extends BaseEntity {
         if (source == null) { return target; }
         target.setId(source.getId());
         target.setTenantCode(source.getTenantCode());
-        target.setBusnessType(source.getBusnessType());
+        target.setBusinessType(source.getBusinessType());
         target.setFileSize(source.getFileSize());
         target.setFileName(source.getFileName());
         target.setFileType(source.getFileType());
@@ -94,7 +94,7 @@ public class MdmFileRecord extends BaseEntity {
         if (source == null) { return target; }
         if (source.getId() != null) { target.setId(source.getId()); }
         if (source.getTenantCode() != null) { target.setTenantCode(source.getTenantCode()); }
-        if (source.getBusnessType() != null) { target.setBusnessType(source.getBusnessType()); }
+        if (source.getBusinessType() != null) { target.setBusinessType(source.getBusinessType()); }
         if (source.getFileSize() != null) { target.setFileSize(source.getFileSize()); }
         if (source.getFileName() != null) { target.setFileName(source.getFileName()); }
         if (source.getFileType() != null) { target.setFileType(source.getFileType()); }

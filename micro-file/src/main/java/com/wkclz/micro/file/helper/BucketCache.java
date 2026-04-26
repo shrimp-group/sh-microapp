@@ -1,81 +1,60 @@
 package com.wkclz.micro.file.helper;
 
 import com.wkclz.micro.file.mapper.MdmFileBucketMapper;
-import com.wkclz.micro.file.pojo.entity.MdmFileBucket;
+import com.wkclz.micro.file.bean.entity.MdmFileBucket;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.BoundValueOperations;
+import org.springframework.data.redis.connection.Message;
+import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.stereotype.Component;
 
+import jakarta.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
-public class BucketCache {
+public class BucketCache implements MessageListener {
 
-    private static final String BUCKET_CACHE_KEY = "shrimp:micro:bucket:cache:time";
+    private static final String BUCKET_CACHE_CHANNEL = "shrimp:micro:bucket:cache:refresh";
 
-    private static Long CACHE_TIME = null;
-    private static Map<String, MdmFileBucket> CACHE_BUCKET = null;
-    private static MdmFileBucket CACHE_BUCKET_DEFAULT = null;
+    private static volatile Map<String, MdmFileBucket> CACHE_BUCKET = null;
+    private static volatile MdmFileBucket CACHE_BUCKET_DEFAULT = null;
+    private static volatile long CACHE_TIME = 0;
 
     @Autowired
     private MdmFileBucketMapper mdmFileBucketMapper;
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    private RedisMessageListenerContainer redisMessageListenerContainer;
+
+    @PostConstruct
+    public void init() {
+        redisMessageListenerContainer.addMessageListener(this, ChannelTopic.of(BUCKET_CACHE_CHANNEL));
+        loadCache();
+    }
+
+    @Override
+    public void onMessage(Message message, byte[] pattern) {
+        log.info("micro-file: 收到 bucket 缓存刷新通知");
+        loadCache();
+    }
 
     public void clearCache() {
-        long now = System.currentTimeMillis();
-        BoundValueOperations<String, String> ops = stringRedisTemplate.boundValueOps(BUCKET_CACHE_KEY);
-        ops.set(now + "");
-        ops.expire(1, TimeUnit.MINUTES);
-
-        CACHE_TIME = null;
-        init();
+        stringRedisTemplate.convertAndSend(BUCKET_CACHE_CHANNEL, String.valueOf(System.currentTimeMillis()));
+        loadCache();
     }
 
-    @Scheduled(fixedDelay = 12_000)
-    public void autoReflash() {
-        if (CACHE_TIME == null || CACHE_BUCKET == null) {
-            init();
-            return;
-        }
-        String changeTime = stringRedisTemplate.boundValueOps(BUCKET_CACHE_KEY).get();
-        if (changeTime == null) {
-            return;
-        }
-
-        long now = System.currentTimeMillis();
-        Long redisTime = Long.valueOf(changeTime);
-
-        // 本地缓存时间更大，不处理
-        if (CACHE_TIME - redisTime > 1_000) {
-            return;
-        }
-
-        // 超过1分钟不处理
-        if (now - redisTime > 60_000) {
-            return;
-        }
-
-        // 更新缓存
-        init();
-    }
-
-
-    /**
-     * 获取 bucket 配置
-     */
     public MdmFileBucket get() {
         if (CACHE_BUCKET_DEFAULT == null) {
-            init();
+            loadCache();
         }
         if (CACHE_BUCKET_DEFAULT == null) {
             return null;
@@ -86,15 +65,12 @@ public class BucketCache {
         return CACHE_BUCKET_DEFAULT;
     }
 
-    /**
-     * 获取 bucket 配置
-     */
     public MdmFileBucket get(String bucket) {
         if (StringUtils.isBlank(bucket)) {
             return null;
         }
         if (CACHE_BUCKET == null) {
-            init();
+            loadCache();
         }
         if (CACHE_BUCKET == null) {
             return null;
@@ -102,9 +78,9 @@ public class BucketCache {
         return CACHE_BUCKET.get(bucket);
     }
 
-    private synchronized void init() {
-        long l = System.currentTimeMillis();
-        if (CACHE_BUCKET != null && CACHE_TIME != null && (l - CACHE_TIME < 5_000)) {
+    private synchronized void loadCache() {
+        long now = System.currentTimeMillis();
+        if (CACHE_BUCKET != null && (now - CACHE_TIME < 3_000)) {
             return;
         }
 
@@ -114,22 +90,21 @@ public class BucketCache {
         if (CollectionUtils.isEmpty(buckets)) {
             CACHE_BUCKET = tmp;
             CACHE_BUCKET_DEFAULT = new MdmFileBucket();
+            CACHE_TIME = now;
             return;
         }
 
+        MdmFileBucket defaultBucket = null;
         for (MdmFileBucket bucket : buckets) {
             tmp.put(bucket.getBucket(), bucket);
             if (bucket.getDefaultFlag() == 1) {
-                CACHE_BUCKET_DEFAULT = bucket;
+                defaultBucket = bucket;
             }
         }
 
         CACHE_BUCKET = tmp;
-        if (CACHE_BUCKET_DEFAULT == null) {
-            CACHE_BUCKET_DEFAULT = buckets.get(0);
-        }
-
-        CACHE_TIME = l;
+        CACHE_BUCKET_DEFAULT = defaultBucket != null ? defaultBucket : buckets.get(0);
+        CACHE_TIME = now;
         log.info("micro-file: bucket更新成功 {} 项", buckets.size());
     }
 

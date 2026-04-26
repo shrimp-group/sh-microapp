@@ -1,6 +1,6 @@
 package com.wkclz.micro.file.mapper;
 
-import com.wkclz.micro.file.pojo.entity.MdmFileRecord;
+import com.wkclz.micro.file.bean.entity.MdmFileRecord;
 import com.wkclz.mybatis.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -18,9 +18,8 @@ public interface MdmFileRecordMapper extends BaseMapper<MdmFileRecord> {
 
     List<MdmFileRecord> getFileList4Page(MdmFileRecord entity);
 
-    MdmFileRecord getFilesByFileId(@Param("fileId") String fileId);
+    MdmFileRecord getFilesByFileId(@Param("fileId") String fileId, @Param("tenantCode") String tenantCode);
 
-    List<MdmFileRecord> getFilesByFileIds(@Param("fileIds") List<String> fileIds);
+    List<MdmFileRecord> getFilesByFileIds(@Param("fileIds") List<String> fileIds, @Param("tenantCode") String tenantCode);
 
 }
-

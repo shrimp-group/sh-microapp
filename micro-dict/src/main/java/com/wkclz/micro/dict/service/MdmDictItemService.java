@@ -1,18 +1,17 @@
 package com.wkclz.micro.dict.service;
 
-import cn.hutool.core.comparator.CompareUtil;
 import com.wkclz.core.base.DbColumnEntity;
+import com.wkclz.micro.dict.bean.dto.MdmDictDto;
+import com.wkclz.micro.dict.bean.dto.MdmDictItemDto;
+import com.wkclz.micro.dict.bean.entity.MdmDictItem;
 import com.wkclz.micro.dict.mapper.MdmDictItemMapper;
-import com.wkclz.micro.dict.beam.dto.MdmDictDto;
-import com.wkclz.micro.dict.beam.dto.MdmDictItemDto;
-import com.wkclz.micro.dict.beam.entity.MdmDictItem;
 import com.wkclz.mybatis.service.BaseService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Description Create by shrimp-gen
@@ -23,8 +22,9 @@ import java.util.List;
 @Service
 public class MdmDictItemService extends BaseService<MdmDictItem, MdmDictItemMapper> {
 
-    public List<MdmDictItem> getDictItemList(String dictZtype) {
-        return mapper.getDictItemList(dictZtype);
+
+    public List<MdmDictItem> getDictItemList(String dictType) {
+        return mapper.getDictItemList(dictType);
     }
 
     public List<MdmDictItemDto> getAllDictItem() {
@@ -39,6 +39,7 @@ public class MdmDictItemService extends BaseService<MdmDictItem, MdmDictItemMapp
     }
 
 
+    @Transactional(rollbackFor = Exception.class)
     public Integer dictItemSave(MdmDictDto dto) {
         List<MdmDictItem> newItems = dto.getItems();
 
@@ -47,58 +48,58 @@ public class MdmDictItemService extends BaseService<MdmDictItem, MdmDictItemMapp
         param.setDictType(dto.getDictType());
         List<MdmDictItem> oldItems = selectByEntity(param);
 
-        List<MdmDictItem> insers;
+        Set<String> oldValues = oldItems.stream().map(MdmDictItem::getDictValue).collect(Collectors.toSet());
+        Set<String> newValues = newItems.stream().map(MdmDictItem::getDictValue).collect(Collectors.toSet());
+
+        List<MdmDictItem> inserts = newItems.stream()
+                .filter(item -> !oldValues.contains(item.getDictValue()))
+                .collect(Collectors.toList());
+
+        List<MdmDictItem> deletes = oldItems.stream()
+                .filter(item -> !newValues.contains(item.getDictValue()))
+                .collect(Collectors.toList());
+
+        Map<String, MdmDictItem> oldItemMap = oldItems.stream()
+                .collect(Collectors.toMap(MdmDictItem::getDictValue, i -> i, (a, b) -> a));
+
         List<MdmDictItem> updates = new ArrayList<>();
-        List<MdmDictItem> deletes;
-
-        // 新增的 items
-        List<String> oldValues = oldItems.stream().map(MdmDictItem::getDictValue).toList();
-        insers = newItems.stream().filter(item -> !oldValues.contains(item.getDictValue())).toList();
-
-        // 删除的 items
-        List<String> newValues = newItems.stream().map(MdmDictItem::getDictValue).toList();
-        deletes = oldItems.stream().filter(item -> !newValues.contains(item.getDictValue())).toList();
-
-        // 修改的 items
         for (MdmDictItem newItem : newItems) {
-            for (MdmDictItem oldItem : oldItems) {
-                if (newItem.getDictValue().equals(oldItem.getDictValue())) {
-                    boolean u = false;
-                    if (CompareUtil.compare(newItem.getDictLabel(), oldItem.getDictLabel()) != 0) {
-                        oldItem.setDictLabel(newItem.getDictLabel());
-                        u = true;
-                    }
-                    if (CompareUtil.compare(newItem.getDescription(), oldItem.getDescription()) != 0) {
-                        oldItem.setDescription(newItem.getDescription());
-                        u = true;
-                    }
-                    if (CompareUtil.compare(newItem.getElType(), oldItem.getElType()) != 0) {
-                        oldItem.setElType(newItem.getElType());
-                        u = true;
-                    }
-                    if (CompareUtil.compare(newItem.getEnableFlag(), oldItem.getEnableFlag()) != 0) {
-                        oldItem.setEnableFlag(newItem.getEnableFlag());
-                        u = true;
-                    }
-                    if (CompareUtil.compare(newItem.getSort(), oldItem.getSort()) != 0) {
-                        oldItem.setSort(newItem.getSort());
-                        u = true;
-                    }
-                    if (u) {
-                        updates.add(oldItem);
-                    }
-                    break;
-                }
+            MdmDictItem oldItem = oldItemMap.get(newItem.getDictValue());
+            if (oldItem == null) {
+                continue;
+            }
+            boolean changed = false;
+            if (!Objects.equals(newItem.getDictLabel(), oldItem.getDictLabel())) {
+                oldItem.setDictLabel(newItem.getDictLabel());
+                changed = true;
+            }
+            if (!Objects.equals(newItem.getDescription(), oldItem.getDescription())) {
+                oldItem.setDescription(newItem.getDescription());
+                changed = true;
+            }
+            if (!Objects.equals(newItem.getElType(), oldItem.getElType())) {
+                oldItem.setElType(newItem.getElType());
+                changed = true;
+            }
+            if (!Objects.equals(newItem.getEnableFlag(), oldItem.getEnableFlag())) {
+                oldItem.setEnableFlag(newItem.getEnableFlag());
+                changed = true;
+            }
+            if (!Objects.equals(newItem.getSort(), oldItem.getSort())) {
+                oldItem.setSort(newItem.getSort());
+                changed = true;
+            }
+            if (changed) {
+                updates.add(oldItem);
             }
         }
 
-
-        if (!CollectionUtils.isEmpty(insers)) {
-            insertBatch(insers);
+        if (!CollectionUtils.isEmpty(inserts)) {
+            insertBatch(inserts);
         }
         if (!CollectionUtils.isEmpty(updates)) {
             for (MdmDictItem update : updates) {
-                updateById(update);
+                updateByIdSelective(update);
             }
         }
         if (!CollectionUtils.isEmpty(deletes)) {
@@ -108,8 +109,7 @@ public class MdmDictItemService extends BaseService<MdmDictItem, MdmDictItemMapp
             deleteByIds(delParam);
         }
 
-        return insers.size() + updates.size() + deletes.size();
+        return inserts.size() + updates.size() + deletes.size();
     }
 
 }
-

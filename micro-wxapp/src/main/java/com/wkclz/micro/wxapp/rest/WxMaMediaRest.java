@@ -8,10 +8,9 @@ import com.wkclz.core.base.R;
 import com.wkclz.micro.wxapp.Route;
 import com.wkclz.micro.wxapp.config.WxMaConfiguration;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.bean.result.WxMediaUploadResult;
 import me.chanjar.weixin.common.error.WxErrorException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,11 +30,10 @@ import java.util.List;
  *
  * @author <a href="https://github.com/binarywang">Binary Wang</a>
  */
+@Slf4j
 @RestController
 @RequestMapping(Route.PREFIX)
 public class WxMaMediaRest {
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private WxMaConfiguration configuration;
@@ -79,13 +77,13 @@ public class WxMaMediaRest {
             try {
                 MultipartFile file = multiRequest.getFile(it.next());
                 File newFile = new File(Files.createTempDir(), file.getOriginalFilename());
-                this.logger.info("filePath is ：" + newFile.toString());
+                log.info("filePath is ：" + newFile.toString());
                 file.transferTo(newFile);
                 WxMediaUploadResult uploadResult = wxService.getMediaService().uploadMedia(WxMaConstants.KefuMsgType.IMAGE, newFile);
-                this.logger.info("media_id ： " + uploadResult.getMediaId());
+                log.info("media_id ： " + uploadResult.getMediaId());
                 result.add(uploadResult.getMediaId());
             } catch (IOException e) {
-                this.logger.error(e.getMessage(), e);
+                log.error(e.getMessage(), e);
             }
         }
         return R.ok(result);

@@ -3,12 +3,13 @@ package com.wkclz.micro.file.service;
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.exception.ValidationException;
 import com.wkclz.iam.sdk.helper.SessionHelper;
+import com.wkclz.micro.file.bean.entity.MdmFileRecord;
 import com.wkclz.micro.file.mapper.MdmFileRecordMapper;
-import com.wkclz.micro.file.pojo.entity.MdmFileRecord;
 import com.wkclz.mybatis.helper.PageQuery;
 import com.wkclz.mybatis.service.BaseService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,6 +23,8 @@ import java.util.List;
 @Service
 public class MdmFileRecordService extends BaseService<MdmFileRecord, MdmFileRecordMapper> {
 
+    @Autowired
+    private MdmFileRecordMapper mapper;
 
     public PageData<MdmFileRecord> getPage(MdmFileRecord entity) {
         entity.setTenantCode(SessionHelper.getTenantCode());
@@ -30,25 +33,27 @@ public class MdmFileRecordService extends BaseService<MdmFileRecord, MdmFileReco
 
     public MdmFileRecord getInfo(MdmFileRecord entity) {
         entity.setTenantCode(SessionHelper.getTenantCode());
-        MdmFileRecord mdmFsUpload = selectOneByEntity(entity);
-        if (mdmFsUpload == null) {
+        MdmFileRecord record = selectOneByEntity(entity);
+        if (record == null) {
             throw ValidationException.of("上传的附件 不存在或无权操作");
         }
-        return mdmFsUpload;
+        return record;
     }
 
     public MdmFileRecord getFilesByFileId(String fileId) {
         if (StringUtils.isBlank(fileId)) {
             throw ValidationException.of("fileId 不能为空");
         }
-        return mapper.getFilesByFileId(fileId);
+        return mapper.getFilesByFileId(fileId, SessionHelper.getTenantCode());
     }
+
     public List<MdmFileRecord> getFilesByFileIds(List<String> fileIds) {
         if (CollectionUtils.isEmpty(fileIds)) {
             throw ValidationException.of("fileId 不能为空");
         }
-        return mapper.getFilesByFileIds(fileIds);
+        return mapper.getFilesByFileIds(fileIds, SessionHelper.getTenantCode());
     }
+
 
     public Integer remove(MdmFileRecord entity) {
         entity.setTenantCode(SessionHelper.getTenantCode());
@@ -64,4 +69,3 @@ public class MdmFileRecordService extends BaseService<MdmFileRecord, MdmFileReco
 
 
 }
-

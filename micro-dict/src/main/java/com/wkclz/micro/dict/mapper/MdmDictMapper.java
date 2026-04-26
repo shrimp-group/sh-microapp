@@ -1,7 +1,7 @@
 package com.wkclz.micro.dict.mapper;
 
-import com.wkclz.micro.dict.beam.dto.MdmDictDto;
-import com.wkclz.micro.dict.beam.entity.MdmDict;
+import com.wkclz.micro.dict.bean.dto.MdmDictDto;
+import com.wkclz.micro.dict.bean.entity.MdmDict;
 import com.wkclz.mybatis.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -27,4 +27,3 @@ public interface MdmDictMapper extends BaseMapper<MdmDict> {
     List<MdmDict> dictOptions();
 
 }
-

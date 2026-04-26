@@ -1,6 +1,6 @@
-package com.wkclz.micro.file.pojo.entity;
+package com.wkclz.micro.file.bean.entity;
 
-import com.wkclz.core.annotation.Desc;
+import com.wkclz.core.annotation.FieldDesc;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,55 +21,55 @@ public class MdmFileBucket extends BaseEntity {
     /**
      * 租户编码
      */
-    @Desc("租户编码")
+    @FieldDesc("租户编码")
     private String tenantCode;
 
     /**
      * Bucket
      */
-    @Desc("Bucket")
+    @FieldDesc("Bucket")
     private String bucket;
 
     /**
      * OSS服务商
      */
-    @Desc("OSS服务商")
+    @FieldDesc("OSS服务商")
     private String ossSp;
 
     /**
      * 内网Endpoint
      */
-    @Desc("内网Endpoint")
+    @FieldDesc("内网Endpoint")
     private String endpointInner;
 
     /**
      * 外网Endpoint
      */
-    @Desc("外网Endpoint")
+    @FieldDesc("外网Endpoint")
     private String endpointOuter;
 
     /**
      * 区域
      */
-    @Desc("区域")
+    @FieldDesc("区域")
     private String region;
 
     /**
      * Access Key
      */
-    @Desc("Access Key")
+    @FieldDesc("Access Key")
     private String accessKey;
 
     /**
      * Secret Key
      */
-    @Desc("Secret Key")
+    @FieldDesc("Secret Key")
     private String secretKey;
 
     /**
      * 默认标识
      */
-    @Desc("默认标识")
+    @FieldDesc("默认标识")
     private Integer defaultFlag;
 
 

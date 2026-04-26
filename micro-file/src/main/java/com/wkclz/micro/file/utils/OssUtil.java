@@ -2,7 +2,7 @@ package com.wkclz.micro.file.utils;
 
 import cn.hutool.core.date.DateUtil;
 import com.wkclz.iam.sdk.helper.SessionHelper;
-import com.wkclz.micro.file.pojo.enums.ContentTypeEnum;
+import com.wkclz.micro.file.bean.enums.ContentTypeEnum;
 import com.wkclz.spring.config.Sys;
 import com.wkclz.tool.tools.RegularTool;
 import com.wkclz.web.helper.RequestHelper;
@@ -56,6 +56,9 @@ public class OssUtil {
         if (name == null) {
             return datetime;
         }
+        name = name.replace("/", "_");
+        name = name.replace("\\", "_");
+        name = name.replace("..", "");
         name = name.replace("(", "_");
         name = name.replace(")", "_");
         name = name.replace("+", "_");

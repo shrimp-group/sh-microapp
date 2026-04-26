@@ -5,13 +5,12 @@ import com.wkclz.iam.sdk.helper.SessionHelper;
 import com.wkclz.micro.file.api.FileApi;
 import com.wkclz.micro.file.config.FsConfig;
 import com.wkclz.micro.file.helper.FileTypeHelper;
-import com.wkclz.micro.file.pojo.dto.MdmFileRecordDto;
-import com.wkclz.micro.file.pojo.entity.MdmFileRecord;
+import com.wkclz.micro.file.bean.dto.MdmFileRecordDto;
+import com.wkclz.micro.file.bean.entity.MdmFileRecord;
 import com.wkclz.micro.file.service.MdmFileRecordService;
 import com.wkclz.tool.tools.RegularTool;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,11 +22,10 @@ import org.springframework.web.multipart.MultipartFile;
  * Description:
  * Created: wangkaicun @ 2017-10-29 上午11:20
  */
+@Slf4j
 @RestController
 @RequestMapping(Route.PREFIX)
 public class FileCommonRest {
-
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private FileApi fileApi;
@@ -51,13 +49,13 @@ public class FileCommonRest {
      * @apiVersion 0.0.1
      * @apiDescription 文件上传
      *
-     * @apiParam {String} [busnessType] <code>param</code>业务类型,如：个人头像,可传 personal_avatar
+     * @apiParam {String} [businessType] <code>param</code>业务类型,如：个人头像,可传 personal_avatar
      * @apiParam {String} [fileName] <code>param</code>文件名。可覆盖默认文件名
      * @apiParam {String} file <code>body</code>文件
      *
      * @apiSuccess {String} previewUrl 上传的附件访问地址（完整url）
      * @apiSuccess {Integer} fileSize 文件大小
-     * @apiSuccess {String} busnessType 业务分类
+     * @apiSuccess {String} businessType 业务分类
      * @apiSuccess {String} fileName 附件名
      * @apiSuccess {String} fileType 附件类型
      * @apiSuccess {String} ossSp 文件存储服务商
@@ -70,7 +68,7 @@ public class FileCommonRest {
      *      "data": {
      *          "previewUrl": "http://oss.domain.com/xxx/file.exname",
      *          "fileSize": 1234,
-     *          "busnessType": "default",
+     *          "businessType": "default",
      *          "fileName": "file.exname",
      *          "fileType": "exname",
      *          "ossSp": "ALI_OSS",
@@ -84,32 +82,31 @@ public class FileCommonRest {
 
     @PostMapping(Route.COMMON_UPLOAD)
     public R commonUpload(@RequestParam("file") MultipartFile file,
-                          String busnessType, String bucket, String fileName) {
-        return upload(file, busnessType, bucket, fileName, false);
+                          String businessType, String bucket, String fileName) {
+        return upload(file, businessType, bucket, fileName, false);
     }
 
     @PostMapping(Route.COMMON_UPLOAD_PUBLIC)
-    public R commonUploadPublic( @RequestParam("file") MultipartFile file,
-            String busnessType, String bucket, String fileName) {
-        return upload(file, busnessType, bucket, fileName, true);
+    public R commonUploadPublic(@RequestParam("file") MultipartFile file,
+            String businessType, String bucket, String fileName) {
+        return upload(file, businessType, bucket, fileName, true);
     }
-
 
     public R upload(
             MultipartFile file,
-            String busnessType,
+            String businessType,
             String bucket,
             String fileName,
             boolean isPublic
             ) {
-        if(file.isEmpty()) {
+        if (file.isEmpty()) {
             return R.warn("file is empty");
         }
-        if (StringUtils.isBlank(busnessType)) {
-            return R.warn("busnessType 为业务类型，请指定以便对附件进行分类！");
+        if (StringUtils.isBlank(businessType)) {
+            return R.warn("businessType 为业务类型，请指定以便对附件进行分类！");
         }
-        if (!RegularTool.isLegalChar(busnessType)) {
-            return R.warn("busnessType 包含有非法字符！");
+        if (!RegularTool.isLegalChar(businessType)) {
+            return R.warn("businessType 包含有非法字符！");
         }
 
         int size = (int) file.getSize();
@@ -131,32 +128,44 @@ public class FileCommonRest {
         if (fileTypeHelper.isVideo(originalFilename) && size > videoMaxSizeMb * 1024 * 1024) {
             return R.warn("上传视频不能超过 {}Mb", videoMaxSizeMb);
         }
+        Integer maxSizeMb = fsConfig.getMaxSizeMb();
+        if (!fileTypeHelper.isImage(originalFilename) && !fileTypeHelper.isVideo(originalFilename) && size > maxSizeMb * 1024 * 1024) {
+            return R.warn("上传文件不能超过 {}Mb", maxSizeMb);
+        }
 
-        logger.info(file.getOriginalFilename() + "-->" + size);
+        if (!fileTypeHelper.validateFileContent(file)) {
+            return R.warn("文件内容与扩展名不匹配，可能为伪装文件！");
+        }
+
+        log.info("{} --> {}", originalFilename, size);
 
         // 上传的附件地址
         MdmFileRecordDto dto =
             isPublic ?
-                fileApi.uploadPublic(file, busnessType, bucket) :
-                fileApi.upload(file, busnessType, bucket);
+                fileApi.uploadPublic(file, businessType, bucket) :
+                fileApi.upload(file, businessType, bucket);
 
         MdmFileRecord f = new MdmFileRecord();
         f.setTenantCode(SessionHelper.getTenantCode());
-        f.setBusnessType(busnessType);
+        f.setBusinessType(businessType);
         f.setFileSize(file.getSize());
         f.setFileName(originalFilename);
         f.setFileType(fileType);
-
         f.setOssSp(dto.getOssSp());
         f.setFileId(dto.getFileId());
         f.setBucket(dto.getBucket());
-        mdmFileRecordService.insert(f);
+
+        try {
+            mdmFileRecordService.insert(f);
+        } catch (Exception e) {
+            log.error("文件上传到OSS成功但数据库记录插入失败，请手动清理OSS文件: fileId={}, bucket={}", dto.getFileId(), dto.getBucket(), e);
+            throw e;
+        }
 
         dto.setFileName(originalFilename);
         dto.setFileSize(f.getFileSize());
-        dto.setFileType(f.getFileType());
+        dto.setFileType(fileType);
         return R.ok(dto);
     }
-
 
 }

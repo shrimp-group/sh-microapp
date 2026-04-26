@@ -1,12 +1,13 @@
 package com.wkclz.micro.dict.rest;
 
 import com.wkclz.core.base.R;
-import com.wkclz.micro.dict.beam.dto.MdmDictDto;
-import com.wkclz.micro.dict.beam.entity.MdmDictItem;
+import com.wkclz.core.exception.ValidationException;
+import com.wkclz.micro.dict.bean.dto.MdmDictDto;
+import com.wkclz.micro.dict.bean.entity.MdmDictItem;
 import com.wkclz.micro.dict.service.MdmDictItemService;
 import com.wkclz.tool.utils.StringUtil;
-import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,7 +25,9 @@ import java.util.stream.Collectors;
 @RequestMapping(Route.PREFIX)
 public class CommonDictRest {
 
-    @Resource
+    private static final int MAX_DICT_TYPES = 50;
+
+    @Autowired
     private MdmDictItemService mdmDictItemService;
 
 
@@ -74,7 +77,7 @@ public class CommonDictRest {
         if (!dictType.equals(dictType.toUpperCase())) {
             dictType = StringUtil.camelToUnderline(dictType).toUpperCase();
         }
-        List<String> dictTypes = Arrays.asList(dictType);
+        List<String> dictTypes = List.of(dictType);
         List<MdmDictItem> items = mdmDictItemService.getDictItemsByDictTypes(dictTypes);
         return R.ok(items);
     }
@@ -122,10 +125,18 @@ public class CommonDictRest {
         if (StringUtils.isBlank(dictType)) {
             return R.error("dictType 不能为空");
         }
-        if (!dictType.equals(dictType.toUpperCase())) {
-            dictType = StringUtil.camelToUnderline(dictType).toUpperCase();
+        List<String> dictTypes = Arrays.stream(dictType.split(","))
+                .map(String::trim)
+                .filter(StringUtils::isNotBlank)
+                .map(String::toUpperCase)
+                .distinct()
+                .collect(Collectors.toList());
+        if (dictTypes.isEmpty()) {
+            throw ValidationException.of("dictType 不能为空");
         }
-        List<String> dictTypes = Arrays.asList(dictType.split(","));
+        if (dictTypes.size() > MAX_DICT_TYPES) {
+            throw ValidationException.of("dictType 数量不能超过 " + MAX_DICT_TYPES);
+        }
         List<MdmDictItem> items = mdmDictItemService.getDictItemsByDictTypes(dictTypes);
         Map<String, List<MdmDictItem>> map = items.stream().collect(Collectors.groupingBy(MdmDictItem::getDictType));
         return R.ok(map);

@@ -1,9 +1,9 @@
 package com.wkclz.micro.dict.rest;
 
 import com.wkclz.core.base.R;
+import com.wkclz.micro.dict.bean.dto.MdmDictDto;
+import com.wkclz.micro.dict.bean.entity.MdmDictItem;
 import com.wkclz.micro.dict.cache.DictCache;
-import com.wkclz.micro.dict.beam.dto.MdmDictDto;
-import com.wkclz.micro.dict.beam.entity.MdmDictItem;
 import com.wkclz.micro.dict.service.MdmDictItemService;
 import com.wkclz.tool.utils.StringUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -124,7 +124,6 @@ public class DictItemRest {
             dto.setItems(new ArrayList<>());
         } else  {
             for (MdmDictItem item : dto.getItems()) {
-                Assert.notNull(item.getDictType(), "字典类型不能为空");
                 Assert.notNull(item.getDictValue(), "字典值不能为空");
                 Assert.notNull(item.getDictLabel(), "字典标签不能为空");
                 if (item.getEnableFlag() == null) {
@@ -142,5 +141,4 @@ public class DictItemRest {
         }
         return R.ok(modifys);
     }
-
 }

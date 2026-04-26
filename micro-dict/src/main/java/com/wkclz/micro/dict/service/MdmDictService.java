@@ -5,10 +5,10 @@ import com.wkclz.core.exception.ValidationException;
 import com.wkclz.iam.sdk.helper.SessionHelper;
 import com.wkclz.micro.dict.mapper.MdmDictItemMapper;
 import com.wkclz.micro.dict.mapper.MdmDictMapper;
-import com.wkclz.micro.dict.beam.dto.MdmDictDto;
-import com.wkclz.micro.dict.beam.dto.MdmDictItemDto;
-import com.wkclz.micro.dict.beam.entity.MdmDict;
-import com.wkclz.micro.dict.beam.entity.MdmDictItem;
+import com.wkclz.micro.dict.bean.dto.MdmDictDto;
+import com.wkclz.micro.dict.bean.dto.MdmDictItemDto;
+import com.wkclz.micro.dict.bean.entity.MdmDict;
+import com.wkclz.micro.dict.bean.entity.MdmDictItem;
 import com.wkclz.mybatis.helper.PageQuery;
 import com.wkclz.mybatis.service.BaseService;
 import org.apache.commons.collections4.CollectionUtils;
@@ -17,9 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -27,7 +25,7 @@ import java.util.stream.Collectors;
  * @author wangkaicun
  * @table mdm_dict (字典) 单表服务类，代码重新生成不覆盖. 只建议完成单表的逻辑，或主表为 mdm_dict 的逻辑. 其他逻辑放 custom 中
  */
- 
+
 @Service
 public class MdmDictService extends BaseService<MdmDict, MdmDictMapper> {
 
@@ -44,26 +42,17 @@ public class MdmDictService extends BaseService<MdmDict, MdmDictMapper> {
         if (mdmDict == null) {
             throw ValidationException.of("数据不存在");
         }
+
+        MdmDict param1 = new MdmDict();
+        param1.setDictType(entity.getDictType());
+        param1 = selectOneByEntity(param1);
+        if (param1 != null && !param1.getId().equals(entity.getId())) {
+            throw ValidationException.of(entity.getDictType() + " 已存在，不可重复");
+        }
+
         // 如果把 dictType 都改了，要多加校验，子表也要改
         if (!mdmDict.getDictType().equals(entity.getDictType())) {
-            // 校验
-            MdmDict param = new MdmDict();
-            param.setDictType(entity.getDictType());
-            long count = selectCountByEntity(param);
-            if (count > 0) {
-                throw ValidationException.of(entity.getDictType() + " 重复使用，请纠正");
-            }
-
-            // 修改子表
-            MdmDictItem itemParam = new MdmDictItem();
-            itemParam.setDictType(mdmDict.getDictType());
-            List<MdmDictItem> items = dictItemMapper.selectByEntity(itemParam);
-            if (!org.springframework.util.CollectionUtils.isEmpty(items)) {
-                items.forEach(l->{
-                    l.setDictType(entity.getDictType());
-                    dictItemMapper.updateByIdSelective(l);
-                });
-            }
+            dictItemMapper.updateDictTypeBatch(mdmDict.getDictType(), entity.getDictType());
         }
         updateById(entity);
         return entity;
@@ -95,7 +84,7 @@ public class MdmDictService extends BaseService<MdmDict, MdmDictMapper> {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Integer paste(List<MdmDictDto> dtos) {
+    public Integer parse(List<MdmDictDto> dtos) {
         if (CollectionUtils.isEmpty(dtos)) {
             return 0;
         }
@@ -110,10 +99,14 @@ public class MdmDictService extends BaseService<MdmDict, MdmDictMapper> {
         param.setDictTypes(dictTypes);
         itemParam.setDictTypes(dictTypes);
 
-        List<MdmDictDto> dicts = mapper.dicts4Update(param);
-        List<MdmDictItem> items = dictItemMapper.dictItems4Update(itemParam);
+        List<MdmDictDto> existingDicts = mapper.dicts4Update(param);
+        List<MdmDictItem> existingItems = dictItemMapper.dictItems4Update(itemParam);
 
-        // dicts2Insert
+        Map<String, MdmDictDto> existingDictMap = existingDicts.stream()
+                .collect(Collectors.toMap(MdmDictDto::getDictType, d -> d, (a, b) -> a));
+        Map<String, MdmDictItem> existingItemMap = existingItems.stream()
+                .collect(Collectors.toMap(i -> i.getDictType() + ":" + i.getDictValue(), i -> i, (a, b) -> a));
+
         List<MdmDict> dicts2Insert = new ArrayList<>();
         // dicts2Update
         List<MdmDict> dicts2Update = new ArrayList<>();
@@ -125,35 +118,29 @@ public class MdmDictService extends BaseService<MdmDict, MdmDictMapper> {
         List<MdmDictItem> importItems = new ArrayList<>();
         for (MdmDictDto dto : dtos) {
             importItems.addAll(dto.getItems());
-            boolean empty = true;
-            for (MdmDictDto dict : dicts) {
-                if (dto.getDictType().equals(dict.getDictType())) {
-                    // compare 2 update
-                    empty = false;
-                    boolean update = false;
-                    if (dto.getDictCtg() == null || !dto.getDictCtg().equals(dict.getDictCtg())) {
-                        dict.setDictCtg(dto.getDictCtg());
-                        update = true;
-                    }
-                    if (dto.getDescription() == null || !dto.getDescription().equals(dict.getDescription())) {
-                        dict.setDescription(dto.getDescription());
-                        update = true;
-                    }
-                    if (dto.getSort() == null || !dto.getSort().equals(dict.getSort())) {
-                        dict.setSort(dto.getSort());
-                        update = true;
-                    }
-                    if (dto.getRemark() == null || !dto.getRemark().equals(dict.getRemark())) {
-                        dict.setRemark(dto.getRemark());
-                        update = true;
-                    }
-                    if (update) {
-                        dicts2Update.add(dict);
-                    }
+            MdmDictDto existing = existingDictMap.get(dto.getDictType());
+            if (existing != null) {
+                boolean update = false;
+                if (dto.getDictCtg() == null || !dto.getDictCtg().equals(existing.getDictCtg())) {
+                    existing.setDictCtg(dto.getDictCtg());
+                    update = true;
                 }
-            }
-            // new 2 insert
-            if (empty) {
+                if (dto.getDescription() == null || !dto.getDescription().equals(existing.getDescription())) {
+                    existing.setDescription(dto.getDescription());
+                    update = true;
+                }
+                if (dto.getSort() == null || !dto.getSort().equals(existing.getSort())) {
+                    existing.setSort(dto.getSort());
+                    update = true;
+                }
+                if (dto.getRemark() == null || !dto.getRemark().equals(existing.getRemark())) {
+                    existing.setRemark(dto.getRemark());
+                    update = true;
+                }
+                if (update) {
+                    dicts2Update.add(existing);
+                }
+            } else {
                 MdmDict insert = new MdmDict();
                 insert.setDictCtg(dto.getDictCtg());
                 insert.setDictType(dto.getDictType());
@@ -166,46 +153,39 @@ public class MdmDictService extends BaseService<MdmDict, MdmDictMapper> {
             }
         }
 
-
         for (MdmDictItem dto : importItems) {
-            boolean empty = true;
-            for (MdmDictItem item : items) {
-                if (dto.getDictType().equals(item.getDictType()) && dto.getDictValue().equals(item.getDictValue()) ) {
-                    // compare 2 update
-                    empty = false;
-                    boolean update = false;
-                    if (dto.getDictLabel() == null || !dto.getDictLabel().equals(item.getDictLabel())) {
-                        item.setDictLabel(dto.getDictLabel());
-                        update = true;
-                    }
-                    if (dto.getElType() == null || !dto.getElType().equals(item.getElType())) {
-                        item.setElType(dto.getElType());
-                        update = true;
-                    }
-                    if (dto.getDescription() == null || !dto.getDescription().equals(item.getDescription())) {
-                        item.setDescription(dto.getDescription());
-                        update = true;
-                    }
-                    if (dto.getEnableFlag() == null || !dto.getEnableFlag().equals(item.getEnableFlag())) {
-                        item.setEnableFlag(dto.getEnableFlag());
-                        update = true;
-                    }
-                    if (dto.getSort() == null || !dto.getSort().equals(item.getSort())) {
-                        item.setSort(dto.getSort());
-                        update = true;
-                    }
-                    if (dto.getRemark() == null || !dto.getRemark().equals(item.getRemark())) {
-                        item.setRemark(dto.getRemark());
-                        update = true;
-                    }
-                    if (update) {
-                        items2Update.add(item);
-                    }
-                    break;
+            String key = dto.getDictType() + ":" + dto.getDictValue();
+            MdmDictItem existing = existingItemMap.get(key);
+            if (existing != null) {
+                boolean update = false;
+                if (dto.getDictLabel() == null || !dto.getDictLabel().equals(existing.getDictLabel())) {
+                    existing.setDictLabel(dto.getDictLabel());
+                    update = true;
                 }
-            }
-            // new 2 insert
-            if (empty) {
+                if (dto.getElType() == null || !dto.getElType().equals(existing.getElType())) {
+                    existing.setElType(dto.getElType());
+                    update = true;
+                }
+                if (dto.getDescription() == null || !dto.getDescription().equals(existing.getDescription())) {
+                    existing.setDescription(dto.getDescription());
+                    update = true;
+                }
+                if (dto.getEnableFlag() == null || !dto.getEnableFlag().equals(existing.getEnableFlag())) {
+                    existing.setEnableFlag(dto.getEnableFlag());
+                    update = true;
+                }
+                if (dto.getSort() == null || !dto.getSort().equals(existing.getSort())) {
+                    existing.setSort(dto.getSort());
+                    update = true;
+                }
+                if (dto.getRemark() == null || !dto.getRemark().equals(existing.getRemark())) {
+                    existing.setRemark(dto.getRemark());
+                    update = true;
+                }
+                if (update) {
+                    items2Update.add(existing);
+                }
+            } else {
                 MdmDictItem insert = new MdmDictItem();
                 insert.setDictType(dto.getDictType());
                 insert.setDictValue(dto.getDictValue());
@@ -221,25 +201,22 @@ public class MdmDictService extends BaseService<MdmDict, MdmDictMapper> {
             }
         }
 
-
-        Integer count = 0;
+        int count = 0;
         if (CollectionUtils.isNotEmpty(dicts2Insert)) {
-           Integer i = mapper.insertBatch(dicts2Insert);
-            count += i;
+            count += mapper.insertBatch(dicts2Insert);
         }
         if (CollectionUtils.isNotEmpty(dicts2Update)) {
             for (MdmDict mdmDict : dicts2Update) {
-                mapper.updateById(mdmDict);
+                mapper.updateByIdSelective(mdmDict);
             }
             count += dicts2Update.size();
         }
         if (CollectionUtils.isNotEmpty(items2Insert)) {
-            Integer i = dictItemMapper.insertBatch(items2Insert);
-            count += i;
+            count += dictItemMapper.insertBatch(items2Insert);
         }
         if (CollectionUtils.isNotEmpty(items2Update)) {
             for (MdmDictItem mdmDictItem : items2Update) {
-                dictItemMapper.updateById(mdmDictItem);
+                dictItemMapper.updateByIdSelective(mdmDictItem);
             }
             count += items2Update.size();
         }

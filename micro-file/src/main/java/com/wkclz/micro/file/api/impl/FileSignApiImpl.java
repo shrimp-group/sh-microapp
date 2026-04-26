@@ -1,24 +1,16 @@
 package com.wkclz.micro.file.api.impl;
 
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.micro.file.api.FileApi;
-import com.wkclz.micro.file.helper.BucketCache;
+import com.wkclz.micro.file.api.FileSignApi;
+import com.wkclz.micro.file.bean.dto.FileRecord;
+import com.wkclz.micro.file.bean.entity.MdmFileBucket;
+import com.wkclz.micro.file.bean.entity.MdmFileRecord;
 import com.wkclz.micro.file.helper.ContentFileHelper;
-import com.wkclz.micro.file.pojo.dto.FileRecord;
-import com.wkclz.micro.file.pojo.dto.MdmFileRecordDto;
-import com.wkclz.micro.file.pojo.entity.MdmFileBucket;
-import com.wkclz.micro.file.pojo.entity.MdmFileRecord;
-import com.wkclz.micro.file.pojo.enums.OssSpEnum;
 import com.wkclz.micro.file.service.FileService;
-import com.wkclz.micro.file.service.MdmFileRecordService;
-import com.wkclz.spring.config.SpringContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -26,54 +18,11 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public class FsileImpl implements FileApi {
-
-    private static final Pattern URI_PATTERN = Pattern.compile("https?://[^/]+(/[^?#]*)");
-
-    @Autowired
-    private BucketCache bucketCache;
-    @Autowired
-    private MdmFileRecordService mdmFileRecordService;
-
-
-    @Override
-    public MdmFileRecordDto upload(MultipartFile file) {
-        return upload(file, null, null);
-    }
-    @Override
-    public MdmFileRecordDto upload(MultipartFile file, String businessType) {
-        return upload(file, businessType, null);
-    }
-    @Override
-    public MdmFileRecordDto upload(MultipartFile file, String businessType, String bucket) {
-        businessType = getBusinessType(businessType);
-        MdmFileBucket fsBucket = getBucket(bucket);
-        FileService service = getApi(fsBucket);
-        return service.upload(file, fsBucket, businessType);
-    }
-
-    @Override
-    public MdmFileRecordDto uploadPublic(MultipartFile file) {
-        return upload(file, null, null);
-    }
-    @Override
-    public MdmFileRecordDto uploadPublic(MultipartFile file, String businessType) {
-        return upload(file, businessType, null);
-    }
-    @Override
-    public MdmFileRecordDto uploadPublic(MultipartFile file, String businessType, String bucket) {
-        businessType = getBusinessType(businessType);
-        MdmFileBucket fsBucket = getBucket(bucket);
-        FileService service = getApi(fsBucket);
-        return service.uploadPublic(file, fsBucket, businessType);
-    }
-
+public class FileSignApiImpl extends AbstractFileApi implements FileSignApi {
 
     @Override
     public <P, R, V> void sign(P fsFile, Function<P, R> getter, BiConsumer<P, V> setter) {
@@ -81,9 +30,10 @@ public class FsileImpl implements FileApi {
         if (!(fileId instanceof String)) {
             return;
         }
-        String sign = sign((String)fileId);
-        setter.accept(fsFile, (V)sign);
+        String sign = sign((String) fileId);
+        setter.accept(fsFile, (V) sign);
     }
+
     @Override
     public <P, R, V> void sign(List<P> fsFiles, Function<P, R> getter, BiConsumer<P, V> setter) {
         List<String> fileIds = new ArrayList<>();
@@ -101,11 +51,10 @@ public class FsileImpl implements FileApi {
             return;
         }
         List<String> signs = sign(fileIds);
-
         for (int i = 0; i < signs.size(); i++) {
             Integer oldInx = newOldIdxMap.get(i);
             P p = fsFiles.get(oldInx);
-            V v = (V)signs.get(i);
+            V v = (V) signs.get(i);
             setter.accept(p, v);
         }
     }
@@ -132,6 +81,7 @@ public class FsileImpl implements FileApi {
         List<String> signs = sign(Arrays.asList(split));
         return StringUtils.join(signs, ",");
     }
+
     @Override
     public String sign(String fileId) {
         if (StringUtils.isBlank(fileId)) {
@@ -144,20 +94,24 @@ public class FsileImpl implements FileApi {
         String[] sign = sign(fileIds);
         return StringUtils.join(sign, ",");
     }
+
     @Override
     public String[] sign(String[] fileIds) {
         List<String> list = Arrays.asList(fileIds);
         List<String> signs = sign(list, 10, TimeUnit.MINUTES);
         return signs.toArray(new String[0]);
     }
+
     @Override
     public String sign(MdmFileRecord fsFile) {
         return sign(fsFile, 10, TimeUnit.MINUTES);
     }
+
     @Override
-    public List<String> sign(List fsFiles) {
+    public List<String> sign(List<?> fsFiles) {
         return sign(fsFiles, 10, TimeUnit.MINUTES);
     }
+
     @Override
     public String sign(String fileId, Integer expire, TimeUnit timeUnit) {
         if (StringUtils.isBlank(fileId)) {
@@ -171,6 +125,7 @@ public class FsileImpl implements FileApi {
         }
         return sign(fsFile, expire, timeUnit);
     }
+
     @Override
     public String sign(MdmFileRecord fsFile, Integer expire, TimeUnit timeUnit) {
         if (fsFile == null) {
@@ -186,8 +141,9 @@ public class FsileImpl implements FileApi {
         FileService service = getApi(fsBucket);
         return service.sign(fsFile.getFileId(), fsBucket, expire, timeUnit);
     }
+
     @Override
-    public List<String> sign(List fsFiles, Integer expire, TimeUnit timeUnit) {
+    public List<String> sign(List<?> fsFiles, Integer expire, TimeUnit timeUnit) {
         if (expire == null) {
             expire = 10;
         }
@@ -195,7 +151,6 @@ public class FsileImpl implements FileApi {
             timeUnit = TimeUnit.MINUTES;
         }
 
-        // 入参分类
         List<FileRecord> rs = new ArrayList<>();
         for (Object f : fsFiles) {
             FileRecord r = new FileRecord();
@@ -218,7 +173,6 @@ public class FsileImpl implements FileApi {
             throw ValidationException.of("error type of the file: {}", f);
         }
 
-        // 为没有 bucket 的信息找到 bucket
         List<String> tempFileIds4Fetch = rs.stream().filter(t -> t.getBucket() == null).map(FileRecord::getFileId).toList();
         if (CollectionUtils.isNotEmpty(tempFileIds4Fetch)) {
             List<MdmFileRecord> tempFiles = mdmFileRecordService.getFilesByFileIds(tempFileIds4Fetch);
@@ -236,12 +190,10 @@ public class FsileImpl implements FileApi {
             }
         }
 
-        // 按 bucket 分组
         Map<String, List<FileRecord>> rsMap = rs.stream()
             .filter(t -> StringUtils.isNotBlank(t.getBucket()))
             .collect(Collectors.groupingBy(FileRecord::getBucket));
 
-        // 按 bucket 进行签名
         for (Map.Entry<String, List<FileRecord>> entry : rsMap.entrySet()) {
             String bucket = entry.getKey();
             List<FileRecord> fileRecords = entry.getValue();
@@ -268,109 +220,6 @@ public class FsileImpl implements FileApi {
             }
         }
         return rs.stream().map(FileRecord::getPreviewUrl).collect(Collectors.toList());
-    }
-
-
-
-
-    @Override
-    public Integer delete(String fileId) {
-        return delete(Collections.singletonList(fileId));
-    }
-    @Override
-    public Integer delete(List<String> fileIds) {
-        List<MdmFileRecord> fsFiles = mdmFileRecordService.getFilesByFileIds(fileIds);
-
-        if (fsFiles.size() != fileIds.size()) {
-            throw ValidationException.of("待删除的文件可能已经丢失，请核实后再操作!");
-        }
-        Map<String, List<MdmFileRecord>> filesSpMap = fsFiles.stream().collect(Collectors.groupingBy(MdmFileRecord::getOssSp));
-
-        // 遍历 oss sp
-        for (Map.Entry<String, List<MdmFileRecord>> entry : filesSpMap.entrySet()) {
-            String ossSp = entry.getKey();
-            List<MdmFileRecord> spFiles = entry.getValue();
-
-            FileService service = getApi(ossSp);
-            Map<String, List<MdmFileRecord>> filesBucketMap = spFiles.stream().collect(Collectors.groupingBy(MdmFileRecord::getBucket));
-
-            // 遍历 oss bucket
-            for (String bucket : filesSpMap.keySet()) {
-                List<MdmFileRecord> bucketFiles = filesBucketMap.get(bucket);
-                MdmFileBucket fsBucket = getBucket(bucket);
-                List<String> collect = bucketFiles.stream().map(MdmFileRecord::getFileId).collect(Collectors.toList());
-                service.delete(collect, fsBucket);
-            }
-        }
-        List<Long> ids = fsFiles.stream().map(MdmFileRecord::getId).toList();
-        MdmFileRecord forDelete = new MdmFileRecord();
-        forDelete.setIds(ids);
-        mdmFileRecordService.deleteByIds(forDelete);
-        return fsFiles.size();
-    }
-
-
-    /**
-     * 获取 businessType
-     */
-    private static String getBusinessType(String businessType) {
-        if (StringUtils.isNotBlank(businessType)) {
-            return businessType;
-        }
-        return "common";
-    }
-
-    /**
-     * 获取 bucket 配置信息
-     */
-    private MdmFileBucket getBucket(String bucket) {
-        if (StringUtils.isNotBlank(bucket)) {
-            MdmFileBucket mdmFileBucket = bucketCache.get(bucket);
-            if (mdmFileBucket == null) {
-                throw ValidationException.of("bucket: {} 未配置，请联系管理员检查！");
-            }
-            return mdmFileBucket;
-        }
-        MdmFileBucket mdmFileBucket = bucketCache.get();
-        if (mdmFileBucket == null) {
-            throw ValidationException.of("无法匹配可用的 bucket 配置，请联系管理员完善 bucket 配置！");
-        }
-        return mdmFileBucket;
-    }
-
-    private FileService getApi(MdmFileBucket bucket) {
-        if (bucket == null) {
-            throw ValidationException.of("无 bucket 信息");
-        }
-        String ossSp = bucket.getOssSp();
-        return getApi(ossSp);
-    }
-
-    private FileService getApi(String ossSp) {
-        if (StringUtils.isBlank(ossSp)) {
-            throw ValidationException.of("bucket: {} 未维护 sp 信息，请联系管理员！");
-        }
-        if (!EnumUtils.isValidEnum(OssSpEnum.class, ossSp)) {
-            throw ValidationException.of("bucket: {} 未支持的 sp，请联系管理员！");
-        }
-        OssSpEnum anEnum = EnumUtils.getEnum(OssSpEnum.class, ossSp);
-        return SpringContextHolder.getBean(anEnum.getServiceName());
-    }
-
-    private static String getFileId(String orgStr) {
-        if (StringUtils.isBlank(orgStr)) {
-            return orgStr;
-        }
-        if (!orgStr.startsWith("http")) {
-            return orgStr;
-        }
-        Matcher matcher = URI_PATTERN.matcher(orgStr);
-        if (matcher.find()) {
-            // 返回第一个捕获组，即URI路径部分
-            String group = matcher.group(1);
-            return group.substring(1);
-        }
-        return orgStr;
     }
 
 }

@@ -1,4 +1,4 @@
-package com.wkclz.micro.file.pojo.enums;
+package com.wkclz.micro.file.bean.enums;
 
 public enum OssSpEnum {
 

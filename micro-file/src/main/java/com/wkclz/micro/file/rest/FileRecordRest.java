@@ -4,8 +4,8 @@ import com.wkclz.core.base.PageData;
 import com.wkclz.core.base.R;
 import com.wkclz.core.enums.ResultCode;
 import com.wkclz.micro.file.api.FileApi;
-import com.wkclz.micro.file.pojo.dto.MdmFileRecordDto;
-import com.wkclz.micro.file.pojo.entity.MdmFileRecord;
+import com.wkclz.micro.file.bean.dto.MdmFileRecordDto;
+import com.wkclz.micro.file.bean.entity.MdmFileRecord;
 import com.wkclz.micro.file.service.MdmFileRecordService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +37,7 @@ public class FileRecordRest {
      * @apiDescription 附件-获取分页
      *
      * @apiParam {String} [tenantCode] <code>param</code>租户编码
-     * @apiParam {String} [busnessType] <code>param</code>业务类型
+     * @apiParam {String} [businessType] <code>param</code>业务类型
      * @apiParam {Long} [fileSize] <code>param</code>文件大小
      * @apiParam {String} [fileName] <code>param</code>文件名
      * @apiParam {String} [fileType] <code>param</code>文件类型
@@ -49,7 +49,7 @@ public class FileRecordRest {
      * ?id=1
      *
      * @apiSuccess {String} [tenantCode] 租户编码
-     * @apiSuccess {String} [busnessType] 业务类型
+     * @apiSuccess {String} [businessType] 业务类型
      * @apiSuccess {Long} [fileSize] 文件大小
      * @apiSuccess {String} [fileName] 文件名
      * @apiSuccess {String} [fileType] 文件类型
@@ -65,7 +65,7 @@ public class FileRecordRest {
      *             {
      *                 "id": "id",
      *                 "tenantCode": "tenantCode",
-     *                 "busnessType": "busnessType",
+     *                 "businessType": "businessType",
      *                 "fileSize": "fileSize",
      *                 "fileName": "fileName",
      *                 "fileType": "fileType",
@@ -120,7 +120,7 @@ public class FileRecordRest {
      *
      * @apiSuccess {Long} [id] ID
      * @apiSuccess {String} [tenantCode] 租户编码
-     * @apiSuccess {String} [busnessType] 业务类型
+     * @apiSuccess {String} [businessType] 业务类型
      * @apiSuccess {Long} [fileSize] 文件大小
      * @apiSuccess {String} [fileName] 文件名
      * @apiSuccess {String} [fileType] 文件类型
@@ -141,7 +141,7 @@ public class FileRecordRest {
      *     "data": {
      *          "id": "id",
      *          "tenantCode": "tenantCode",
-     *          "busnessType": "busnessType",
+     *          "businessType": "businessType",
      *          "fileSize": "fileSize",
      *          "fileName": "fileName",
      *          "fileType": "fileType",
@@ -193,9 +193,9 @@ public class FileRecordRest {
     @PostMapping(Route.RECORD_REMOVE)
     public R mdmFileRecordRemove(@RequestBody MdmFileRecord entity) {
         Assert.notNull(entity.getId(), ResultCode.PARAM_NO_ID.getMessage());
-        mdmFileRecordService.remove(entity);
+        MdmFileRecord record = mdmFileRecordService.getInfo(entity);
+        fileApi.delete(record.getFileId());
         return R.ok(1);
     }
 
 }
-

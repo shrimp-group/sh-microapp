@@ -4,7 +4,7 @@ import com.wkclz.core.base.PageData;
 import com.wkclz.core.base.R;
 import com.wkclz.core.enums.ResultCode;
 import com.wkclz.iam.sdk.helper.SessionHelper;
-import com.wkclz.micro.file.pojo.entity.MdmFileBucket;
+import com.wkclz.micro.file.bean.entity.MdmFileBucket;
 import com.wkclz.micro.file.service.MdmFileBucketService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;

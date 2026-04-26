@@ -1,9 +1,9 @@
-package com.wkclz.micro.file.pojo.enums;
+package com.wkclz.micro.file.bean.enums;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public enum ContentTypeEnum {
-    /**
-     *
-     */
 
     DEFAULT(".default", "application/octet-stream", ""),
 
@@ -331,8 +331,17 @@ public enum ContentTypeEnum {
     XSL(".xsl", "text/xml", ""),
     XSLT(".xslt", "text/xml", ""),
     XWD(".xwd", "application/x-xwd", ""),
-    
+
     ;
+
+    private static final Map<String, String> SUB_NAME_MAP;
+
+    static {
+        SUB_NAME_MAP = new HashMap<>();
+        for (ContentTypeEnum c : ContentTypeEnum.values()) {
+            SUB_NAME_MAP.put(c.sub, c.contentType);
+        }
+    }
 
     private final String sub;
     private final String contentType;
@@ -357,15 +366,11 @@ public enum ContentTypeEnum {
     }
 
     public static String getContentTypeBySubName(String subName) {
-        if (subName == null || "".equals(subName)) {
+        if (subName == null || subName.isEmpty()) {
             return DEFAULT.contentType;
         }
-        for (ContentTypeEnum c : ContentTypeEnum.values()) {
-            if (c.sub.equals(subName)) {
-                return c.contentType;
-            }
-        }
-        return DEFAULT.contentType;
+        String contentType = SUB_NAME_MAP.get(subName);
+        return contentType != null ? contentType : DEFAULT.contentType;
     }
 
 }

@@ -6,16 +6,19 @@ import org.springframework.context.annotation.Configuration;
 
 @Data
 @Configuration
-public class FsConfig {
+public class FileConfig {
 
-    @Value("${shrimp.fs.image.max-size-mg:2}")
+    @Value("${sh.file.image.max-size-mb:2}")
     private Integer imageMaxSizeMb;
-    @Value("${shrimp.fs.image.extension-names:jpg,jpeg,png,gif,webp}")
+    @Value("${sh.file.image.extension-names:jpg,jpeg,png,gif,webp}")
     private String imageExtensionNames;
 
-    @Value("${shrimp.fs.video.max-size-mb:100}")
+    @Value("${sh.file.video.max-size-mb:100}")
     private Integer videoMaxSizeMb;
-    @Value("${shrimp.fs.video.extension-names:mp4,mpeg,avi,mov,wmv,rm,rmvb}")
+    @Value("${sh.file.video.extension-names:mp4,mpeg,avi,mov,wmv,rm,rmvb}")
     private String videoExtensionNames;
+
+    @Value("${sh.file.max-size-mb:50}")
+    private Integer maxSizeMb;
 
 }

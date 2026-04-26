@@ -1,11 +1,12 @@
 package com.wkclz.micro.file.service.impl;
 
-
-import com.wkclz.micro.file.pojo.FileConstant;
-import com.wkclz.micro.file.pojo.dto.MdmFileRecordDto;
-import com.wkclz.micro.file.pojo.entity.MdmFileBucket;
+import com.wkclz.core.exception.ValidationException;
+import com.wkclz.micro.file.bean.FileConstant;
+import com.wkclz.micro.file.bean.dto.MdmFileRecordDto;
+import com.wkclz.micro.file.bean.entity.MdmFileBucket;
 import com.wkclz.micro.file.service.FileService;
 import com.wkclz.micro.file.utils.OssUtil;
+import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,7 +15,12 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.services.s3.model.Delete;
+import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest;
+import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
+import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
@@ -27,11 +33,15 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service("S3Service")
 public class S3ServiceImpl implements FileService {
+
+    private final ConcurrentHashMap<String, S3Client> s3ClientCache = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, S3Presigner> s3PresignerCache = new ConcurrentHashMap<>();
 
     @Override
     public MdmFileRecordDto upload(MultipartFile file, MdmFileBucket fsBucket, String businessType) {
@@ -48,11 +58,10 @@ public class S3ServiceImpl implements FileService {
     }
 
     private MdmFileRecordDto uploadCommon(MultipartFile file, MdmFileBucket fsBucket, String fileId) {
-        S3Client s3 = getS3Client(fsBucket);
+        S3Client s3 = getOrCreateS3Client(fsBucket);
         String bucket = fsBucket.getBucket();
         String filename = file.getOriginalFilename();
         String contentType = OssUtil.getContentType(filename);
-
         try {
             PutObjectRequest request = PutObjectRequest
                 .builder()
@@ -60,12 +69,11 @@ public class S3ServiceImpl implements FileService {
                 .bucket(bucket)
                 .contentType(contentType)
                 .contentLength(file.getSize())
-                .acl(fileId.startsWith(FileConstant.PUBLIC_PREFIX) ? ObjectCannedACL.PUBLIC_READ :ObjectCannedACL.AUTHENTICATED_READ)
+                .acl(fileId.startsWith(FileConstant.PUBLIC_PREFIX) ? ObjectCannedACL.PUBLIC_READ : ObjectCannedACL.AUTHENTICATED_READ)
                 .build();
             RequestBody requestBody = RequestBody.fromInputStream(file.getInputStream(), file.getSize());
             s3.putObject(request, requestBody);
-
-            String previewUrl = sign(fileId, fsBucket, 10, TimeUnit.MINUTES, s3);
+            String previewUrl = sign(fileId, fsBucket, 10, TimeUnit.MINUTES);
 
             MdmFileRecordDto dto = new MdmFileRecordDto();
             dto.setFileId(fileId);
@@ -74,34 +82,27 @@ public class S3ServiceImpl implements FileService {
             dto.setPreviewUrl(previewUrl);
             return dto;
         } catch (IOException e) {
-            log.error(String.format("Upload file [%s] to AWS S3 failed! Error: %s", fileId, e.getMessage()));
-            throw new RuntimeException(e);
-        } finally {
-            s3.close();
+            log.error("Upload file [{}] to AWS S3 IO failed: {}", fileId, e.getMessage());
+            throw ValidationException.of("文件上传失败: {}", e.getMessage());
+        } catch (S3Exception e) {
+            log.error("Upload file [{}] to AWS S3 failed: {}", fileId, e.awsErrorDetails().errorCode());
+            throw ValidationException.of("文件上传失败: {}", e.awsErrorDetails().errorCode());
         }
     }
 
-
     @Override
     public String sign(String fileId, MdmFileBucket fsBucket, Integer expire, TimeUnit timeUnit) {
-        List<String> signs = sign(Collections.singletonList(fileId), fsBucket, expire, timeUnit, null);
+        List<String> signs = sign(Collections.singletonList(fileId), fsBucket, expire, timeUnit);
         return signs.get(0);
     }
+
     @Override
     public List<String> sign(List<String> fileIds, MdmFileBucket fsBucket, Integer expire, TimeUnit timeUnit) {
-        return sign(fileIds, fsBucket, expire, timeUnit, null);
-    }
-
-    private String sign(String fileId, MdmFileBucket fsBucket, Integer expire, TimeUnit timeUnit, S3Client s3) {
-        List<String> signs = sign(Collections.singletonList(fileId), fsBucket, expire, timeUnit, s3);
-        return signs.get(0);
-    }
-
-    private List<String> sign(List<String> fileIds, MdmFileBucket fsBucket, Integer expire, TimeUnit timeUnit, S3Client s3) {
         List<String> result = new ArrayList<>();
-        String endpointInner = fsBucket.getEndpointInner();
         String endpointOuter = fsBucket.getEndpointOuter();
+
         long millis = timeUnit.toMillis(expire);
+        S3Presigner presigner = getOrCreateS3Presigner(fsBucket);
 
         try {
             for (String fileId : fileIds) {
@@ -118,20 +119,12 @@ public class S3ServiceImpl implements FileService {
                     result.add(endpointOuter + "/" + fileId);
                     continue;
                 }
-
-                S3Presigner presigner = S3Presigner.builder()
-                    .region(Region.of(fsBucket.getRegion()))
-                    .credentialsProvider(getCredentialsProvider(fsBucket))
-                    .build();
-
                 GetObjectPresignRequest getObjectPresignRequest = GetObjectPresignRequest.builder()
                     .getObjectRequest(builder -> builder
                         .bucket(fsBucket.getBucket())
                         .key(fileId))
                     .signatureDuration(Duration.ofMillis(millis))
                     .build();
-
-                // 生成预签名请求
                 PresignedGetObjectRequest presignedRequest = presigner.presignGetObject(getObjectPresignRequest);
                 URL url = presignedRequest.url();
                 String newUrl = endpointOuter
@@ -141,7 +134,8 @@ public class S3ServiceImpl implements FileService {
                 result.add(newUrl);
             }
         } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
+            log.error("Sign URL parse failed: {}", e.getMessage());
+            throw ValidationException.of("签名URL生成失败: {}", e.getMessage());
         }
         return result;
     }
@@ -151,37 +145,36 @@ public class S3ServiceImpl implements FileService {
      */
     @Override
     public Integer delete(List<String> fileIds, MdmFileBucket fsBucket) {
-        S3Client s3 = getS3Client(fsBucket);
+        S3Client s3 = getOrCreateS3Client(fsBucket);
         try {
-            // 构建 ObjectIdentifier 列表
             List<ObjectIdentifier> objectIdentifiers = fileIds.stream()
                 .map(key -> ObjectIdentifier.builder().key(key).build())
                 .toList();
 
-            // 创建 Delete 请求
             Delete delete = Delete.builder()
                 .objects(objectIdentifiers)
                 .build();
 
-            // 创建 DeleteObjectsRequest
             var deleteObjectsRequest = DeleteObjectsRequest.builder()
                 .bucket(fsBucket.getBucket())
                 .delete(delete)
                 .build();
 
-            // 执行批量删除
             s3.deleteObjects(deleteObjectsRequest);
             return fileIds.size();
-        } finally {
-            s3.close();
+        } catch (S3Exception e) {
+            log.error("Delete files from AWS S3 failed: {}", e.awsErrorDetails().errorCode());
+            throw ValidationException.of("文件删除失败: {}", e.awsErrorDetails().errorCode());
         }
     }
 
+    private S3Client getOrCreateS3Client(MdmFileBucket fsBucket) {
+        return s3ClientCache.computeIfAbsent(fsBucket.getBucket(), k -> createS3Client(fsBucket));
+    }
 
-    private S3Client getS3Client(MdmFileBucket fsBucket) {
+    private static S3Client createS3Client(MdmFileBucket fsBucket) {
         String endpointInner = fsBucket.getEndpointInner();
         String region = fsBucket.getRegion();
-
         if (!endpointInner.startsWith("http")) {
             endpointInner = "https://" + endpointInner;
         }
@@ -195,11 +188,37 @@ public class S3ServiceImpl implements FileService {
             .build();
     }
 
+    private S3Presigner getOrCreateS3Presigner(MdmFileBucket fsBucket) {
+        return s3PresignerCache.computeIfAbsent(fsBucket.getBucket(), k -> createS3Presigner(fsBucket));
+    }
+
+    private static S3Presigner createS3Presigner(MdmFileBucket fsBucket) {
+        String endpointInner = fsBucket.getEndpointInner();
+        String region = fsBucket.getRegion();
+        if (!endpointInner.startsWith("http")) {
+            endpointInner = "https://" + endpointInner;
+        }
+        StaticCredentialsProvider credentialsProvider = getCredentialsProvider(fsBucket);
+        return S3Presigner.builder()
+            .region(Region.of(region))
+            .endpointOverride(URI.create(endpointInner))
+            .credentialsProvider(credentialsProvider)
+            .build();
+    }
+
     private static StaticCredentialsProvider getCredentialsProvider(MdmFileBucket fsBucket) {
         String accessKey = fsBucket.getAccessKey();
         String secretKey = fsBucket.getSecretKey();
         AwsBasicCredentials awsBasicCredentials = AwsBasicCredentials.create(accessKey, secretKey);
         return StaticCredentialsProvider.create(awsBasicCredentials);
+    }
+
+    @PreDestroy
+    public void destroy() {
+        s3PresignerCache.values().forEach(S3Presigner::close);
+        s3PresignerCache.clear();
+        s3ClientCache.values().forEach(S3Client::close);
+        s3ClientCache.clear();
     }
 
 }
