@@ -1,7 +1,7 @@
 package com.wkclz.micro.k8s;
 
 
-import com.wkclz.core.annotation.Desc;
+import com.wkclz.core.annotation.ApiDesc;
 import com.wkclz.core.annotation.Router;
 
 /**
@@ -20,36 +20,36 @@ public interface Route {
      * k8s config
      */
 
-    @Desc("1. k8s配置-分页")
+    @ApiDesc("1. k8s配置-分页")
     String CONFIG_PAGE = "/config/page";
-    @Desc("2. k8s配置-详情")
+    @ApiDesc("2. k8s配置-详情")
     String CONFIG_INFO = "/config/info";
-    @Desc("3. k8s配置-新增")
+    @ApiDesc("3. k8s配置-新增")
     String CONFIG_CREATE = "/config/create";
-    @Desc("4. k8s配置-更新")
+    @ApiDesc("4. k8s配置-更新")
     String CONFIG_UPDATE = "/config/update";
-    @Desc("5. k8s配置-删除")
+    @ApiDesc("5. k8s配置-删除")
     String CONFIG_REMOVE = "/config/remove";
-    @Desc("1. k8s配置-选项")
+    @ApiDesc("1. k8s配置-选项")
     String CONFIG_OPTIONS = "/config/options";
 
-    @Desc("0. k8s-获取 集群 node 节点")
+    @ApiDesc("0. k8s-获取 集群 node 节点")
     String CLUSTER_NODES = "/cluster/nodes";
-    @Desc("1. k8s-获取 namespaces")
+    @ApiDesc("1. k8s-获取 namespaces")
     String CLUSTER_NAMESPACES = "/cluster/namespaces";
-    @Desc("2. k8s-获取 namespaces")
+    @ApiDesc("2. k8s-获取 namespaces")
     String CLUSTER_NAMESPACES_BRIEFLY = "/cluster/namespaces/briefly";
 
 
-    @Desc("1. k8s-kind 获取列表")
+    @ApiDesc("1. k8s-kind 获取列表")
     String CLUSTER_KIND_LIST = "/cluster/kind/list";
-    @Desc("2. k8s-kind 获取Yaml")
+    @ApiDesc("2. k8s-kind 获取Yaml")
     String CLUSTER_KIND_YAML = "/cluster/kind/yaml";
-    @Desc("3. k8s-kind 创建")
+    @ApiDesc("3. k8s-kind 创建")
     String CLUSTER_KIND_CREATE = "/cluster/kind/create";
-    @Desc("4. k8s-kind 更新")
+    @ApiDesc("4. k8s-kind 更新")
     String CLUSTER_KIND_UPDATE = "/cluster/kind/update";
-    @Desc("5. k8s-kind 删除")
+    @ApiDesc("5. k8s-kind 删除")
     String CLUSTER_KIND_DELETE = "/cluster/kind/delete";
 
 }

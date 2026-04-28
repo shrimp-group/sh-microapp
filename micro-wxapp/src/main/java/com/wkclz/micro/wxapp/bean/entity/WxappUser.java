@@ -1,6 +1,6 @@
 package com.wkclz.micro.wxapp.bean.entity;
 
-import com.wkclz.core.annotation.Desc;
+import com.wkclz.core.annotation.FieldDesc;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,61 +21,61 @@ public class WxappUser extends BaseEntity {
     /**
      * 用户编码
      */
-    @Desc("用户编码")
+    @FieldDesc("用户编码")
     private String userCode;
 
     /**
      * 客户昵称
      */
-    @Desc("客户昵称")
+    @FieldDesc("客户昵称")
     private String nickname;
 
     /**
      * 微信appId
      */
-    @Desc("微信appId")
+    @FieldDesc("微信appId")
     private String appId;
 
     /**
      * 微信openId
      */
-    @Desc("微信openId")
+    @FieldDesc("微信openId")
     private String openId;
 
     /**
      * 微信公众平台unionId
      */
-    @Desc("微信公众平台unionId")
+    @FieldDesc("微信公众平台unionId")
     private String unionId;
 
     /**
      * 手机号
      */
-    @Desc("手机号")
+    @FieldDesc("手机号")
     private String mobile;
 
     /**
      * 邮箱
      */
-    @Desc("邮箱")
+    @FieldDesc("邮箱")
     private String email;
 
     /**
      * 性别(0未知1男2女)
      */
-    @Desc("性别(0未知1男2女)")
+    @FieldDesc("性别(0未知1男2女)")
     private Integer gender;
 
     /**
      * 头像
      */
-    @Desc("头像")
+    @FieldDesc("头像")
     private String avatar;
 
     /**
      * 登录成功次数
      */
-    @Desc("登录成功次数")
+    @FieldDesc("登录成功次数")
     private Integer loginTimes;
 
 

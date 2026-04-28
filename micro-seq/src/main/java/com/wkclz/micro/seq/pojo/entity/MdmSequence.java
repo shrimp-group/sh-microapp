@@ -1,6 +1,6 @@
 package com.wkclz.micro.seq.pojo.entity;
 
-import com.wkclz.core.annotation.Desc;
+import com.wkclz.core.annotation.FieldDesc;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,25 +21,25 @@ public class MdmSequence extends BaseEntity {
     /**
      * 名称
      */
-    @Desc("名称")
+    @FieldDesc("名称")
     private String seqName;
 
     /**
      * 前缀
      */
-    @Desc("前缀")
+    @FieldDesc("前缀")
     private String prefix;
 
     /**
      * 当前序列
      */
-    @Desc("当前序列")
+    @FieldDesc("当前序列")
     private Integer sequence;
 
     /**
      * 序列长度(不计前缀长度)
      */
-    @Desc("序列长度(不计前缀长度)")
+    @FieldDesc("序列长度(不计前缀长度)")
     private Integer codeLength;
 
 

@@ -2,11 +2,11 @@ package com.wkclz.micro.file.rest;
 
 import com.wkclz.core.base.R;
 import com.wkclz.iam.sdk.helper.SessionHelper;
-import com.wkclz.micro.file.api.FileApi;
-import com.wkclz.micro.file.config.FsConfig;
-import com.wkclz.micro.file.helper.FileTypeHelper;
+import com.wkclz.micro.file.api.FileUploadApi;
 import com.wkclz.micro.file.bean.dto.MdmFileRecordDto;
 import com.wkclz.micro.file.bean.entity.MdmFileRecord;
+import com.wkclz.micro.file.config.FileConfig;
+import com.wkclz.micro.file.helper.FileTypeHelper;
 import com.wkclz.micro.file.service.MdmFileRecordService;
 import com.wkclz.tool.tools.RegularTool;
 import lombok.extern.slf4j.Slf4j;
@@ -28,9 +28,9 @@ import org.springframework.web.multipart.MultipartFile;
 public class FileCommonRest {
 
     @Autowired
-    private FileApi fileApi;
+    private FileConfig fileConfig;
     @Autowired
-    private FsConfig fsConfig;
+    private FileUploadApi fileUploadApi;
     @Autowired
     private FileTypeHelper fileTypeHelper;
     @Autowired
@@ -120,15 +120,15 @@ public class FileCommonRest {
         String fileType = FileTypeHelper.getExtName(originalFilename);
 
         // 当图片大于2M 不允许上传
-        Integer imageMaxSizeMb = fsConfig.getImageMaxSizeMb();
+        Integer imageMaxSizeMb = fileConfig.getImageMaxSizeMb();
         if (fileTypeHelper.isImage(originalFilename) && size > imageMaxSizeMb * 1024 * 1024) {
             return R.warn("上传图片不能超过 {}Mb", imageMaxSizeMb);
         }
-        Integer videoMaxSizeMb = fsConfig.getVideoMaxSizeMb();
+        Integer videoMaxSizeMb = fileConfig.getVideoMaxSizeMb();
         if (fileTypeHelper.isVideo(originalFilename) && size > videoMaxSizeMb * 1024 * 1024) {
             return R.warn("上传视频不能超过 {}Mb", videoMaxSizeMb);
         }
-        Integer maxSizeMb = fsConfig.getMaxSizeMb();
+        Integer maxSizeMb = fileConfig.getMaxSizeMb();
         if (!fileTypeHelper.isImage(originalFilename) && !fileTypeHelper.isVideo(originalFilename) && size > maxSizeMb * 1024 * 1024) {
             return R.warn("上传文件不能超过 {}Mb", maxSizeMb);
         }
@@ -142,8 +142,8 @@ public class FileCommonRest {
         // 上传的附件地址
         MdmFileRecordDto dto =
             isPublic ?
-                fileApi.uploadPublic(file, businessType, bucket) :
-                fileApi.upload(file, businessType, bucket);
+                    fileUploadApi.uploadPublic(file, businessType, bucket) :
+                    fileUploadApi.upload(file, businessType, bucket);
 
         MdmFileRecord f = new MdmFileRecord();
         f.setTenantCode(SessionHelper.getTenantCode());

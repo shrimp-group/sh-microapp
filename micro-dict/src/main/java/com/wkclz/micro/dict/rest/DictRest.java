@@ -346,7 +346,7 @@ public class DictRest {
             }
         }
 
-        Integer paste = mdmDictService.parse(dto);
+        Integer paste = mdmDictService.paste(dto);
         return R.ok(paste);
     }
 

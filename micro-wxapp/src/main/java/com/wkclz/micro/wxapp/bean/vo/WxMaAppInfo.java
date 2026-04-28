@@ -1,30 +1,30 @@
 package com.wkclz.micro.wxapp.bean.vo;
 
-import com.wkclz.core.annotation.Desc;
+import com.wkclz.core.annotation.FieldDesc;
 import lombok.Data;
 
 @Data
 public class WxMaAppInfo {
 
-    @Desc("租户编码")
+    @FieldDesc("租户编码")
     private String tenantCode;
 
-    @Desc("小程序appid")
+    @FieldDesc("小程序appid")
     private String appId;
 
-    @Desc("小程序Secret")
+    @FieldDesc("小程序Secret")
     private String appSecret;
 
-    @Desc("证书文件cert")
+    @FieldDesc("证书文件cert")
     private String certPem;
 
-    @Desc("证书文件key")
+    @FieldDesc("证书文件key")
     private String keyPem;
 
-    @Desc("小程序消息服务器配置token")
+    @FieldDesc("小程序消息服务器配置token")
     private String appToken;
 
-    @Desc("小程序消息服务器配置EncodingAESKey")
+    @FieldDesc("小程序消息服务器配置EncodingAESKey")
     private String aesKey;
 
 

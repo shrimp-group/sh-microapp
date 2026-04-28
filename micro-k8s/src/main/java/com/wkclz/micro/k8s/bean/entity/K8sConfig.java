@@ -1,6 +1,6 @@
 package com.wkclz.micro.k8s.bean.entity;
 
-import com.wkclz.core.annotation.Desc;
+import com.wkclz.core.annotation.FieldDesc;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,13 +21,13 @@ public class K8sConfig extends BaseEntity {
     /**
      * 集群名称
      */
-    @Desc("集群名称")
+    @FieldDesc("集群名称")
     private String clusterName;
 
     /**
      * 配置信息
      */
-    @Desc("配置信息")
+    @FieldDesc("配置信息")
     private String kubeConfig;
 
 

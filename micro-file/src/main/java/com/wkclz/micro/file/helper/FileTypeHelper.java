@@ -1,6 +1,6 @@
 package com.wkclz.micro.file.helper;
 
-import com.wkclz.micro.file.config.FsConfig;
+import com.wkclz.micro.file.config.FileConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,14 +31,14 @@ public class FileTypeHelper {
     }
 
     @Autowired
-    private FsConfig fsConfig;
+    private FileConfig fileConfig;
 
 
     /**
      * 识别文件是否为图片
      */
     public boolean isImage(String fileName) {
-        String extnames = fsConfig.getImageExtensionNames();
+        String extnames = fileConfig.getImageExtensionNames();
         return isExtName(fileName, extnames);
     }
 
@@ -46,7 +46,7 @@ public class FileTypeHelper {
      * 识别文件是否为视频
      */
     public boolean isVideo(String fileName) {
-        String extnames = fsConfig.getVideoExtensionNames();
+        String extnames = fileConfig.getVideoExtensionNames();
         return isExtName(fileName, extnames);
     }
 

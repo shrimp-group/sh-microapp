@@ -1,6 +1,6 @@
 package com.wkclz.micro.wxapp.bean.entity;
 
-import com.wkclz.core.annotation.Desc;
+import com.wkclz.core.annotation.FieldDesc;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,19 +21,19 @@ public class WxappLoginLog extends BaseEntity {
     /**
      * 用户编码
      */
-    @Desc("用户编码")
+    @FieldDesc("用户编码")
     private String userCode;
 
     /**
      * 小程序openId
      */
-    @Desc("小程序openId")
+    @FieldDesc("小程序openId")
     private String openId;
 
     /**
      * 登录IP
      */
-    @Desc("登录IP")
+    @FieldDesc("登录IP")
     private String loginIp;
 
 

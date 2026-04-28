@@ -1,6 +1,6 @@
 package com.wkclz.micro.wxapp.bean.entity;
 
-import com.wkclz.core.annotation.Desc;
+import com.wkclz.core.annotation.FieldDesc;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,43 +21,43 @@ public class WxappConfig extends BaseEntity {
     /**
      * 租户编码
      */
-    @Desc("租户编码")
+    @FieldDesc("租户编码")
     private String tenantCode;
 
     /**
      * 小程序appid
      */
-    @Desc("小程序appid")
+    @FieldDesc("小程序appid")
     private String appId;
 
     /**
      * 小程序Secret
      */
-    @Desc("小程序Secret")
+    @FieldDesc("小程序Secret")
     private String appSecret;
 
     /**
      * 证书文件cert
      */
-    @Desc("证书文件cert")
+    @FieldDesc("证书文件cert")
     private String certPem;
 
     /**
      * 证书文件key
      */
-    @Desc("证书文件key")
+    @FieldDesc("证书文件key")
     private String keyPem;
 
     /**
      * 小程序消息服务器配置token
      */
-    @Desc("小程序消息服务器配置token")
+    @FieldDesc("小程序消息服务器配置token")
     private String appToken;
 
     /**
      * 小程序消息服务器配置EncodingAESKey
      */
-    @Desc("小程序消息服务器配置EncodingAESKey")
+    @FieldDesc("小程序消息服务器配置EncodingAESKey")
     private String aesKey;
 
 

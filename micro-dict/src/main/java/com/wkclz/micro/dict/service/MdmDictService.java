@@ -84,7 +84,7 @@ public class MdmDictService extends BaseService<MdmDict, MdmDictMapper> {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Integer parse(List<MdmDictDto> dtos) {
+    public Integer paste(List<MdmDictDto> dtos) {
         if (CollectionUtils.isEmpty(dtos)) {
             return 0;
         }
