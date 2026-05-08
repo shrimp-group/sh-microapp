@@ -103,21 +103,27 @@ public class DictCache implements MessageListener {
 
         List<MdmDictItem> allItems = mdmDictItemMapper.dictItems4Cache();
         Map<String, List<MdmDictItem>> itemsByType = allItems.stream()
+                .filter(item -> item.getDictType() != null)
                 .collect(Collectors.groupingBy(MdmDictItem::getDictType));
 
         for (MdmDict dict : dicts) {
+            if (dict.getDictType() == null) {
+                continue;
+            }
             List<MdmDictItem> items = itemsByType.get(dict.getDictType());
             Map<String, String> itemMap = new HashMap<>();
             if (CollectionUtils.isNotEmpty(items)) {
                 for (MdmDictItem item : items) {
-                    itemMap.put(item.getDictValue(), item.getDictLabel());
+                    if (item.getDictValue() != null) {
+                        itemMap.put(item.getDictValue(), item.getDictLabel());
+                    }
                 }
             }
             tmp.put(dict.getDictType(), itemMap);
         }
         CACHE_DICT = tmp;
         CACHE_TIME = now;
-        log.info("micro-dict: 字典更新成功 {} 项", dicts.size());
+        log.info("micro-dict: 字典缓存成功 {} 项", dicts.size());
     }
 
 }
