@@ -20,11 +20,11 @@ import java.util.function.Function;
 public class FileApiImpl implements FileApi {
 
     @Autowired
-    private FileUploadApi fileUploadApi;
-    @Autowired
     private FileSignApi fileSignApi;
     @Autowired
     private FileDeleteApi fileDeleteApi;
+    @Autowired
+    private FileUploadApi fileUploadApi;
 
     @Override
     public MdmFileRecordDto upload(MultipartFile file) {

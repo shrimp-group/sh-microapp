@@ -13,7 +13,6 @@ import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.stereotype.Component;
 
-import jakarta.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,12 +33,6 @@ public class BucketCache implements MessageListener {
     private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private RedisMessageListenerContainer redisMessageListenerContainer;
-
-    @PostConstruct
-    public void init() {
-        redisMessageListenerContainer.addMessageListener(this, ChannelTopic.of(BUCKET_CACHE_CHANNEL));
-        loadCache();
-    }
 
     @Override
     public void onMessage(Message message, byte[] pattern) {

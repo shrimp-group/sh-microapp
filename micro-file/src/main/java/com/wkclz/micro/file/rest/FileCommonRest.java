@@ -81,14 +81,32 @@ public class FileCommonRest {
 
 
     @PostMapping(Route.COMMON_UPLOAD)
-    public R commonUpload(@RequestParam("file") MultipartFile file,
-                          String businessType, String bucket, String fileName) {
+    public R commonUpload(
+            @RequestParam("file") MultipartFile file,
+            String businessType,
+            String busnessType,
+            String bucket,
+            String fileName
+    ) {
+        // 兼容旧前端代码
+        if (StringUtils.isBlank(businessType)) {
+            businessType = busnessType;
+        }
         return upload(file, businessType, bucket, fileName, false);
     }
 
     @PostMapping(Route.COMMON_UPLOAD_PUBLIC)
-    public R commonUploadPublic(@RequestParam("file") MultipartFile file,
-            String businessType, String bucket, String fileName) {
+    public R commonUploadPublic(
+            @RequestParam("file") MultipartFile file,
+            String businessType,
+            String busnessType,
+            String bucket,
+            String fileName
+    ) {
+        // 兼容旧前端代码
+        if (StringUtils.isBlank(businessType)) {
+            businessType = busnessType;
+        }
         return upload(file, businessType, bucket, fileName, true);
     }
 
