@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.fileos.mapper.MdmFileosRecordMapper">
+
+    <select id="getRecordList4Page" parameterType="com.wkclz.micro.fileos.bean.entity.MdmFileosRecord" resultType="com.wkclz.micro.fileos.bean.entity.MdmFileosRecord">
+        SELECT
+            id,
+            tenant_code,
+            file_id,
+            file_name,
+            file_type,
+            file_size,
+            file_hash,
+            content_type,
+            category,
+            dir_path,
+            is_public,
+            oss_sp,
+            bucket_name,
+            upload_type,
+            upload_id,
+            upload_status,
+            image_process,
+            create_time,
+            create_by,
+            update_time,
+            update_by,
+            remark,
+            version
+        FROM
+            mdm_fileos_record
+        WHERE
+            deleted = 0
+            <if test="timeFrom != null">AND create_time &gt;= #{timeFrom} </if>
+            <if test="timeTo != null">AND create_time &lt;= #{timeTo} </if>
+            <if test="id != null">AND id = #{id} </if>
+            <if test="tenantCode != null">AND tenant_code = #{tenantCode} </if>
+            <if test="category != null">AND category = #{category} </if>
+            <if test="fileName != null">AND file_name LIKE CONCAT('%', #{fileName}, '%') </if>
+            <if test="fileType != null">AND file_type = #{fileType} </if>
+            <if test="ossSp != null">AND oss_sp = #{ossSp} </if>
+            <if test="bucketName != null">AND bucket_name = #{bucketName} </if>
+            <if test="fileId != null">AND file_id = #{fileId} </if>
+            <if test="dirPath != null">AND dir_path = #{dirPath} </if>
+            <if test="isPublic != null">AND is_public = #{isPublic} </if>
+        ORDER BY
+            id DESC
+    </select>
+
+    <select id="getRecordByFileId" resultType="com.wkclz.micro.fileos.bean.entity.MdmFileosRecord">
+        SELECT
+            id,
+            tenant_code,
+            file_id,
+            file_name,
+            file_type,
+            file_size,
+            file_hash,
+            content_type,
+            category,
+            dir_path,
+            is_public,
+            oss_sp,
+            bucket_name,
+            upload_type,
+            upload_id,
+            upload_status,
+            image_process
+        FROM
+            mdm_fileos_record
+        WHERE
+            deleted = 0
+            AND file_id = #{fileId}
+            <if test="tenantCode != null">AND tenant_code = #{tenantCode}</if>
+        ORDER BY
+            id DESC
+        LIMIT 1
+    </select>
+
+    <select id="getRecordByFileIds" resultType="com.wkclz.micro.fileos.bean.entity.MdmFileosRecord">
+        SELECT
+            id,
+            tenant_code,
+            file_id,
+            file_name,
+            file_type,
+            file_size,
+            file_hash,
+            content_type,
+            category,
+            dir_path,
+            is_public,
+            oss_sp,
+            bucket_name,
+            upload_type,
+            upload_id,
+            upload_status,
+            image_process
+        FROM
+            mdm_fileos_record
+        WHERE
+            deleted = 0
+            <if test="tenantCode != null">AND tenant_code = #{tenantCode}</if>
+            AND file_id IN ( <foreach collection="fileIds" item="item" separator=","> #{item} </foreach> )
+    </select>
+
+    <select id="getRecordByFileHash" resultType="com.wkclz.micro.fileos.bean.entity.MdmFileosRecord">
+        SELECT
+            id,
+            tenant_code,
+            file_id,
+            file_name,
+            file_type,
+            file_size,
+            file_hash,
+            content_type,
+            category,
+            dir_path,
+            is_public,
+            oss_sp,
+            bucket_name,
+            upload_type,
+            upload_id,
+            upload_status,
+            image_process
+        FROM
+            mdm_fileos_record
+        WHERE
+            deleted = 0
+            AND file_hash = #{fileHash}
+            <if test="tenantCode != null">AND tenant_code = #{tenantCode}</if>
+        ORDER BY
+            id DESC
+        LIMIT 1
+    </select>
+
+    <select id="getRecordByDirPath" resultType="com.wkclz.micro.fileos.bean.entity.MdmFileosRecord">
+        SELECT
+            id,
+            tenant_code,
+            file_id,
+            file_name,
+            file_type,
+            file_size,
+            file_hash,
+            content_type,
+            category,
+            dir_path,
+            is_public,
+            oss_sp,
+            bucket_name,
+            upload_type,
+            upload_id,
+            upload_status,
+            image_process
+        FROM
+            mdm_fileos_record
+        WHERE
+            deleted = 0
+            AND dir_path = #{dirPath}
+            <if test="tenantCode != null">AND tenant_code = #{tenantCode}</if>
+    </select>
+
+</mapper>

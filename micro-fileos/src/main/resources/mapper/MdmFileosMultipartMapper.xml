@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.fileos.mapper.MdmFileosMultipartMapper">
+
+    <select id="getExpiredMultipartList" resultType="com.wkclz.micro.fileos.bean.entity.MdmFileosMultipart">
+        SELECT
+            id,
+            tenant_code,
+            upload_id,
+            file_id,
+            file_name,
+            file_size,
+            content_type,
+            category,
+            is_public,
+            oss_sp,
+            bucket_name,
+            part_count,
+            completed_parts,
+            status,
+            expire_time,
+            sort,
+            create_time,
+            create_by,
+            update_time,
+            update_by,
+            remark,
+            version
+        FROM
+            mdm_fileos_multipart
+        WHERE
+            deleted = 0
+            AND status IN ('INIT', 'UPLOADING')
+            AND expire_time &lt; #{expireTime}
+    </select>
+
+
+    <update id="updateMultipartFileStatus" parameterType="com.wkclz.micro.fileos.bean.entity.MdmFileosMultipart">
+        UPDATE
+            mdm_fileos_multipart
+        SET
+            status = #{status},
+            version = version + 1
+        WHERE
+            deleted = 0
+            AND upload_id = #{uploadId}
+    </update>
+
+</mapper>
