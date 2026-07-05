@@ -1,17 +1,18 @@
 package com.wkclz.micro.fileos.rest;
 
-import com.wkclz.core.base.R;
 import com.wkclz.micro.fileos.api.FileosDownloadApi;
-import com.wkclz.micro.fileos.api.FileosSignApi;
 import com.wkclz.micro.fileos.bean.entity.MdmFileosBucket;
 import com.wkclz.micro.fileos.bean.entity.MdmFileosRecord;
 import com.wkclz.micro.fileos.helper.BucketCache;
 import com.wkclz.micro.fileos.service.MdmFileosRecordService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.InputStream;
@@ -22,18 +23,19 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 @RestController
 @RequestMapping(Route.PREFIX)
+@Tag(name = "文件下载")
+@Validated
 public class FileosDownloadRest {
 
     @Autowired
     private FileosDownloadApi fileosDownloadApi;
-    @Autowired
-    private FileosSignApi fileosSignApi;
     @Autowired
     private MdmFileosRecordService mdmFileosRecordService;
     @Autowired
     private BucketCache bucketCache;
 
     @GetMapping(Route.DOWNLOAD)
+    @Operation(summary = "文件下载")
     public void download(@PathVariable String fileId, HttpServletRequest request, HttpServletResponse response) {
         MdmFileosRecord record = mdmFileosRecordService.getRecordByFileId(fileId, null);
         if (record == null) {
@@ -101,5 +103,4 @@ public class FileosDownloadRest {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
-
 }

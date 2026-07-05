@@ -1,10 +1,10 @@
 package com.wkclz.micro.fileos.service;
 
 import com.wkclz.micro.fileos.bean.dto.CompletedPartInfo;
-import com.wkclz.micro.fileos.bean.dto.MdmFileosRecordDto;
-import com.wkclz.micro.fileos.bean.dto.MultipartUploadInitResponse;
-import com.wkclz.micro.fileos.bean.dto.PresignUploadResponse;
 import com.wkclz.micro.fileos.bean.entity.MdmFileosBucket;
+import com.wkclz.micro.fileos.bean.resp.MultipartUploadInitResp;
+import com.wkclz.micro.fileos.bean.resp.PresignUploadResp;
+import com.wkclz.micro.fileos.bean.resp.RecordResp;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 public interface FileosService {
 
-    MdmFileosRecordDto upload(MultipartFile file, MdmFileosBucket bucket, String fileId, String category, Boolean isPublic);
+    RecordResp upload(MultipartFile file, MdmFileosBucket bucket, String fileId, String category, Boolean isPublic);
 
     String sign(String file, MdmFileosBucket bucket, Integer expire, TimeUnit timeUnit);
 
@@ -21,9 +21,9 @@ public interface FileosService {
 
     Integer delete(List<String> files, MdmFileosBucket bucket);
 
-    PresignUploadResponse presignUpload(String fileId, MdmFileosBucket bucket, String contentType, Integer expireMinutes);
+    PresignUploadResp presignUpload(String fileId, MdmFileosBucket bucket, String contentType, Integer expireMinutes);
 
-    MultipartUploadInitResponse initMultipartUpload(String fileId, MdmFileosBucket bucket, String contentType, Integer partCount, Integer expireMinutes);
+    MultipartUploadInitResp initMultipartUpload(String fileId, MdmFileosBucket bucket, String contentType, Integer partCount, Integer expireMinutes);
 
     void completeMultipartUpload(String uploadId, String fileId, MdmFileosBucket bucket, List<CompletedPartInfo> parts);
 

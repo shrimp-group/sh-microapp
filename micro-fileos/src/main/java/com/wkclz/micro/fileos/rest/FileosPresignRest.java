@@ -2,15 +2,20 @@ package com.wkclz.micro.fileos.rest;
 
 import com.wkclz.core.base.R;
 import com.wkclz.micro.fileos.api.FileosPresignUploadApi;
-import com.wkclz.micro.fileos.bean.dto.MdmFileosRecordDto;
-import com.wkclz.micro.fileos.bean.dto.MultipartCompleteRequest;
-import com.wkclz.micro.fileos.bean.dto.MultipartUploadInitRequest;
-import com.wkclz.micro.fileos.bean.dto.MultipartUploadInitResponse;
-import com.wkclz.micro.fileos.bean.dto.PresignCompleteRequest;
-import com.wkclz.micro.fileos.bean.dto.PresignUploadRequest;
-import com.wkclz.micro.fileos.bean.dto.PresignUploadResponse;
+import com.wkclz.micro.fileos.bean.req.MultipartAbortReq;
+import com.wkclz.micro.fileos.bean.req.MultipartCompleteReq;
+import com.wkclz.micro.fileos.bean.req.MultipartUploadInitReq;
+import com.wkclz.micro.fileos.bean.req.PresignCompleteReq;
+import com.wkclz.micro.fileos.bean.req.PresignUploadReq;
+import com.wkclz.micro.fileos.bean.resp.MultipartUploadInitResp;
+import com.wkclz.micro.fileos.bean.resp.PresignUploadResp;
+import com.wkclz.micro.fileos.bean.resp.RecordResp;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,59 +23,64 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping(Route.PREFIX)
+@Tag(name = "预签名上传")
+@Validated
 public class FileosPresignRest {
 
     @Autowired
     private FileosPresignUploadApi fileosPresignUploadApi;
 
     @PostMapping(Route.PRESIGN_UPLOAD)
-    public R<PresignUploadResponse> presignUpload(@RequestBody PresignUploadRequest request) {
-        PresignUploadResponse response = fileosPresignUploadApi.presignUpload(request);
-        return R.ok(response);
+    @Operation(summary = "预签名简单上传")
+    public R<PresignUploadResp> presignUpload(@Valid @RequestBody PresignUploadReq req) {
+        PresignUploadResp resp = fileosPresignUploadApi.presignUpload(req);
+        return R.ok(resp);
     }
 
     @PostMapping(Route.PRESIGN_UPLOAD_BATCH)
-    public R<List<PresignUploadResponse>> presignUploadBatch(@RequestBody List<PresignUploadRequest> requests) {
-        List<PresignUploadResponse> responses = fileosPresignUploadApi.presignUploadBatch(requests);
-        return R.ok(responses);
+    @Operation(summary = "批量预签名简单上传")
+    public R<List<PresignUploadResp>> presignUploadBatch(@Valid @RequestBody List<PresignUploadReq> reqs) {
+        List<PresignUploadResp> respList = fileosPresignUploadApi.presignUploadBatch(reqs);
+        return R.ok(respList);
     }
 
     @PostMapping(Route.PRESIGN_MULTIPART_INIT)
-    public R<MultipartUploadInitResponse> multipartInit(@RequestBody MultipartUploadInitRequest request) {
-        log.info("预签名分片上传初始化: fileName={}, bucketName={}", request.getFileName(), request.getBucketName());
-        MultipartUploadInitResponse response = fileosPresignUploadApi.initMultipartUpload(request);
-        return R.ok(response);
+    @Operation(summary = "预签名分片上传初始化")
+    public R<MultipartUploadInitResp> multipartInit(@Valid @RequestBody MultipartUploadInitReq req) {
+        log.info("预签名分片上传初始化: fileName={}, bucketName={}", req.getFileName(), req.getBucketName());
+        MultipartUploadInitResp resp = fileosPresignUploadApi.initMultipartUpload(req);
+        return R.ok(resp);
     }
 
     @PostMapping(Route.PRESIGN_MULTIPART_COMPLETE)
-    public R<MdmFileosRecordDto> multipartComplete(@RequestBody MultipartCompleteRequest request) {
-        log.info("预签名分片上传完成: fileId={}, uploadId={}", request.getFileId(), request.getUploadId());
-        MdmFileosRecordDto dto = fileosPresignUploadApi.completeMultipartUpload(request);
-        return R.ok(dto);
+    @Operation(summary = "预签名分片上传完成")
+    public R<RecordResp> multipartComplete(@Valid @RequestBody MultipartCompleteReq req) {
+        log.info("预签名分片上传完成: fileId={}, uploadId={}", req.getFileId(), req.getUploadId());
+        RecordResp resp = fileosPresignUploadApi.completeMultipartUpload(req);
+        return R.ok(resp);
     }
 
     @PostMapping(Route.PRESIGN_MULTIPART_ABORT)
-    public R<?> multipartAbort(@RequestParam String uploadId,
-                               @RequestParam String fileId,
-                               @RequestParam(required = false) String bucketName,
-                               @RequestParam(required = false) String ossSp) {
-        log.info("预签名分片上传中止: fileId={}, uploadId={}", fileId, uploadId);
-        fileosPresignUploadApi.abortMultipartUpload(uploadId, fileId, bucketName, ossSp);
+    @Operation(summary = "预签名分片上传中止")
+    public R<Void> multipartAbort(@Valid MultipartAbortReq req) {
+        log.info("预签名分片上传中止: fileId={}, uploadId={}", req.getFileId(), req.getUploadId());
+        fileosPresignUploadApi.abortMultipartUpload(req.getUploadId(), req.getFileId(), req.getBucketName(), req.getOssSp());
         return R.ok();
     }
 
     @PostMapping(Route.PRESIGN_COMPLETE)
-    public R<MdmFileosRecordDto> presignComplete(@RequestBody PresignCompleteRequest request) {
-        log.info("预签名上传完成确认: fileId={}, bucketName={}", request.getFileId(), request.getBucketName());
-        MdmFileosRecordDto dto = fileosPresignUploadApi.presignComplete(request);
-        return R.ok(dto);
+    @Operation(summary = "预签名上传完成确认")
+    public R<RecordResp> presignComplete(@Valid @RequestBody PresignCompleteReq req) {
+        log.info("预签名上传完成确认: fileId={}, bucketName={}", req.getFileId(), req.getBucketName());
+        RecordResp resp = fileosPresignUploadApi.presignComplete(req);
+        return R.ok(resp);
     }
 
     @PostMapping(Route.PRESIGN_COMPLETE_BATCH)
-    public R<List<MdmFileosRecordDto>> presignCompleteBatch(@RequestBody List<PresignCompleteRequest> requests) {
-        log.info("预签名上传批量完成确认: count={}", requests.size());
-        List<MdmFileosRecordDto> dtos = fileosPresignUploadApi.presignCompleteBatch(requests);
-        return R.ok(dtos);
+    @Operation(summary = "批量预签名上传完成确认")
+    public R<List<RecordResp>> presignCompleteBatch(@Valid @RequestBody List<PresignCompleteReq> reqs) {
+        log.info("预签名上传批量完成确认: count={}", reqs.size());
+        List<RecordResp> respList = fileosPresignUploadApi.presignCompleteBatch(reqs);
+        return R.ok(respList);
     }
-
 }

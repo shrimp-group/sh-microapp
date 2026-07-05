@@ -91,7 +91,9 @@ micro-fileos/src/main/java/com/wkclz/micro/fileos/
 │   ├── FileTypeHelper.java           # Magic Bytes 文件验证
 │   └── ImageProcessHelper.java       # 图片处理参数构建（阿里云 OSS）
 ├── job/
-│   └── MultipartCleanupJob.java      # 分片上传过期清理（XXL-Job）
+│   ├── MultipartCleanupJob.java          # 分片上传过期清理（业务逻辑）
+│   ├── MultipartCleanupXxlJob.java       # XxlJob 入口（@ConditionalOnClass，依赖存在时生效）
+│   └── MultipartCleanupScheduledJob.java # Schedule 入口（@ConditionalOnMissingClass，依赖不存在时生效）
 ├── mapper/
 │   ├── MdmFileosBucketMapper.java
 │   ├── MdmFileosRecordMapper.java
@@ -434,6 +436,9 @@ sh:
         default-part-size-mb: 5                  # 默认分片大小（默认 5MB）
     multipart:
       max-age-hours: 24                          # 分片上传记录最大保留时间（默认 24 小时）
+      cleanup:
+        cron: "0 0 */1 * * ?"                    # Schedule 模式 cron 表达式（默认每小时）
+        enabled: true                            # Schedule 模式开关（默认开启，XxlJob 模式下忽略）
     hash:
       enabled: true                              # 是否启用 Hash 去重（默认 true）
       algorithm: SHA-256                         # Hash 算法（默认 SHA-256）
@@ -447,7 +452,7 @@ sh:
 2. 统一使用 `ValidationException.of("消息")` 抛出业务异常
 3. 不指定 bucket 参数时使用 `default_flag=1` 的默认 Bucket
 4. Hash 去重默认开启，相同内容的文件会复用存储路径，但会创建新的 `mdm_fileos_record` 记录
-5. 分片上传需配合 `MultipartCleanupJob`（XXL-Job Handler: `fileosMultipartCleanup`）定时清理过期记录
+5. 分片上传需配合 `MultipartCleanupJob` 定时清理过期记录。支持双入口：XxlJob（Handler: `fileosMultipartCleanup`）优先，XxlJob 依赖不存在时自动降级为 Spring `@Scheduled`（cron: `sh.fileos.multipart.cleanup.cron`，默认每小时；开关: `sh.fileos.multipart.cleanup.enabled`，默认 true）
 6. 图片处理参数（`imageProcess`）仅阿里云 OSS 生效，存储为 JSON 格式，签名时自动附加 `x-oss-process` 参数
 7. 目录统计（`fileCount` / `totalSize`）由 `DirectoryHelper` 异步维护，上传/删除时自动更新
 8. 预签名上传流程：后端生成预签名 URL → 前端直传 OSS → 前端通知后端完成确认（`presignComplete`）
@@ -462,7 +467,7 @@ sh:
 - `sh-redis`: StringRedisTemplate、RedisMessageListenerContainer
 - `sh-spring`: Sys（环境信息）、SnowflakeHelper
 - `sh-web`: ErrorHandler
-- `sh-xxljob`: @XxlJob（分片上传清理任务）
+- `sh-xxljob`: @XxlJob（分片上传清理任务，optional 依赖，不存在时自动降级为 @Scheduled）
 - `aliyun-sdk-oss` / `software.amazon.awssdk:s3`
 
 ---
@@ -476,10 +481,10 @@ sh:
 | 多实例缓存不一致 | 确认 Redis 频道 `shrimp:micro:fileos:bucket:cache:refresh` 正常通信 |
 | 文件类型校验失败 | Magic Bytes 验证实际内容，确认文件未损坏或扩展名匹配 |
 | Hash 去重导致文件 ID 相同 | 这是预期行为，相同内容共享存储路径，但各自有独立的 `mdm_fileos_record` 记录 |
-| 分片上传记录堆积 | 检查 XXL-Job 中 `fileosMultipartCleanup` 任务是否正常运行 |
+| 分片上传记录堆积 | 检查 XxlJob 中 `fileosMultipartCleanup` 任务是否正常运行；若未引入 XxlJob，检查 `@Scheduled` 是否生效（`sh.fileos.multipart.cleanup.enabled=true`） |
 | 图片处理参数不生效 | 确认 OSS 服务商为 `ALI_OSS`，其他服务商暂不支持图片处理 |
 | 预签名上传后文件状态为 UPLOADING | 前端上传完成后需调用 `presignComplete` 接口确认 |
 
 ---
 
-**最后更新时间**: 2026-05-22
+**最后更新时间**: 2026-06-19

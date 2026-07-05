@@ -1,29 +1,29 @@
 package com.wkclz.micro.fileos.api;
 
-import com.wkclz.micro.fileos.bean.dto.MdmFileosRecordDto;
-import com.wkclz.micro.fileos.bean.dto.MultipartCompleteRequest;
-import com.wkclz.micro.fileos.bean.dto.MultipartUploadInitRequest;
-import com.wkclz.micro.fileos.bean.dto.MultipartUploadInitResponse;
-import com.wkclz.micro.fileos.bean.dto.PresignCompleteRequest;
-import com.wkclz.micro.fileos.bean.dto.PresignUploadRequest;
-import com.wkclz.micro.fileos.bean.dto.PresignUploadResponse;
+import com.wkclz.micro.fileos.bean.req.MultipartCompleteReq;
+import com.wkclz.micro.fileos.bean.req.MultipartUploadInitReq;
+import com.wkclz.micro.fileos.bean.req.PresignCompleteReq;
+import com.wkclz.micro.fileos.bean.req.PresignUploadReq;
+import com.wkclz.micro.fileos.bean.resp.MultipartUploadInitResp;
+import com.wkclz.micro.fileos.bean.resp.PresignUploadResp;
+import com.wkclz.micro.fileos.bean.resp.RecordResp;
 
 import java.util.List;
 
 public interface FileosPresignUploadApi {
 
-    PresignUploadResponse presignUpload(PresignUploadRequest request);
+    PresignUploadResp presignUpload(PresignUploadReq request);
 
-    List<PresignUploadResponse> presignUploadBatch(List<PresignUploadRequest> requests);
+    List<PresignUploadResp> presignUploadBatch(List<PresignUploadReq> requests);
 
-    MultipartUploadInitResponse initMultipartUpload(MultipartUploadInitRequest request);
+    MultipartUploadInitResp initMultipartUpload(MultipartUploadInitReq request);
 
-    MdmFileosRecordDto completeMultipartUpload(MultipartCompleteRequest request);
+    RecordResp completeMultipartUpload(MultipartCompleteReq request);
 
     void abortMultipartUpload(String uploadId, String fileId, String bucketName, String ossSp);
 
-    MdmFileosRecordDto presignComplete(PresignCompleteRequest request);
+    RecordResp presignComplete(PresignCompleteReq request);
 
-    List<MdmFileosRecordDto> presignCompleteBatch(List<PresignCompleteRequest> requests);
+    List<RecordResp> presignCompleteBatch(List<PresignCompleteReq> requests);
 
 }

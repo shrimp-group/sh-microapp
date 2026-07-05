@@ -1,4 +1,4 @@
-package com.wkclz.micro.fileos.job;
+package com.wkclz.micro.fileos.job.impl;
 
 import com.wkclz.micro.fileos.bean.entity.MdmFileosBucket;
 import com.wkclz.micro.fileos.bean.entity.MdmFileosMultipart;
@@ -9,7 +9,6 @@ import com.wkclz.micro.fileos.helper.BucketCache;
 import com.wkclz.micro.fileos.service.FileosService;
 import com.wkclz.micro.fileos.service.MdmFileosMultipartService;
 import com.wkclz.micro.fileos.service.MdmFileosRecordService;
-import com.xxl.job.core.handler.annotation.XxlJob;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -38,7 +37,6 @@ public class MultipartCleanupJob {
     @Autowired
     private MdmFileosRecordService mdmFileosRecordService;
 
-    @XxlJob("fileosMultipartCleanup")
     public void cleanup() {
         Integer maxAgeHours = fileosConfig.getMultipartMaxAgeHours();
         if (maxAgeHours == null) {

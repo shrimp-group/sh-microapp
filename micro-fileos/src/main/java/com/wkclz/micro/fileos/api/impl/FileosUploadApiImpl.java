@@ -4,16 +4,21 @@ import com.wkclz.core.exception.ValidationException;
 import com.wkclz.core.user.UserContext;
 import com.wkclz.micro.fileos.api.FileosSignApi;
 import com.wkclz.micro.fileos.api.FileosUploadApi;
-import com.wkclz.micro.fileos.bean.dto.*;
 import com.wkclz.micro.fileos.bean.entity.MdmFileosBucket;
 import com.wkclz.micro.fileos.bean.entity.MdmFileosMultipart;
 import com.wkclz.micro.fileos.bean.entity.MdmFileosRecord;
 import com.wkclz.micro.fileos.bean.enums.UploadStatusEnum;
 import com.wkclz.micro.fileos.bean.enums.UploadTypeEnum;
 import com.wkclz.micro.fileos.helper.FileTypeHelper;
+import com.wkclz.micro.fileos.bean.req.MultipartCompleteReq;
+import com.wkclz.micro.fileos.bean.req.MultipartUploadInitReq;
+import com.wkclz.micro.fileos.bean.req.UploadSimpleReq;
+import com.wkclz.micro.fileos.bean.resp.MultipartUploadInitResp;
+import com.wkclz.micro.fileos.bean.resp.RecordResp;
 import com.wkclz.micro.fileos.service.FileosService;
 import com.wkclz.micro.fileos.service.MdmFileosMultipartService;
 import com.wkclz.micro.fileos.utils.OssUtil;
+import com.wkclz.tool.utils.BeanUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -33,28 +38,28 @@ public class FileosUploadApiImpl extends AbstractFileosApi implements FileosUplo
     private MdmFileosMultipartService mdmFileosMultipartService;
 
     @Override
-    public MdmFileosRecordDto upload(MultipartFile file) {
+    public RecordResp upload(MultipartFile file) {
         return upload(file, null, null, null);
     }
 
     @Override
-    public MdmFileosRecordDto upload(MultipartFile file, String category) {
+    public RecordResp upload(MultipartFile file, String category) {
         return upload(file, category, null, null);
     }
 
     @Override
-    public MdmFileosRecordDto upload(MultipartFile file, String category, String bucketName) {
+    public RecordResp upload(MultipartFile file, String category, String bucketName) {
         return upload(file, category, bucketName, null);
     }
 
     @Override
-    public MdmFileosRecordDto upload(MultipartFile file, String category, String bucketName, Boolean isPublic) {
+    public RecordResp upload(MultipartFile file, String category, String bucketName, Boolean isPublic) {
         return upload(file, category, bucketName, isPublic, null);
     }
 
     @Override
-    public MdmFileosRecordDto upload(MultipartFile file, String category, String bucketName, Boolean isPublic, String fileName) {
-        FileosUploadRequest request = new FileosUploadRequest();
+    public RecordResp upload(MultipartFile file, String category, String bucketName, Boolean isPublic, String fileName) {
+        UploadSimpleReq request = new UploadSimpleReq();
         request.setCategory(category);
         request.setBucketName(bucketName);
         request.setIsPublic(isPublic);
@@ -63,7 +68,7 @@ public class FileosUploadApiImpl extends AbstractFileosApi implements FileosUplo
     }
 
     @Override
-    public MdmFileosRecordDto upload(MultipartFile file, FileosUploadRequest request) {
+    public RecordResp upload(MultipartFile file, UploadSimpleReq request) {
         validateFile(file);
 
         String category = getCategory(request != null ? request.getCategory() : null);
@@ -82,9 +87,9 @@ public class FileosUploadApiImpl extends AbstractFileosApi implements FileosUplo
             MdmFileosRecord existing = mdmFileosRecordService.getRecordByFileHash(fileHash, tenantCode);
             if (existing != null) {
                 log.info("文件Hash去重命中, fileHash={}, 已有fileId={}, 直接返回已有记录", fileHash, existing.getFileId());
-                MdmFileosRecordDto dto = MdmFileosRecordDto.copy(existing);
-                dto.setPreviewUrl(fileosSignApi.sign(existing.getFileId()));
-                return dto;
+                RecordResp resp = BeanUtil.cp(existing, RecordResp.class);
+                resp.setPreviewUrl(fileosSignApi.sign(existing.getFileId()));
+                return resp;
             }
         }
 
@@ -116,16 +121,15 @@ public class FileosUploadApiImpl extends AbstractFileosApi implements FileosUplo
             log.error("文件已上传到存储但数据库记录插入失败，请手动清理孤立文件! fileId={}, bucketName={}", fileId, bucket.getBucketName(), e);
             throw e;
         }
-
-        MdmFileosRecordDto dto = MdmFileosRecordDto.copy(record);
-        dto.setPreviewUrl(fileosSignApi.sign(record.getFileId()));
+        RecordResp resp = BeanUtil.cp(record, RecordResp.class);
+        resp.setPreviewUrl(fileosSignApi.sign(record.getFileId()));
 
         ensureDirectoryAsync(fileId, record.getBucketName(), tenantCode, record.getFileSize());
-        return dto;
+        return resp;
     }
 
     @Override
-    public MultipartUploadInitResponse initMultipartUpload(MultipartUploadInitRequest request) {
+    public MultipartUploadInitResp initMultipartUpload(MultipartUploadInitReq request) {
         if (request == null) {
             throw ValidationException.of("请求不能为空");
         }
@@ -155,11 +159,11 @@ public class FileosUploadApiImpl extends AbstractFileosApi implements FileosUplo
         }
 
         log.info("初始化分片上传, fileId={}, partCount={}, bucketName={}", fileId, request.getPartCount(), bucket.getBucketName());
-        MultipartUploadInitResponse response = service.initMultipartUpload(fileId, bucket, contentType, request.getPartCount(), expireMinutes);
+        MultipartUploadInitResp resp = service.initMultipartUpload(fileId, bucket, contentType, request.getPartCount(), expireMinutes);
 
         MdmFileosMultipart multipart = new MdmFileosMultipart();
         multipart.setTenantCode(tenantCode);
-        multipart.setUploadId(response.getUploadId());
+        multipart.setUploadId(resp.getUploadId());
         multipart.setFileId(fileId);
         multipart.setFileName(request.getFileName());
         multipart.setFileSize(request.getFileSize());
@@ -174,14 +178,14 @@ public class FileosUploadApiImpl extends AbstractFileosApi implements FileosUplo
         multipart.setExpireTime(new Date(System.currentTimeMillis() + expireMs));
         mdmFileosMultipartService.insert(multipart);
 
-        response.setFileId(fileId);
-        response.setOssSp(bucket.getOssSp());
-        response.setBucketName(bucket.getBucketName());
-        return response;
+        resp.setFileId(fileId);
+        resp.setOssSp(bucket.getOssSp());
+        resp.setBucketName(bucket.getBucketName());
+        return resp;
     }
 
     @Override
-    public MdmFileosRecordDto completeMultipartUpload(MultipartCompleteRequest request) {
+    public RecordResp completeMultipartUpload(MultipartCompleteReq request) {
         if (StringUtils.isBlank(request.getUploadId())) {
             throw ValidationException.of("uploadId 不能为空");
         }
@@ -223,8 +227,7 @@ public class FileosUploadApiImpl extends AbstractFileosApi implements FileosUplo
         mdmFileosMultipartService.updateMultipartFileStatus(multipart);
 
         ensureDirectoryAsync(request.getFileId(), bucket.getBucketName(), tenantCode, request.getFileSize() != null ? request.getFileSize() : 0L);
-
-        return MdmFileosRecordDto.copy(record);
+        return BeanUtil.cp(record, RecordResp.class);
     }
 
     @Override

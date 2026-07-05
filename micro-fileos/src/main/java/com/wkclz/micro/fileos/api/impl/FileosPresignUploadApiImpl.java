@@ -3,22 +3,23 @@ package com.wkclz.micro.fileos.api.impl;
 import com.wkclz.core.exception.ValidationException;
 import com.wkclz.core.user.UserContext;
 import com.wkclz.micro.fileos.api.FileosPresignUploadApi;
-import com.wkclz.micro.fileos.bean.dto.MdmFileosRecordDto;
-import com.wkclz.micro.fileos.bean.dto.MultipartCompleteRequest;
-import com.wkclz.micro.fileos.bean.dto.MultipartUploadInitRequest;
-import com.wkclz.micro.fileos.bean.dto.MultipartUploadInitResponse;
-import com.wkclz.micro.fileos.bean.dto.PresignCompleteRequest;
-import com.wkclz.micro.fileos.bean.dto.PresignUploadRequest;
-import com.wkclz.micro.fileos.bean.dto.PresignUploadResponse;
 import com.wkclz.micro.fileos.bean.entity.MdmFileosBucket;
 import com.wkclz.micro.fileos.bean.entity.MdmFileosMultipart;
 import com.wkclz.micro.fileos.bean.entity.MdmFileosRecord;
 import com.wkclz.micro.fileos.bean.enums.UploadStatusEnum;
 import com.wkclz.micro.fileos.bean.enums.UploadTypeEnum;
 import com.wkclz.micro.fileos.helper.FileTypeHelper;
+import com.wkclz.micro.fileos.bean.req.MultipartCompleteReq;
+import com.wkclz.micro.fileos.bean.req.MultipartUploadInitReq;
+import com.wkclz.micro.fileos.bean.req.PresignCompleteReq;
+import com.wkclz.micro.fileos.bean.req.PresignUploadReq;
+import com.wkclz.micro.fileos.bean.resp.MultipartUploadInitResp;
+import com.wkclz.micro.fileos.bean.resp.PresignUploadResp;
+import com.wkclz.micro.fileos.bean.resp.RecordResp;
 import com.wkclz.micro.fileos.service.FileosService;
 import com.wkclz.micro.fileos.service.MdmFileosMultipartService;
 import com.wkclz.micro.fileos.utils.OssUtil;
+import com.wkclz.tool.utils.BeanUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -37,7 +38,7 @@ public class FileosPresignUploadApiImpl extends AbstractFileosApi implements Fil
     private MdmFileosMultipartService mdmFileosMultipartService;
 
     @Override
-    public PresignUploadResponse presignUpload(PresignUploadRequest request) {
+    public PresignUploadResp presignUpload(PresignUploadReq request) {
         validatePresignRequest(request);
         String category = getCategory(request.getCategory());
         MdmFileosBucket bucket = getBucket(request.getBucketName());
@@ -55,7 +56,7 @@ public class FileosPresignUploadApiImpl extends AbstractFileosApi implements Fil
         }
 
         log.info("预签名上传, fileId={}, category={}, bucketName={}", fileId, category, bucket.getBucketName());
-        PresignUploadResponse response = service.presignUpload(fileId, bucket, contentType, expireMinutes);
+        PresignUploadResp resp = service.presignUpload(fileId, bucket, contentType, expireMinutes);
 
         MdmFileosRecord record = new MdmFileosRecord();
         record.setTenantCode(tenantCode);
@@ -74,28 +75,28 @@ public class FileosPresignUploadApiImpl extends AbstractFileosApi implements Fil
         record.setImageProcess(request.getImageProcess());
         mdmFileosRecordService.insert(record);
 
-        response.setFileId(fileId);
-        response.setOssSp(bucket.getOssSp());
-        response.setBucketName(bucket.getBucketName());
-        response.setContentType(contentType);
-        response.setExpireMinutes(expireMinutes);
-        return response;
+        resp.setFileId(fileId);
+        resp.setOssSp(bucket.getOssSp());
+        resp.setBucketName(bucket.getBucketName());
+        resp.setContentType(contentType);
+        resp.setExpireMinutes(expireMinutes);
+        return resp;
     }
 
     @Override
-    public List<PresignUploadResponse> presignUploadBatch(List<PresignUploadRequest> requests) {
+    public List<PresignUploadResp> presignUploadBatch(List<PresignUploadReq> requests) {
         if (CollectionUtils.isEmpty(requests)) {
             throw ValidationException.of("请求列表不能为空");
         }
-        List<PresignUploadResponse> responses = new ArrayList<>();
-        for (PresignUploadRequest request : requests) {
+        List<PresignUploadResp> responses = new ArrayList<>();
+        for (PresignUploadReq request : requests) {
             responses.add(presignUpload(request));
         }
         return responses;
     }
 
     @Override
-    public MultipartUploadInitResponse initMultipartUpload(MultipartUploadInitRequest request) {
+    public MultipartUploadInitResp initMultipartUpload(MultipartUploadInitReq request) {
         validateMultipartRequest(request);
         String category = getCategory(request.getCategory());
         MdmFileosBucket bucket = getBucket(request.getBucketName());
@@ -117,11 +118,11 @@ public class FileosPresignUploadApiImpl extends AbstractFileosApi implements Fil
         }
 
         log.info("预签名分片上传初始化, fileId={}, partCount={}, bucketName={}", fileId, partCount, bucket.getBucketName());
-        MultipartUploadInitResponse response = service.initMultipartUpload(fileId, bucket, contentType, partCount, expireMinutes);
+        MultipartUploadInitResp resp = service.initMultipartUpload(fileId, bucket, contentType, partCount, expireMinutes);
 
         MdmFileosMultipart multipart = new MdmFileosMultipart();
         multipart.setTenantCode(tenantCode);
-        multipart.setUploadId(response.getUploadId());
+        multipart.setUploadId(resp.getUploadId());
         multipart.setFileId(fileId);
         multipart.setFileName(request.getFileName());
         multipart.setFileSize(request.getFileSize());
@@ -136,14 +137,14 @@ public class FileosPresignUploadApiImpl extends AbstractFileosApi implements Fil
         multipart.setExpireTime(new Date(System.currentTimeMillis() + expireMs));
         mdmFileosMultipartService.insert(multipart);
 
-        response.setFileId(fileId);
-        response.setOssSp(bucket.getOssSp());
-        response.setBucketName(bucket.getBucketName());
-        return response;
+        resp.setFileId(fileId);
+        resp.setOssSp(bucket.getOssSp());
+        resp.setBucketName(bucket.getBucketName());
+        return resp;
     }
 
     @Override
-    public MdmFileosRecordDto completeMultipartUpload(MultipartCompleteRequest request) {
+    public RecordResp completeMultipartUpload(MultipartCompleteReq request) {
         if (StringUtils.isBlank(request.getUploadId())) {
             throw ValidationException.of("uploadId 不能为空");
         }
@@ -185,8 +186,7 @@ public class FileosPresignUploadApiImpl extends AbstractFileosApi implements Fil
         mdmFileosMultipartService.updateMultipartFileStatus(multipart);
 
         ensureDirectoryAsync(request.getFileId(), bucket.getBucketName(), tenantCode, request.getFileSize() != null ? request.getFileSize() : 0L);
-
-        return MdmFileosRecordDto.copy(record);
+        return BeanUtil.cp(record, RecordResp.class);
     }
 
     @Override
@@ -210,7 +210,7 @@ public class FileosPresignUploadApiImpl extends AbstractFileosApi implements Fil
     }
 
     @Override
-    public MdmFileosRecordDto presignComplete(PresignCompleteRequest request) {
+    public RecordResp presignComplete(PresignCompleteReq request) {
         if (StringUtils.isBlank(request.getFileId())) {
             throw ValidationException.of("fileId 不能为空");
         }
@@ -235,23 +235,22 @@ public class FileosPresignUploadApiImpl extends AbstractFileosApi implements Fil
 
         log.info("预签名上传完成, fileId={}, bucketName={}", request.getFileId(), existing.getBucketName());
         ensureDirectoryAsync(existing.getFileId(), existing.getBucketName(), tenantCode, existing.getFileSize() != null ? existing.getFileSize() : 0L);
-
-        return MdmFileosRecordDto.copy(existing);
+        return BeanUtil.cp(existing, RecordResp.class);
     }
 
     @Override
-    public List<MdmFileosRecordDto> presignCompleteBatch(List<PresignCompleteRequest> requests) {
+    public List<RecordResp> presignCompleteBatch(List<PresignCompleteReq> requests) {
         if (CollectionUtils.isEmpty(requests)) {
             throw ValidationException.of("请求列表不能为空");
         }
-        List<MdmFileosRecordDto> responses = new ArrayList<>();
-        for (PresignCompleteRequest request : requests) {
+        List<RecordResp> responses = new ArrayList<>();
+        for (PresignCompleteReq request : requests) {
             responses.add(presignComplete(request));
         }
         return responses;
     }
 
-    private void validatePresignRequest(PresignUploadRequest request) {
+    private void validatePresignRequest(PresignUploadReq request) {
         if (request == null) {
             throw ValidationException.of("请求不能为空");
         }
@@ -281,7 +280,7 @@ public class FileosPresignUploadApiImpl extends AbstractFileosApi implements Fil
         }
     }
 
-    private void validateMultipartRequest(MultipartUploadInitRequest request) {
+    private void validateMultipartRequest(MultipartUploadInitReq request) {
         if (request == null) {
             throw ValidationException.of("请求不能为空");
         }

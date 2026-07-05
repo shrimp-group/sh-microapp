@@ -42,6 +42,12 @@ public class FileosConfig {
 
 
 
+    @Value("${sh.fileos.multipart.cleanup.cron:0 0 */1 * * ?}")
+    private String multipartCleanupCron;
+
+    @Value("${sh.fileos.multipart.cleanup.enabled:true}")
+    private Boolean multipartCleanupEnabled;
+
     @Value("${spring.application.name:demo}")
     private String system;
 

@@ -5,6 +5,7 @@ import com.wkclz.micro.fileos.bean.entity.MdmFileosRecord;
 import com.wkclz.micro.fileos.mapper.MdmFileosRecordMapper;
 import com.wkclz.mybatis.helper.PageQuery;
 import com.wkclz.mybatis.service.BaseService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.List;
 
+@Slf4j
 @Service
 public class MdmFileosRecordService extends BaseService<MdmFileosRecord, MdmFileosRecordMapper> {
 
@@ -43,5 +45,6 @@ public class MdmFileosRecordService extends BaseService<MdmFileosRecord, MdmFile
         }
         return mapper.getRecordByFileHash(fileHash, tenantCode);
     }
+
 
 }

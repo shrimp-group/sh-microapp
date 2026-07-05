@@ -3,11 +3,11 @@ package com.wkclz.micro.fileos.service.impl;
 import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.fileos.bean.FileosConstant;
 import com.wkclz.micro.fileos.bean.dto.CompletedPartInfo;
-import com.wkclz.micro.fileos.bean.dto.MdmFileosRecordDto;
-import com.wkclz.micro.fileos.bean.dto.MultipartUploadInitResponse;
 import com.wkclz.micro.fileos.bean.dto.PresignedPartInfo;
-import com.wkclz.micro.fileos.bean.dto.PresignUploadResponse;
 import com.wkclz.micro.fileos.bean.entity.MdmFileosBucket;
+import com.wkclz.micro.fileos.bean.resp.MultipartUploadInitResp;
+import com.wkclz.micro.fileos.bean.resp.PresignUploadResp;
+import com.wkclz.micro.fileos.bean.resp.RecordResp;
 import com.wkclz.micro.fileos.service.FileosService;
 import com.wkclz.micro.fileos.helper.PathHelper;
 import com.wkclz.micro.fileos.utils.OssUtil;
@@ -65,11 +65,11 @@ public class S3ServiceImpl implements FileosService {
     private PathHelper pathHelper;
 
     @Override
-    public MdmFileosRecordDto upload(MultipartFile file, MdmFileosBucket bucket, String fileId, String category, Boolean isPublic) {
+    public RecordResp upload(MultipartFile file, MdmFileosBucket bucket, String fileId, String category, Boolean isPublic) {
         return uploadCommon(file, bucket, fileId);
     }
 
-    private MdmFileosRecordDto uploadCommon(MultipartFile file, MdmFileosBucket bucket, String fileId) {
+    private RecordResp uploadCommon(MultipartFile file, MdmFileosBucket bucket, String fileId) {
         S3Client s3 = getOrCreateS3Client(bucket);
         String bucketName = bucket.getBucketName();
         String filename = file.getOriginalFilename();
@@ -88,12 +88,12 @@ public class S3ServiceImpl implements FileosService {
             log.info("Upload file to S3 success: fileId={}, bucketName={}", fileId, bucketName);
             String previewUrl = sign(fileId, bucket, 10, TimeUnit.MINUTES);
 
-            MdmFileosRecordDto dto = new MdmFileosRecordDto();
-            dto.setFileId(fileId);
-            dto.setOssSp(bucket.getOssSp());
-            dto.setBucketName(bucketName);
-            dto.setPreviewUrl(previewUrl);
-            return dto;
+            RecordResp resp = new RecordResp();
+            resp.setFileId(fileId);
+            resp.setOssSp(bucket.getOssSp());
+            resp.setBucketName(bucketName);
+            resp.setPreviewUrl(previewUrl);
+            return resp;
         } catch (IOException e) {
             log.error("Upload file [{}] to AWS S3 IO failed: {}", fileId, e.getMessage());
             throw ValidationException.of("文件上传失败: {}", e.getMessage());
@@ -180,7 +180,7 @@ public class S3ServiceImpl implements FileosService {
     }
 
     @Override
-    public PresignUploadResponse presignUpload(String fileId, MdmFileosBucket bucket, String contentType, Integer expireMinutes) {
+    public PresignUploadResp presignUpload(String fileId, MdmFileosBucket bucket, String contentType, Integer expireMinutes) {
         String bucketName = bucket.getBucketName();
         String endpointOuter = bucket.getEndpointOuter();
         S3Presigner presigner = getOrCreateS3Presigner(bucket);
@@ -203,14 +203,14 @@ public class S3ServiceImpl implements FileosService {
                 + (url.getQuery() != null ? "?" + url.getQuery() : "")
                 + (url.getRef() != null ? "#" + url.getRef() : "");
 
-            PresignUploadResponse response = new PresignUploadResponse();
-            response.setFileId(fileId);
-            response.setPresignUrl(presignUrl);
-            response.setOssSp(bucket.getOssSp());
-            response.setBucketName(bucketName);
-            response.setContentType(contentType);
-            response.setExpireMinutes(expireMinutes);
-            return response;
+            PresignUploadResp resp = new PresignUploadResp();
+            resp.setFileId(fileId);
+            resp.setPresignUrl(presignUrl);
+            resp.setOssSp(bucket.getOssSp());
+            resp.setBucketName(bucketName);
+            resp.setContentType(contentType);
+            resp.setExpireMinutes(expireMinutes);
+            return resp;
         } catch (Exception e) {
             log.error("Generate presigned upload URL for S3 failed: {}", e.getMessage());
             throw ValidationException.of("预签名上传URL生成失败: {}", e.getMessage());
@@ -218,7 +218,7 @@ public class S3ServiceImpl implements FileosService {
     }
 
     @Override
-    public MultipartUploadInitResponse initMultipartUpload(String fileId, MdmFileosBucket bucket, String contentType, Integer partCount, Integer expireMinutes) {
+    public MultipartUploadInitResp initMultipartUpload(String fileId, MdmFileosBucket bucket, String contentType, Integer partCount, Integer expireMinutes) {
         S3Client s3 = getOrCreateS3Client(bucket);
         String bucketName = bucket.getBucketName();
         String endpointOuter = bucket.getEndpointOuter();
@@ -267,15 +267,15 @@ public class S3ServiceImpl implements FileosService {
             parts.add(partInfo);
         }
 
-        MultipartUploadInitResponse response = new MultipartUploadInitResponse();
-        response.setUploadId(uploadId);
-        response.setFileId(fileId);
-        response.setOssSp(bucket.getOssSp());
-        response.setBucketName(bucketName);
-        response.setContentType(contentType);
-        response.setExpireMinutes(expireMinutes);
-        response.setParts(parts);
-        return response;
+        MultipartUploadInitResp resp = new MultipartUploadInitResp();
+        resp.setUploadId(uploadId);
+        resp.setFileId(fileId);
+        resp.setOssSp(bucket.getOssSp());
+        resp.setBucketName(bucketName);
+        resp.setContentType(contentType);
+        resp.setExpireMinutes(expireMinutes);
+        resp.setParts(parts);
+        return resp;
     }
 
     @Override
