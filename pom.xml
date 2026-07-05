@@ -29,6 +29,7 @@
         <module>micro-audit</module>
         <module>micro-dict</module>
         <module>micro-fileos</module>
+        <module>micro-liteflow</module>
         <module>micro-form</module>
         <module>micro-k8s</module>
         <module>micro-mask</module>

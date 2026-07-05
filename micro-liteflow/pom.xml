@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.wkclz.microapp</groupId>
+        <artifactId>sh-microapp</artifactId>
+        <version>5.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>micro-liteflow</artifactId>
+    <version>${revision}</version>
+
+    <properties>
+        <liteflow.version>2.12.4.1</liteflow.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.wkclz.iam</groupId>
+            <artifactId>iam-sdk</artifactId>
+            <version>${sh-iam.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.wkclz.framework</groupId>
+            <artifactId>sh-mybatis</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.yomahub</groupId>
+            <artifactId>liteflow-spring-boot-starter</artifactId>
+            <version>${liteflow.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.yomahub</groupId>
+            <artifactId>liteflow-rule-sql</artifactId>
+            <version>${liteflow.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.yomahub</groupId>
+            <artifactId>liteflow-script-groovy</artifactId>
+            <version>${liteflow.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.yomahub</groupId>
+            <artifactId>liteflow-script-javax</artifactId>
+            <version>${liteflow.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.yomahub</groupId>
+            <artifactId>liteflow-script-aviator</artifactId>
+            <version>${liteflow.version}</version>
+        </dependency>
+
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.wkclz.generator</groupId>
+                <artifactId>generator-client</artifactId>
+                <version>5.0.0-SNAPSHOT</version>
+                <configuration>
+                    <options>
+                        <option>94d4e81d910ffe2ba738fc6dd1764c33</option>
+                    </options>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
