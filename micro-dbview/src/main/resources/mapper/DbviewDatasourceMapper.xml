@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.dbview.mapper.DbviewDatasourceMapper">
+
+    <select id="getDatasourceList" parameterType="com.wkclz.micro.dbview.bean.entity.DbviewDatasource" resultType="com.wkclz.micro.dbview.bean.entity.DbviewDatasource">
+        SELECT
+            id,
+            datasource_name,
+            host,
+            port,
+            database_name,
+            jdbc_url,
+            username,
+            status,
+            sort,
+            create_time,
+            create_by,
+            update_time,
+            update_by,
+            remark,
+            version
+        FROM
+            dbview_datasource
+        WHERE
+            deleted = 0
+            <if test="datasourceName != null">AND datasource_name LIKE CONCAT('%', #{datasourceName}, '%')</if>
+            <if test="host != null">AND host LIKE CONCAT('%', #{host}, '%')</if>
+            <if test="status != null">AND status = #{status}</if>
+        ORDER BY
+            sort ASC,
+            id ASC
+    </select>
+
+    <select id="getDatasourceOptions" resultType="java.lang.String">
+        SELECT
+            datasource_name
+        FROM
+            dbview_datasource
+        WHERE
+            deleted = 0
+            AND status = 1
+        ORDER BY
+            sort ASC,
+            id ASC
+    </select>
+
+    <select id="selectByDatasourceName" resultType="com.wkclz.micro.dbview.bean.entity.DbviewDatasource">
+        SELECT
+            id,
+            datasource_name,
+            host,
+            port,
+            database_name,
+            jdbc_url,
+            username,
+            password,
+            status,
+            sort,
+            create_time,
+            create_by,
+            update_time,
+            update_by,
+            remark,
+            version
+        FROM
+            dbview_datasource
+        WHERE
+            deleted = 0
+            AND datasource_name = #{datasourceName}
+        LIMIT 1
+    </select>
+
+</mapper>

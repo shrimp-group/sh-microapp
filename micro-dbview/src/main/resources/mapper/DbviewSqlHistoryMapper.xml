@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.dbview.mapper.DbviewSqlHistoryMapper">
+
+    <select id="getHistoryList" parameterType="com.wkclz.micro.dbview.bean.entity.DbviewSqlHistory" resultType="com.wkclz.micro.dbview.bean.entity.DbviewSqlHistory">
+        SELECT
+            id,
+            datasource_id,
+            user_code,
+            sql_text,
+            sql_type,
+            status,
+            affected_rows,
+            cost_ms,
+            error_message,
+            create_time
+        FROM
+            dbview_sql_history
+        WHERE
+            deleted = 0
+            <if test="datasourceId != null">AND datasource_id = #{datasourceId}</if>
+            <if test="userCode != null">AND user_code = #{userCode}</if>
+            <if test="sqlType != null">AND sql_type = #{sqlType}</if>
+            <if test="status != null">AND status = #{status}</if>
+            <if test="keyword != null">AND sql_text LIKE CONCAT('%', #{keyword}, '%')</if>
+            <if test="timeFrom != null">AND create_time &gt;= #{timeFrom}</if>
+            <if test="timeTo != null">AND create_time &lt;= #{timeTo}</if>
+        ORDER BY
+            id DESC
+    </select>
+
+</mapper>
