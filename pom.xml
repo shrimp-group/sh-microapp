@@ -33,6 +33,7 @@
         <module>micro-pdf</module>
         <module>micro-seq</module>
         <module>micro-wxapp</module>
+        <module>micro-wxmp</module>
     </modules>
 
 </project>
