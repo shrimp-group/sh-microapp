@@ -30,6 +30,7 @@
         <module>micro-dict</module>
         <module>micro-fileos</module>
         <module>micro-k8s</module>
+        <module>micro-mask</module>
         <module>micro-msg</module>
         <module>micro-pdf</module>
         <module>micro-seq</module>
