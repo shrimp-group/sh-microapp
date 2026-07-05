@@ -34,6 +34,7 @@
         <module>micro-fun</module>
         <module>micro-k8s</module>
         <module>micro-mask</module>
+        <module>micro-material</module>
         <module>micro-msg</module>
         <module>micro-pdf</module>
         <module>micro-points</module>

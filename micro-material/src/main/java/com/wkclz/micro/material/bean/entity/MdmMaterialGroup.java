@@ -1,4 +1,4 @@
-package com.wkclz.micro.material.pojo.entity;
+package com.wkclz.micro.material.bean.entity;
 
 import com.wkclz.core.annotation.FieldDesc;
 import com.wkclz.core.base.BaseEntity;
@@ -11,47 +11,41 @@ import lombok.EqualsAndHashCode;
 /**
  * Description Create by sh-generator
  * @author shrimp
- * @table mdm_material_version (素材版本) 重新生成代码会覆盖
+ * @table mdm_material_group (素材分组) 重新生成代码会覆盖
  */
 
 @Data
 @EqualsAndHashCode(callSuper = false)
-public class MdmMaterialVersion extends BaseEntity {
+public class MdmMaterialGroup extends BaseEntity {
 
     /**
-     * 素材编码
+     * 分组编码
      */
-    @FieldDesc(value = "素材编码", notNull = true)
-    private String materialCode;
+    @FieldDesc(value = "分组编码", notNull = true)
+    private String groupCode;
 
     /**
-     * 版本号
+     * 父级分组编码(顶级为0)
      */
-    @FieldDesc(value = "版本号", notNull = true)
-    private Integer versionNo;
+    @FieldDesc(value = "父级分组编码(顶级为0)", notNull = true)
+    private String parentCode;
 
     /**
-     * 文件ID
+     * 分组名称
      */
-    @FieldDesc(value = "文件ID")
-    private String fileId;
+    @FieldDesc(value = "分组名称", notNull = true)
+    private String groupName;
 
     /**
-     * 文件名
+     * 分组类型(SYSTEM/PERSONAL)
      */
-    @FieldDesc(value = "文件名")
-    private String fileName;
+    @FieldDesc(value = "分组类型(SYSTEM/PERSONAL)", notNull = true)
+    private String groupType;
 
     /**
-     * 文件大小(字节)
+     * 所有者用户编码
      */
-    @FieldDesc(value = "文件大小(字节)")
-    private Long fileSize;
-
-    /**
-     * 操作人用户编码
-     */
-    @FieldDesc(value = "操作人用户编码", notNull = true)
+    @FieldDesc(value = "所有者用户编码", notNull = true)
     private String userCode;
 
     /**
@@ -61,15 +55,14 @@ public class MdmMaterialVersion extends BaseEntity {
     private String tenantCode;
 
 
-    public static MdmMaterialVersion copy(MdmMaterialVersion source, MdmMaterialVersion target) {
-        if (target == null ) { target = new MdmMaterialVersion();}
+    public static MdmMaterialGroup copy(MdmMaterialGroup source, MdmMaterialGroup target) {
+        if (target == null ) { target = new MdmMaterialGroup();}
         if (source == null) { return target; }
         target.setId(source.getId());
-        target.setMaterialCode(source.getMaterialCode());
-        target.setVersionNo(source.getVersionNo());
-        target.setFileId(source.getFileId());
-        target.setFileName(source.getFileName());
-        target.setFileSize(source.getFileSize());
+        target.setGroupCode(source.getGroupCode());
+        target.setParentCode(source.getParentCode());
+        target.setGroupName(source.getGroupName());
+        target.setGroupType(source.getGroupType());
         target.setUserCode(source.getUserCode());
         target.setTenantCode(source.getTenantCode());
         target.setSort(source.getSort());
@@ -82,15 +75,14 @@ public class MdmMaterialVersion extends BaseEntity {
         return target;
     }
 
-    public static MdmMaterialVersion copyIfNotNull(MdmMaterialVersion source, MdmMaterialVersion target) {
-        if (target == null ) { target = new MdmMaterialVersion();}
+    public static MdmMaterialGroup copyIfNotNull(MdmMaterialGroup source, MdmMaterialGroup target) {
+        if (target == null ) { target = new MdmMaterialGroup();}
         if (source == null) { return target; }
         if (source.getId() != null) { target.setId(source.getId()); }
-        if (source.getMaterialCode() != null) { target.setMaterialCode(source.getMaterialCode()); }
-        if (source.getVersionNo() != null) { target.setVersionNo(source.getVersionNo()); }
-        if (source.getFileId() != null) { target.setFileId(source.getFileId()); }
-        if (source.getFileName() != null) { target.setFileName(source.getFileName()); }
-        if (source.getFileSize() != null) { target.setFileSize(source.getFileSize()); }
+        if (source.getGroupCode() != null) { target.setGroupCode(source.getGroupCode()); }
+        if (source.getParentCode() != null) { target.setParentCode(source.getParentCode()); }
+        if (source.getGroupName() != null) { target.setGroupName(source.getGroupName()); }
+        if (source.getGroupType() != null) { target.setGroupType(source.getGroupType()); }
         if (source.getUserCode() != null) { target.setUserCode(source.getUserCode()); }
         if (source.getTenantCode() != null) { target.setTenantCode(source.getTenantCode()); }
         if (source.getSort() != null) { target.setSort(source.getSort()); }

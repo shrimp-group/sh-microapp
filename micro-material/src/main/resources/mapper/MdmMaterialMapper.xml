@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.material.mapper.MdmMaterialMapper">
+
+    <select id="getMaterialList4Page" parameterType="com.wkclz.micro.material.bean.entity.MdmMaterial" resultType="com.wkclz.micro.material.bean.entity.MdmMaterial">
+        SELECT
+            id, material_code, material_name, material_type, source_type,
+            group_code, file_id, file_name, file_ext, file_size,
+            link_url, link_status, visibility, cover_file_id, description,
+            user_code, tenant_code, sort, create_time, create_by, update_time, update_by, remark, version
+        FROM mdm_material
+        WHERE deleted = 0
+            <if test="tenantCode != null">AND tenant_code = #{tenantCode}</if>
+            <if test="userCode != null">AND user_code = #{userCode}</if>
+            <if test="materialName != null and materialName != ''">AND material_name LIKE CONCAT('%', #{materialName}, '%')</if>
+            <if test="materialType != null and materialType != ''">AND material_type = #{materialType}</if>
+            <if test="sourceType != null and sourceType != ''">AND source_type = #{sourceType}</if>
+            <if test="groupCode != null and groupCode != ''">AND group_code = #{groupCode}</if>
+            <if test="visibility != null and visibility != ''">AND visibility = #{visibility}</if>
+            <if test="linkStatus != null and linkStatus != ''">AND link_status = #{linkStatus}</if>
+            <if test="timeFrom != null">AND create_time &gt;= #{timeFrom}</if>
+            <if test="timeTo != null">AND create_time &lt;= #{timeTo}</if>
+        ORDER BY id DESC
+    </select>
+
+    <select id="getByGroupCodeWithChildren" resultType="com.wkclz.micro.material.bean.entity.MdmMaterial">
+        SELECT
+            id, material_code, material_name, material_type, source_type,
+            group_code, file_id, file_name, file_ext, file_size,
+            link_url, link_status, visibility, cover_file_id, description,
+            user_code, tenant_code, sort, create_time, create_by, update_time, update_by, remark, version
+        FROM mdm_material
+        WHERE deleted = 0
+            AND tenant_code = #{tenantCode}
+            AND group_code IN (<foreach collection="groupCodes" item="item" separator=",">#{item}</foreach>)
+        ORDER BY id DESC
+    </select>
+
+    <select id="getHotMaterialList" parameterType="com.wkclz.micro.material.bean.entity.MdmMaterial" resultType="com.wkclz.micro.material.bean.entity.MdmMaterial">
+        SELECT
+            m.id, m.material_code, m.material_name, m.material_type, m.source_type,
+            m.group_code, m.file_id, m.file_name, m.file_ext, m.file_size,
+            m.link_url, m.link_status, m.visibility, m.cover_file_id, m.description,
+            m.user_code, m.tenant_code, m.sort, m.create_time, m.create_by, m.update_time, m.update_by, m.remark, m.version,
+            COUNT(r.id) AS ref_count
+        FROM mdm_material m
+        LEFT JOIN mdm_material_ref r ON m.material_code = r.material_code AND r.deleted = 0
+        WHERE m.deleted = 0
+            <if test="tenantCode != null">AND m.tenant_code = #{tenantCode}</if>
+            <if test="materialType != null and materialType != ''">AND m.material_type = #{materialType}</if>
+        GROUP BY m.id
+        ORDER BY ref_count DESC, m.id DESC
+    </select>
+
+    <select id="getPickerMaterialList" parameterType="com.wkclz.micro.material.bean.entity.MdmMaterial" resultType="com.wkclz.micro.material.bean.entity.MdmMaterial">
+        SELECT
+            id, material_code, material_name, material_type, source_type,
+            group_code, file_id, file_name, file_ext, file_size,
+            link_url, link_status, visibility, cover_file_id, description,
+            user_code, tenant_code, sort, create_time, create_by, update_time, update_by, remark, version
+        FROM mdm_material
+        WHERE deleted = 0
+            <if test="tenantCode != null">AND tenant_code = #{tenantCode}</if>
+            <if test="userCode != null">
+                AND (visibility = 'PUBLIC' OR user_code = #{userCode})
+            </if>
+            <if test="materialType != null and materialType != ''">AND material_type = #{materialType}</if>
+            <if test="groupCode != null and groupCode != ''">AND group_code = #{groupCode}</if>
+            <if test="materialName != null and materialName != ''">AND material_name LIKE CONCAT('%', #{materialName}, '%')</if>
+        ORDER BY id DESC
+    </select>
+
+</mapper>

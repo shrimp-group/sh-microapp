@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.material.mapper.MdmMaterialRefMapper">
+
+    <select id="getByMaterialCode" resultType="com.wkclz.micro.material.bean.entity.MdmMaterialRef">
+        SELECT
+            id, material_code, biz_type, biz_code, ref_desc,
+            user_code, tenant_code, sort, create_time, create_by, update_time, update_by, remark, version
+        FROM mdm_material_ref
+        WHERE deleted = 0
+            AND material_code = #{materialCode}
+            <if test="tenantCode != null">AND tenant_code = #{tenantCode}</if>
+        ORDER BY id DESC
+    </select>
+
+    <select id="countByMaterialCode" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM mdm_material_ref
+        WHERE deleted = 0
+            AND material_code = #{materialCode}
+            <if test="tenantCode != null">AND tenant_code = #{tenantCode}</if>
+    </select>
+
+    <delete id="deleteByBiz">
+        UPDATE mdm_material_ref
+        SET deleted = DATE_FORMAT(NOW(6), '%Y%m%d%H%i%s%m'), version = version + 1
+        WHERE deleted = 0
+            AND material_code = #{materialCode}
+            AND biz_type = #{bizType}
+            AND biz_code = #{bizCode}
+            <if test="tenantCode != null">AND tenant_code = #{tenantCode}</if>
+    </delete>
+
+</mapper>
