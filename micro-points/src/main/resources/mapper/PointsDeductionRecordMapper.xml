@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.points.mapper.PointsDeductionRecordMapper">
+
+    <!-- 批量查询 PENDING 任务记录（earn_flow_no IS NULL AND status='PENDING'），按 user_code 排序便于分组 -->
+    <select id="selectPendingTaskRecords" resultType="com.wkclz.micro.points.bean.entity.PointsDeductionRecord">
+        SELECT
+            id, tenant_code, user_code, flow_no, order_no, earn_flow_no, deduction_points, status,
+            sort, create_time, create_by, update_time, update_by, remark, version
+        FROM
+            points_deduction_record
+        WHERE
+            deleted = 0
+            AND earn_flow_no IS NULL
+            AND status = 'PENDING'
+        ORDER BY user_code ASC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 按 order_no 聚合 COMPLETED 动作记录（earn_flow_no IS NOT NULL AND status='COMPLETED'）的 deduction_points 之和 -->
+    <select id="sumCompletedDeductionPointsByOrderNo" resultType="java.lang.Integer">
+        SELECT COALESCE(SUM(deduction_points), 0)
+        FROM
+            points_deduction_record
+        WHERE
+            deleted = 0
+            AND tenant_code = #{tenantCode}
+            AND order_no = #{orderNo}
+            AND earn_flow_no IS NOT NULL
+            AND status = 'COMPLETED'
+    </select>
+
+    <!-- 按 order_no 查所有 COMPLETED 动作记录（earn_flow_no IS NOT NULL AND status='COMPLETED'） -->
+    <select id="selectCompletedActionsByOrderNo" resultType="com.wkclz.micro.points.bean.entity.PointsDeductionRecord">
+        SELECT
+            id, tenant_code, user_code, flow_no, order_no, earn_flow_no, deduction_points, status,
+            sort, create_time, create_by, update_time, update_by, remark, version
+        FROM
+            points_deduction_record
+        WHERE
+            deleted = 0
+            AND tenant_code = #{tenantCode}
+            AND order_no = #{orderNo}
+            AND earn_flow_no IS NOT NULL
+            AND status = 'COMPLETED'
+        ORDER BY id ASC
+    </select>
+
+    <!-- 按 order_no 查任务记录（earn_flow_no IS NULL），返回最新一条，用于对账判断 PENDING / PARTIAL / PROCESSED -->
+    <select id="selectTaskRecordByOrderNo" resultType="com.wkclz.micro.points.bean.entity.PointsDeductionRecord">
+        SELECT
+            id, tenant_code, user_code, flow_no, order_no, earn_flow_no, deduction_points, status,
+            sort, create_time, create_by, update_time, update_by, remark, version
+        FROM
+            points_deduction_record
+        WHERE
+            deleted = 0
+            AND tenant_code = #{tenantCode}
+            AND order_no = #{orderNo}
+            AND earn_flow_no IS NULL
+        ORDER BY id DESC
+        LIMIT 1
+    </select>
+
+    <!-- 乐观锁更新状态 -->
+    <update id="updateStatusByVersion">
+        UPDATE points_deduction_record
+        SET
+            status = #{status},
+            version = version + 1
+        WHERE
+            deleted = 0
+            AND id = #{id}
+            AND version = #{version}
+    </update>
+
+</mapper>

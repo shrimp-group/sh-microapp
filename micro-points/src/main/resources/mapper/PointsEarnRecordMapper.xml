@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.points.mapper.PointsEarnRecordMapper">
+
+    <!-- 按 user_code + expire_time ASC 批量查询可用获取流水（available_points > 0），支持分页 -->
+    <select id="selectAvailableBatchByExpireTime" resultType="com.wkclz.micro.points.bean.entity.PointsEarnRecord">
+        SELECT
+            id, tenant_code, user_code, flow_no, earn_time, points, reason, expire_time,
+            used_points, available_points, is_used_up, point_source_type, source_no,
+            sort, create_time, create_by, update_time, update_by, remark, version
+        FROM
+            points_earn_record
+        WHERE
+            deleted = 0
+            AND tenant_code = #{tenantCode}
+            AND user_code = #{userCode}
+            AND available_points &gt; 0
+        ORDER BY expire_time ASC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 按 source_no 聚合 REFUND 获取流水的 points 之和 -->
+    <select id="sumRefundPointsBySourceNo" resultType="java.lang.Integer">
+        SELECT COALESCE(SUM(points), 0)
+        FROM
+            points_earn_record
+        WHERE
+            deleted = 0
+            AND tenant_code = #{tenantCode}
+            AND source_no = #{sourceNo}
+            AND point_source_type = 'REFUND'
+    </select>
+
+    <!-- 扫描过期且可用的获取流水（expire_time < #{expireTime} AND available_points > 0） -->
+    <select id="selectExpiredAvailable" resultType="com.wkclz.micro.points.bean.entity.PointsEarnRecord">
+        SELECT
+            id, tenant_code, user_code, flow_no, earn_time, points, reason, expire_time,
+            used_points, available_points, is_used_up, point_source_type, source_no,
+            sort, create_time, create_by, update_time, update_by, remark, version
+        FROM
+            points_earn_record
+        WHERE
+            deleted = 0
+            AND expire_time &lt; #{expireTime}
+            AND available_points &gt; 0
+        ORDER BY id ASC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 批量更新获取流水的 used_points/available_points/is_used_up -->
+    <update id="batchUpdateUsedPoints">
+        UPDATE points_earn_record
+        SET
+            used_points = CASE id
+                <foreach collection="list" item="item">WHEN #{item.id} THEN #{item.usedPoints}</foreach>
+            END,
+            available_points = CASE id
+                <foreach collection="list" item="item">WHEN #{item.id} THEN #{item.availablePoints}</foreach>
+            END,
+            is_used_up = CASE id
+                <foreach collection="list" item="item">WHEN #{item.id} THEN #{item.isUsedUp}</foreach>
+            END,
+            version = version + 1
+        WHERE
+            deleted = 0
+            AND id IN (
+                <foreach collection="list" item="item" separator=",">#{item.id}</foreach>
+            )
+    </update>
+
+</mapper>

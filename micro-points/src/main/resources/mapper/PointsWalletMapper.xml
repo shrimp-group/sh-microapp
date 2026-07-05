@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.points.mapper.PointsWalletMapper">
+
+    <!-- 按 tenant_code + user_code 查询钱包 -->
+    <select id="selectByUserCode" resultType="com.wkclz.micro.points.bean.entity.PointsWallet">
+        SELECT
+            id, tenant_code, user_code, available_points, frozen_points, total_earned_points,
+            sort, create_time, create_by, update_time, update_by, remark, version
+        FROM
+            points_wallet
+        WHERE
+            deleted = 0
+            AND tenant_code = #{tenantCode}
+            AND user_code = #{userCode}
+    </select>
+
+    <!-- 乐观锁更新积分（available/frozen/total_earned） -->
+    <update id="updatePointsByVersion">
+        UPDATE points_wallet
+        SET
+            available_points = #{availablePoints},
+            frozen_points = #{frozenPoints},
+            total_earned_points = #{totalEarnedPoints},
+            version = version + 1
+        WHERE
+            deleted = 0
+            AND id = #{id}
+            AND version = #{version}
+    </update>
+
+</mapper>

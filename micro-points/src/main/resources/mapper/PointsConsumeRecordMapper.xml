@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.points.mapper.PointsConsumeRecordMapper">
+
+    <!-- 按 order_no 查单条消费记录（用于回退校验） -->
+    <select id="selectByOrderNo" resultType="com.wkclz.micro.points.bean.entity.PointsConsumeRecord">
+        SELECT
+            id, tenant_code, user_code, flow_no, consume_time, points, reason, order_no, status,
+            sort, create_time, create_by, update_time, update_by, remark, version
+        FROM
+            points_consume_record
+        WHERE
+            deleted = 0
+            AND tenant_code = #{tenantCode}
+            AND order_no = #{orderNo}
+    </select>
+
+    <!-- 按 user_code 查消费流水，可选时间范围过滤（用于对账遍历），按 consume_time 倒序 -->
+    <select id="selectByUserCodeAndTimeRange" resultType="com.wkclz.micro.points.bean.entity.PointsConsumeRecord">
+        SELECT
+            id, tenant_code, user_code, flow_no, consume_time, points, reason, order_no, status,
+            sort, create_time, create_by, update_time, update_by, remark, version
+        FROM
+            points_consume_record
+        WHERE
+            deleted = 0
+            AND tenant_code = #{tenantCode}
+            AND user_code = #{userCode}
+            <if test="startTime != null">
+                AND consume_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND consume_time &lt;= #{endTime}
+            </if>
+        ORDER BY consume_time DESC, id DESC
+    </select>
+
+</mapper>
