@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.form.mapper.MdmFormRuleValidatorTemplateMapper">
+      
+    <select id="getValidatorTemplateList" parameterType="com.wkclz.micro.form.bean.entity.MdmFormRuleValidatorTemplate" resultType="com.wkclz.micro.form.bean.entity.MdmFormRuleValidatorTemplate">
+        SELECT
+            id,
+            template_code,
+            template_name,
+            pattern,
+            sort,
+            create_time,
+            create_by,
+            update_time,
+            update_by,
+            remark,
+            version
+        FROM
+            mdm_form_rule_validator_template
+        WHERE
+            deleted = 0
+            <if test="templateCode != null">AND template_code LIKE CONCAT('%', #{templateCode}, '%') </if>
+            <if test="templateName != null">AND template_name LIKE CONCAT('%', #{templateName}, '%') </if>
+        ORDER BY
+            id DESC
+    </select>
+    
+</mapper>
+

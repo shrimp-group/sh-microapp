@@ -1,0 +1,18 @@
+package com.wkclz.micro.form.bean.req;
+
+import com.wkclz.web.bean.PageReq;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+@Data
+@EqualsAndHashCode(callSuper = true)
+@Schema(description = "表单校验规则验证器分页查询请求")
+public class MdmFormRuleValidatorPageReq extends PageReq {
+
+    @Schema(description = "表单校验规则编码")
+    private String formRuleCode;
+
+    @Schema(description = "字段编码")
+    private String fieldCode;
+}

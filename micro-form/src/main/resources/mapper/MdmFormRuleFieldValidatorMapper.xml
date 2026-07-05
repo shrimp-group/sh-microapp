@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.form.mapper.MdmFormRuleFieldValidatorMapper">
+      
+    <select id="getFormRuleFieldValidatorList" parameterType="java.lang.String" resultType="com.wkclz.micro.form.bean.dto.MdmFormRuleFieldValidatorDto">
+        SELECT
+            rf.form_rule_code,
+            rf.field_code,
+            rf.field_name,
+            rfv.validator_type,
+            rfv.template_code,
+            IFNULL( rvt.validator_pattern, rfv.validator_pattern ) validator_pattern,
+            IFNULL( rvt.validator_function, rfv.validator_function ) validator_function,
+            rfv.msg_template
+        FROM
+            mdm_form_rule_field rf
+            LEFT JOIN mdm_form_rule_field_validator rfv ON rfv.form_rule_code = rf.form_rule_code AND rfv.field_code = rf.field_code AND rfv.deleted = 0
+            LEFT JOIN mdm_form_rule_validator_template rvt ON rvt.template_code = rfv.template_code AND rvt.deleted = 0
+        WHERE
+            rf.deleted = 0
+            AND rf.form_rule_code = #{formRuleCode}
+        ORDER BY
+            rf.sort ASC,
+            rf.id ASC,
+            rfv.sort ASC,
+            rfv.id ASC
+  </select>
+
+    <select id="getFormRuleFieldValidatorList4Check" parameterType="com.wkclz.micro.form.bean.entity.MdmFormRule" resultType="com.wkclz.micro.form.bean.dto.MdmFormRuleFieldValidatorDto">
+        SELECT
+            rf.form_rule_code,
+            rf.field_code,
+            rf.field_name,
+            rfv.validator_type,
+            rfv.template_code,
+            IFNULL( rvt.validator_pattern, rfv.validator_pattern ) validator_pattern,
+            IFNULL( rvt.validator_function, rfv.validator_function ) validator_function,
+            rfv.msg_template
+        FROM
+            mdm_form_rule r
+            LEFT JOIN mdm_form_rule_field rf ON rf.form_rule_code = r.form_rule_code AND rf.deleted = 0
+            LEFT JOIN mdm_form_rule_field_validator rfv ON rfv.form_rule_code = rf.form_rule_code AND rfv.field_code = rf.field_code AND rfv.deleted = 0
+            LEFT JOIN mdm_form_rule_validator_template rvt ON rvt.template_code = rfv.template_code AND rvt.deleted = 0
+        WHERE
+            r.deleted = 0
+            AND r.api_method = #{apiMethod}
+            AND r.api_uri = #{apiUri}
+        ORDER BY
+            rf.sort ASC,
+            rf.id ASC,
+            rfv.sort ASC,
+            rfv.id ASC
+    </select>
+
+
+
+    <select id="get4Cache" resultType="com.wkclz.micro.form.bean.dto.MdmFormRuleFieldValidatorDto">
+        SELECT
+            rfv.form_rule_code,
+            rfv.field_code,
+            rfv.validator_type,
+            IFNULL(rft.validator_pattern, rfv.validator_pattern) validator_pattern,
+            IFNULL(rft.validator_function, rfv.validator_function) validator_function,
+            rfv.template_code,
+            rfv.msg_template
+        FROM
+            mdm_form_rule_field_validator rfv
+            LEFT JOIN mdm_form_rule_validator_template rft ON rft.template_code = rfv.template_code AND rft.deleted = 0
+        WHERE
+            rfv.deleted = 0
+        ORDER BY
+            rfv.sort ASC,
+            rfv.id ASC
+    </select>
+
+
+</mapper>
+
