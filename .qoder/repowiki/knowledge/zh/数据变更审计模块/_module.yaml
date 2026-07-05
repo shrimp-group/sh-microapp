@@ -1,0 +1,15 @@
+schema_version: 1
+module_path: micro_audit
+title: 数据变更审计模块
+scope:
+    - micro-audit/
+source_files: []
+depends_on: []
+related_to:
+    - path: micro_mask
+    - path: micro_rmcheck
+    - path: micro_dbview
+    - path: micro_seq
+    - path: micro_pay
+    - path: micro_fileos
+    - path: micro_autotest

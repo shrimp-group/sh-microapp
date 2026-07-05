@@ -1,0 +1,13 @@
+schema_version: 1
+module_path: micro_dbview
+title: 数据库元数据管理与安全执行引擎
+scope:
+    - micro-dbview/
+source_files: []
+depends_on: []
+related_to:
+    - path: micro_report
+    - path: micro_k8s
+    - path: micro_audit
+    - path: micro_rmcheck
+    - path: micro_autotest

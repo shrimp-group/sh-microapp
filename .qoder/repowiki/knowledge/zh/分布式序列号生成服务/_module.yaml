@@ -1,0 +1,15 @@
+schema_version: 1
+module_path: micro_seq
+title: 分布式序列号生成服务
+scope:
+    - micro-seq/
+source_files: []
+depends_on: []
+related_to:
+    - path: micro_dict
+    - path: micro_pay
+    - path: micro_audit
+    - path: micro_msg
+    - path: micro_rmcheck
+    - path: micro_autotest
+    - path: micro_k8s

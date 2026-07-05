@@ -1,0 +1,1509 @@
+# 知识卡导出索引文件
+schema_version: 1
+locale: zh-CN
+branch: dev/0.0.2
+exported_at: "2026-06-17T15:14:15Z"
+modules:
+    "":
+        dir_name: 微应用模块化业务中台
+        title: 微应用模块化业务中台
+        scope:
+            - README.md
+            - .gitignore
+            - AGENTS.md
+            - CONTEXT.md
+            - pom.xml
+            - docs/
+            - .agents/
+            - .trae/
+            - .agents\skills\micro-audit\SKILL.md
+            - .agents\skills\micro-autotest\SKILL.md
+            - .agents\skills\micro-dbview\SKILL.md
+            - .agents\skills\micro-dict\SKILL.md
+            - .agents\skills\micro-dict\references\architecture.md
+            - .agents\skills\micro-fileos\SKILL.md
+            - .agents\skills\micro-form\SKILL.md
+            - .agents\skills\micro-fun\SKILL.md
+            - .agents\skills\micro-k8s\SKILL.md
+            - .agents\skills\micro-liteflow\SKILL.md
+            - .agents\skills\micro-mask\SKILL.md
+            - .agents\skills\micro-material\SKILL.md
+            - .agents\skills\micro-msg\SKILL.md
+            - .agents\skills\micro-pay\SKILL.md
+            - .agents\skills\micro-pdf\SKILL.md
+            - .agents\skills\micro-rmcheck\SKILL.md
+            - .agents\skills\micro-seq\SKILL.md
+            - .agents\skills\micro-wxapp\SKILL.md
+            - .agents\skills\micro-wxmp\SKILL.md
+            - .idea\.gitignore
+            - .idea\compiler.xml
+            - .idea\encodings.xml
+            - .idea\git_toolbox_prj.xml
+            - .idea\jarRepositories.xml
+            - .idea\misc.xml
+            - .idea\shelf\Uncommitted_changes_before_Update_at_2026-06-10_09_49_[Changes]1\shelved.patch
+            - .idea\shelf\Uncommitted_changes_before_Update_at_2026-06-10_09_49_[Changes]\shelved.patch
+            - .idea\shelf\Uncommitted_changes_before_Update_at_2026-06-10_09_49__Changes_.xml
+            - .idea\shelf\Uncommitted_changes_before_Update_at_2026-06-10_09_49__Changes_1.xml
+            - .idea\shelf\Uncommitted_changes_before_Update_at_2026-06-11_23_44_[Changes]\shelved.patch
+            - .idea\shelf\Uncommitted_changes_before_Update_at_2026-06-11_23_44__Changes_.xml
+            - .idea\vcs.xml
+            - .idea\workspace.xml
+            - .trae\.ignore
+            - .trae\mcp.json
+            - .trae\skills\check-work\SKILL.md
+            - .trae\skills\cnife-pi-workflow\SKILL.md
+            - .trae\skills\code-review\SKILL.md
+            - .trae\skills\coding-skill\SKILL.md
+            - .trae\skills\expert-reviewer\SKILL.md
+            - .trae\skills\find-skill\SKILL.md
+            - .trae\skills\grill-me\SKILL.md
+            - .trae\skills\grill\SKILL.md
+            - .trae\skills\handoff\SKILL.md
+            - .trae\skills\plan-to-tasks\SKILL.md
+            - .trae\skills\plan\SKILL.md
+            - .trae\skills\request-analysis\SKILL.md
+            - .trae\skills\sh-bom\SKILL.md
+            - .trae\skills\sh-core\SKILL.md
+            - .trae\skills\sh-demo\SKILL.md
+            - .trae\skills\sh-dynamicdb\SKILL.md
+            - .trae\skills\sh-mqtt\SKILL.md
+            - .trae\skills\sh-mybatis\SKILL.md
+            - .trae\skills\sh-redis\SKILL.md
+            - .trae\skills\sh-spring\SKILL.md
+            - .trae\skills\sh-tool\SKILL.md
+            - .trae\skills\sh-web\SKILL.md
+            - .trae\skills\sh-xxljob\SKILL.md
+            - .trae\skills\superpower\SKILL.md
+            - .trae\skills\write-code\SKILL.md
+            - .trae\skills\writing-plans\SKILL.md
+            - .trae\skills\zoom-out\SKILL.md
+            - .trae\specs\add-r-generics-to-rest-controllers\checklist.md
+            - .trae\specs\add-r-generics-to-rest-controllers\spec.md
+            - .trae\specs\add-r-generics-to-rest-controllers\tasks.md
+            - .trae\specs\add-swagger-annotations-micro-audit\checklist.md
+            - .trae\specs\add-swagger-annotations-micro-audit\spec.md
+            - .trae\specs\add-swagger-annotations-micro-audit\tasks.md
+            - .trae\specs\create-micro-fileos\checklist.md
+            - .trae\specs\create-micro-fileos\spec.md
+            - .trae\specs\create-micro-fileos\tasks.md
+            - .trae\specs\harness-initialization\checklist.md
+            - .trae\specs\harness-initialization\spec.md
+            - .trae\specs\harness-initialization\tasks.md
+            - .trae\specs\implement-micro-material\checklist.md
+            - .trae\specs\implement-micro-material\spec.md
+            - .trae\specs\implement-micro-material\tasks.md
+            - .trae\specs\micro-autotest\checklist.md
+            - .trae\specs\micro-autotest\spec.md
+            - .trae\specs\micro-autotest\tasks.md
+            - .trae\specs\micro-dbview\micro-dbview-design.md
+            - .trae\specs\micro-dbview\micro-dbview-plan.md
+            - .trae\specs\micro-dbview\micro-dbview-supplement-plan.md
+            - .trae\specs\micro-material\micro-material-requirements.md
+            - .trae\specs\optimize-rest-beanutil-convert\checklist.md
+            - .trae\specs\optimize-rest-beanutil-convert\spec.md
+            - .trae\specs\optimize-rest-beanutil-convert\tasks.md
+            - .trae\specs\refine-micro-audit-conversion\checklist.md
+            - .trae\specs\refine-micro-audit-conversion\spec.md
+            - .trae\specs\refine-micro-audit-conversion\tasks.md
+            - .trae\specs\standardize-micro-audit\checklist.md
+            - .trae\specs\standardize-micro-audit\spec.md
+            - .trae\specs\standardize-micro-audit\tasks.md
+            - .trae\specs\standardize-micro-dict\checklist.md
+            - .trae\specs\standardize-micro-dict\spec.md
+            - .trae\specs\standardize-micro-dict\tasks.md
+            - .trae\specs\standardize-micro-fileos\checklist.md
+            - .trae\specs\standardize-micro-fileos\spec.md
+            - .trae\specs\standardize-micro-fileos\tasks.md
+            - .trae\specs\standardize-micro-k8s\checklist.md
+            - .trae\specs\standardize-micro-k8s\spec.md
+            - .trae\specs\standardize-micro-k8s\tasks.md
+            - .trae\specs\standardize-micro-pay\checklist.md
+            - .trae\specs\standardize-micro-pay\spec.md
+            - .trae\specs\standardize-micro-pay\tasks.md
+            - .trae\specs\standardize-micro-pdf\checklist.md
+            - .trae\specs\standardize-micro-pdf\spec.md
+            - .trae\specs\standardize-micro-pdf\tasks.md
+            - .trae\specs\standardize-micro-wxapp\checklist.md
+            - .trae\specs\standardize-micro-wxapp\spec.md
+            - .trae\specs\standardize-micro-wxapp\tasks.md
+            - .trae\specs\standardize-micro-wxmp\checklist.md
+            - .trae\specs\standardize-micro-wxmp\spec.md
+            - .trae\specs\standardize-micro-wxmp\tasks.md
+            - .trae\specs\standardize-rest-layer\checklist.md
+            - .trae\specs\standardize-rest-layer\spec.md
+            - .trae\specs\standardize-rest-layer\tasks.md
+            - LICENSE
+            - changes\README.md
+            - docs\coding-standards\java.md
+            - docs\dev-process.md
+            - docs\harness-spec.md
+            - docs\living-docs-business\README.md
+            - docs\living-docs-business\changelog.md
+            - docs\living-docs-business\glossary\README.md
+            - docs\living-docs-business\modules\README.md
+            - docs\living-docs-business\processes\README.md
+            - docs\living-docs-business\rules\README.md
+            - docs\living-docs-guide.md
+            - docs\living-docs-technical\README.md
+            - docs\living-docs-technical\api\README.md
+            - docs\living-docs-technical\architecture\deployment.md
+            - docs\living-docs-technical\architecture\overview.md
+            - docs\living-docs-technical\data-models\README.md
+            - docs\living-docs-technical\dependencies\README.md
+            - docs\living-docs-technical\modules\README.md
+            - docs\requirement-template.md
+            - docs\risk-analysis.md
+            - docs\skill-setup.md
+            - docs\standards\ai-paradigm.md
+            - docs\standards\ai-practice.md
+            - docs\standards\api.md
+            - docs\standards\architecture.md
+            - docs\standards\backend.md
+            - docs\standards\database.md
+            - docs\standards\document.md
+            - docs\standards\frontend.md
+            - docs\standards\git.md
+            - docs\standards\harness.md
+            - docs\standards\logging.md
+            - docs\standards\ops.md
+            - docs\standards\security.md
+            - docs\stories-guide.md
+            - docs\stories\基础设施\001-LiteFlow链与脚本.md
+            - docs\stories\基础设施\002-函数脚本引擎.md
+            - docs\stories\基础设施\003-K8s资源管理.md
+            - docs\stories\基础设施\004-自动化测试执行.md
+            - docs\stories\基础设施\005-数据源与元数据.md
+            - docs\stories\基础设施\006-SQL与DDL操作.md
+            - docs\stories\基础设施\README.md
+            - docs\stories\审计校验\001-变更审计日志.md
+            - docs\stories\审计校验\002-删除合规校验.md
+            - docs\stories\审计校验\README.md
+            - docs\stories\微信\001-小程序登录与用户.md
+            - docs\stories\微信\002-小程序媒体管理.md
+            - docs\stories\微信\003-公众号消息处理.md
+            - docs\stories\微信\004-公众号OAuth与用户.md
+            - docs\stories\微信\README.md
+            - docs\stories\支付\001-支付配置与订单.md
+            - docs\stories\支付\002-支付回调SPI.md
+            - docs\stories\支付\README.md
+            - docs\stories\数据管理\001-字典类型增删改查.md
+            - docs\stories\数据管理\002-字典通用查询.md
+            - docs\stories\数据管理\003-字典跨环境复制.md
+            - docs\stories\数据管理\004-字典项批量保存.md
+            - docs\stories\数据管理\005-序列号生成.md
+            - docs\stories\数据管理\006-物料增删改查.md
+            - docs\stories\数据管理\007-物料分组树.md
+            - docs\stories\数据管理\008-物料引用与转移.md
+            - docs\stories\数据管理\009-表单规则管理.md
+            - docs\stories\数据管理\010-表单AOP校验.md
+            - docs\stories\数据管理\README.md
+            - docs\stories\文件文档\001-文件上传.md
+            - docs\stories\文件文档\002-文件签名下载.md
+            - docs\stories\文件文档\003-文件预签名上传.md
+            - docs\stories\文件文档\004-文件桶与目录.md
+            - docs\stories\文件文档\005-PDF模板渲染.md
+            - docs\stories\文件文档\README.md
+            - docs\stories\消息通知\001-消息通知.md
+            - docs\stories\消息通知\002-用户消息记录.md
+            - docs\stories\消息通知\003-数据脱敏自动处理.md
+            - docs\stories\消息通知\README.md
+            - docs\tech-debt-conventions.md
+            - docs\tech-debt-scan-guide.md
+            - docs\tech-debts\INDEX.md
+            - micro-audit\pom.xml
+            - micro-audit\src\main\java\com\wkclz\micro\audit\AuditAutoConfig.java
+            - micro-audit\src\main\java\com\wkclz\micro\audit\api\AuditApi.java
+            - micro-audit\src\main\java\com\wkclz\micro\audit\api\impl\AuditImpl.java
+            - micro-audit\src\main\java\com\wkclz\micro\audit\bean\dto\ChangeLog.java
+            - micro-audit\src\main\java\com\wkclz\micro\audit\bean\dto\ChangeLogItem.java
+            - micro-audit\src\main\java\com\wkclz\micro\audit\bean\entity\MdmChangeLog.java
+            - micro-audit\src\main\java\com\wkclz\micro\audit\bean\req\ChangeLogInfoReq.java
+            - micro-audit\src\main\java\com\wkclz\micro\audit\bean\req\ChangeLogPageReq.java
+            - micro-audit\src\main\java\com\wkclz\micro\audit\bean\resp\ChangeLogInfoResp.java
+            - micro-audit\src\main\java\com\wkclz\micro\audit\bean\resp\ChangeLogPageResp.java
+            - micro-audit\src\main\java\com\wkclz\micro\audit\mapper\MdmChangeLogMapper.java
+            - micro-audit\src\main\java\com\wkclz\micro\audit\rest\ChangeLogRest.java
+            - micro-audit\src\main\java\com\wkclz\micro\audit\rest\Route.java
+            - micro-audit\src\main\java\com\wkclz\micro\audit\service\MdmChangeLogService.java
+            - micro-audit\src\main\java\com\wkclz\micro\audit\utils\AuditCompareUtil.java
+            - micro-audit\src\main\resources\META-INF\spring\org.springframework.boot.autoconfigure.AutoConfiguration.imports
+            - micro-audit\src\main\resources\mapper\MdmChangeLogMapper.xml
+            - micro-autotest\README.md
+            - micro-autotest\pom.xml
+            - micro-autotest\src\main\java\com\wkclz\auto\AutoTestAutoConfig.java
+            - micro-autotest\src\main\java\com\wkclz\auto\bean\ApiInfo.java
+            - micro-autotest\src\main\java\com\wkclz\auto\bean\ApiParamInfo.java
+            - micro-autotest\src\main\java\com\wkclz\auto\bean\TestCaseResult.java
+            - micro-autotest\src\main\java\com\wkclz\auto\bean\TestReport.java
+            - micro-autotest\src\main\java\com\wkclz\auto\bean\req\ApiListReq.java
+            - micro-autotest\src\main\java\com\wkclz\auto\bean\req\RunReq.java
+            - micro-autotest\src\main\java\com\wkclz\auto\bean\resp\ApiListResp.java
+            - micro-autotest\src\main\java\com\wkclz\auto\bean\resp\TestReportResp.java
+            - micro-autotest\src\main\java\com\wkclz\auto\executor\TestExecutor.java
+            - micro-autotest\src\main\java\com\wkclz\auto\mock\AutoMockBeanPostProcessor.java
+            - micro-autotest\src\main\java\com\wkclz\auto\mock\MockHelper.java
+            - micro-autotest\src\main\java\com\wkclz\auto\mock\TestDataGenerator.java
+            - micro-autotest\src\main\java\com\wkclz\auto\report\ReportGenerator.java
+            - micro-autotest\src\main\java\com\wkclz\auto\rest\AutoTestRest.java
+            - micro-autotest\src\main\java\com\wkclz\auto\rest\Route.java
+            - micro-autotest\src\main\java\com\wkclz\auto\scanner\ApiScanner.java
+            - micro-autotest\src\main\resources\META-INF\spring\org.springframework.boot.autoconfigure.AutoConfiguration.imports
+            - micro-dbview\AGENTS.md
+            - micro-dbview\pom.xml
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\DbviewAutoConfig.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\dto\ColumnDefinition.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\dto\ColumnInfo.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\dto\DdlExecuteRequest.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\dto\DdlPreview.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\dto\DdlRequest.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\dto\IndexDefinition.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\dto\IndexInfo.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\dto\SqlExecuteRequest.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\dto\SqlResult.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\dto\TableDetail.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\dto\TableInfo.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\entity\DbviewDatasource.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\entity\DbviewDatasourcePermission.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\entity\DbviewSqlHistory.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\enums\DdlType.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\enums\PermissionLevel.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\enums\SqlType.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\req\DatasourceCreateReq.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\req\DatasourceInfoReq.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\req\DatasourcePageReq.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\req\DatasourceRemoveReq.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\req\DatasourceTestConnectionReq.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\req\DatasourceUpdateReq.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\req\DdlReq.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\req\MetadataDetailReq.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\req\MetadataSchemasReq.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\req\MetadataTablesReq.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\req\PermissionCreateReq.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\req\PermissionPageReq.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\req\PermissionRemoveReq.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\req\PermissionUpdateReq.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\req\SqlExecuteReq.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\req\SqlHistoryPageReq.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\resp\DatasourcePageResp.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\resp\DatasourceResp.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\resp\PermissionResp.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\bean\resp\SqlHistoryResp.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\cache\DatasourceCache.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\config\DbviewConfig.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\config\DbviewDataSourceFactory.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\mapper\DbviewDatasourceMapper.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\mapper\DbviewDatasourcePermissionMapper.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\mapper\DbviewSqlHistoryMapper.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\rest\DatasourceRest.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\rest\DdlRest.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\rest\MetadataRest.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\rest\PermissionRest.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\rest\Route.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\rest\SqlRest.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\service\DbviewConnectionService.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\service\DbviewDatasourcePermissionService.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\service\DbviewDatasourceService.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\service\DbviewDdlService.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\service\DbviewMetadataService.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\service\DbviewSqlHistoryService.java
+            - micro-dbview\src\main\java\com\wkclz\micro\dbview\service\DbviewSqlService.java
+            - micro-dbview\src\main\resources\META-INF\spring\org.springframework.boot.autoconfigure.AutoConfiguration.imports
+            - micro-dbview\src\main\resources\mapper\DbviewDatasourceMapper.xml
+            - micro-dbview\src\main\resources\mapper\DbviewDatasourcePermissionMapper.xml
+            - micro-dbview\src\main\resources\mapper\DbviewSqlHistoryMapper.xml
+            - micro-dict\AGENTS.md
+            - micro-dict\pom.xml
+            - micro-dict\src\main\java\com\wkclz\micro\dict\DictAutoConfig.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\bean\dto\MdmDictDto.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\bean\dto\MdmDictItemDto.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\bean\entity\MdmDict.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\bean\entity\MdmDictItem.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\bean\req\CommonDictListReq.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\bean\req\CommonDictsListReq.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\bean\req\DictCopyReq.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\bean\req\DictCreateReq.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\bean\req\DictInfoReq.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\bean\req\DictItemListReq.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\bean\req\DictItemSaveReq.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\bean\req\DictPageReq.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\bean\req\DictPasteReq.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\bean\req\DictUpdateReq.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\bean\resp\DictCopyResp.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\bean\resp\DictItemResp.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\bean\resp\DictOptionsResp.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\bean\resp\DictPageResp.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\bean\resp\DictResp.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\cache\DictCache.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\mapper\MdmDictItemMapper.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\mapper\MdmDictMapper.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\rest\CommonDictRest.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\rest\DictItemRest.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\rest\DictRest.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\rest\Route.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\service\MdmDictItemService.java
+            - micro-dict\src\main\java\com\wkclz\micro\dict\service\MdmDictService.java
+            - micro-dict\src\main\resources\META-INF\spring\org.springframework.boot.autoconfigure.AutoConfiguration.imports
+            - micro-dict\src\main\resources\mapper\MdmDictItemMapper.xml
+            - micro-dict\src\main\resources\mapper\MdmDictMapper.xml
+            - micro-fileos\AGENTS.md
+            - micro-fileos\docs\configuration-guide.md
+            - micro-fileos\docs\integration-guide.md
+            - micro-fileos\pom.xml
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\FileosAutoConfig.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\api\FileosDeleteApi.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\api\FileosDownloadApi.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\api\FileosPresignUploadApi.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\api\FileosSignApi.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\api\FileosUploadApi.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\api\impl\AbstractFileosApi.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\api\impl\FileosDeleteApiImpl.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\api\impl\FileosDownloadApiImpl.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\api\impl\FileosPresignUploadApiImpl.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\api\impl\FileosSignApiImpl.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\api\impl\FileosUploadApiImpl.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\FileosConstant.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\dto\CompletedPartInfo.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\dto\ImageProcessParam.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\dto\PresignedPartInfo.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\entity\MdmFileosBucket.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\entity\MdmFileosDirectory.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\entity\MdmFileosMultipart.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\entity\MdmFileosRecord.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\enums\ContentTypeEnum.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\enums\OssSpEnum.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\enums\UploadStatusEnum.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\enums\UploadTypeEnum.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\req\BucketCreateReq.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\req\BucketInfoReq.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\req\BucketOptionsReq.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\req\BucketPageReq.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\req\BucketRemoveReq.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\req\BucketUpdateReq.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\req\DirectoryInfoReq.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\req\DirectoryListReq.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\req\DirectoryTreeReq.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\req\DownloadReq.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\req\MultipartAbortReq.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\req\MultipartCompleteReq.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\req\MultipartUploadInitReq.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\req\PresignCompleteReq.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\req\PresignUploadReq.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\req\RecordInfoReq.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\req\RecordPageReq.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\req\RecordRemoveReq.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\req\SignUrlReq.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\req\SignUrlsReq.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\req\UploadSimpleReq.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\resp\BucketResp.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\resp\DirectoryResp.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\resp\DirectoryTreeResp.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\resp\MultipartUploadInitResp.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\resp\PresignUploadResp.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\resp\RecordResp.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\bean\resp\SignUrlResp.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\config\FileosConfig.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\helper\BucketCache.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\helper\DirectoryHelper.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\helper\FileHashHelper.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\helper\FileTypeHelper.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\helper\ImageProcessHelper.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\helper\PathHelper.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\job\MultipartCleanupJob.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\mapper\MdmFileosBucketMapper.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\mapper\MdmFileosDirectoryMapper.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\mapper\MdmFileosMultipartMapper.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\mapper\MdmFileosRecordMapper.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\rest\FileosBucketRest.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\rest\FileosDirectoryRest.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\rest\FileosDownloadRest.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\rest\FileosPresignRest.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\rest\FileosRecordRest.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\rest\FileosSignRest.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\rest\FileosUploadRest.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\rest\Route.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\service\FileosService.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\service\MdmFileosBucketService.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\service\MdmFileosDirectoryService.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\service\MdmFileosMultipartService.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\service\MdmFileosRecordService.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\service\impl\AliOssServiceImpl.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\service\impl\S3ServiceImpl.java
+            - micro-fileos\src\main\java\com\wkclz\micro\fileos\utils\OssUtil.java
+            - micro-fileos\src\main\resources\META-INF\spring\org.springframework.boot.autoconfigure.AutoConfiguration.imports
+            - micro-fileos\src\main\resources\mapper\MdmFileosBucketMapper.xml
+            - micro-fileos\src\main\resources\mapper\MdmFileosDirectoryMapper.xml
+            - micro-fileos\src\main\resources\mapper\MdmFileosMultipartMapper.xml
+            - micro-fileos\src\main\resources\mapper\MdmFileosRecordMapper.xml
+            - micro-form\pom.xml
+            - micro-form\src\main\java\com\wkclz\micro\form\FormAutoConfig.java
+            - micro-form\src\main\java\com\wkclz\micro\form\aop\FormRuleAop.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\dto\MdmFormDto.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\dto\MdmFormItemDto.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\dto\MdmFormRuleDto.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\dto\MdmFormRuleFieldDto.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\dto\MdmFormRuleFieldValidatorDto.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\dto\MdmFormRuleValidatorTemplateDto.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\entity\MdmForm.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\entity\MdmFormItem.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\entity\MdmFormRule.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\entity\MdmFormRuleField.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\entity\MdmFormRuleFieldValidator.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\entity\MdmFormRuleValidatorTemplate.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\enums\ValidatorTypeEnum.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\req\CommonFormInfoReq.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\req\CommonFormListReq.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\req\CommonFormRuleReq.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\req\MdmFormCreateReq.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\req\MdmFormInfoReq.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\req\MdmFormPageReq.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\req\MdmFormRuleCreateReq.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\req\MdmFormRuleInfoReq.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\req\MdmFormRulePageReq.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\req\MdmFormRuleUpdateReq.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\req\MdmFormRuleValidatorCreateReq.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\req\MdmFormRuleValidatorInfoReq.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\req\MdmFormRuleValidatorPageReq.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\req\MdmFormRuleValidatorTemplateCreateReq.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\req\MdmFormRuleValidatorTemplateInfoReq.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\req\MdmFormRuleValidatorTemplatePageReq.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\req\MdmFormRuleValidatorTemplateUpdateReq.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\req\MdmFormRuleValidatorUpdateReq.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\req\MdmFormUpdateReq.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\resp\CommonFormResp.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\resp\CommonFormRuleResp.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\resp\MdmFormPageResp.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\resp\MdmFormResp.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\resp\MdmFormRuleResp.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\resp\MdmFormRuleValidatorResp.java
+            - micro-form\src\main\java\com\wkclz\micro\form\bean\resp\MdmFormRuleValidatorTemplateResp.java
+            - micro-form\src\main\java\com\wkclz\micro\form\cache\FormCache.java
+            - micro-form\src\main\java\com\wkclz\micro\form\cache\FormRuleCache.java
+            - micro-form\src\main\java\com\wkclz\micro\form\mapper\MdmFormItemMapper.java
+            - micro-form\src\main\java\com\wkclz\micro\form\mapper\MdmFormMapper.java
+            - micro-form\src\main\java\com\wkclz\micro\form\mapper\MdmFormRuleFieldMapper.java
+            - micro-form\src\main\java\com\wkclz\micro\form\mapper\MdmFormRuleFieldValidatorMapper.java
+            - micro-form\src\main\java\com\wkclz\micro\form\mapper\MdmFormRuleMapper.java
+            - micro-form\src\main\java\com\wkclz\micro\form\mapper\MdmFormRuleValidatorTemplateMapper.java
+            - micro-form\src\main\java\com\wkclz\micro\form\rest\CommonFormRest.java
+            - micro-form\src\main\java\com\wkclz\micro\form\rest\CommonFormRuleRest.java
+            - micro-form\src\main\java\com\wkclz\micro\form\rest\FormRest.java
+            - micro-form\src\main\java\com\wkclz\micro\form\rest\FormRuleRest.java
+            - micro-form\src\main\java\com\wkclz\micro\form\rest\FormRuleValidatorRest.java
+            - micro-form\src\main\java\com\wkclz\micro\form\rest\FormRuleValidatorTemplateRest.java
+            - micro-form\src\main\java\com\wkclz\micro\form\rest\Route.java
+            - micro-form\src\main\java\com\wkclz\micro\form\service\FormTableInfoService.java
+            - micro-form\src\main\java\com\wkclz\micro\form\service\MdmFormItemService.java
+            - micro-form\src\main\java\com\wkclz\micro\form\service\MdmFormRuleFieldService.java
+            - micro-form\src\main\java\com\wkclz\micro\form\service\MdmFormRuleFieldValidatorService.java
+            - micro-form\src\main\java\com\wkclz\micro\form\service\MdmFormRuleService.java
+            - micro-form\src\main\java\com\wkclz\micro\form\service\MdmFormRuleValidatorTemplateService.java
+            - micro-form\src\main\java\com\wkclz\micro\form\service\MdmFormService.java
+            - micro-form\src\main\java\com\wkclz\micro\form\validator\IValidator.java
+            - micro-form\src\main\java\com\wkclz\micro\form\validator\ValidatorFactory.java
+            - micro-form\src\main\java\com\wkclz\micro\form\validator\impl\DateValidator.java
+            - micro-form\src\main\java\com\wkclz\micro\form\validator\impl\DatetimeValidator.java
+            - micro-form\src\main\java\com\wkclz\micro\form\validator\impl\DiyValidator.java
+            - micro-form\src\main\java\com\wkclz\micro\form\validator\impl\DomainValidator.java
+            - micro-form\src\main\java\com\wkclz\micro\form\validator\impl\EmailValidator.java
+            - micro-form\src\main\java\com\wkclz\micro\form\validator\impl\FloatGeValidator.java
+            - micro-form\src\main\java\com\wkclz\micro\form\validator\impl\FloatGtValidator.java
+            - micro-form\src\main\java\com\wkclz\micro\form\validator\impl\FloatLeValidator.java
+            - micro-form\src\main\java\com\wkclz\micro\form\validator\impl\FloatLtValidator.java
+            - micro-form\src\main\java\com\wkclz\micro\form\validator\impl\IdCardValidator.java
+            - micro-form\src\main\java\com\wkclz\micro\form\validator\impl\IntegerGeValidator.java
+            - micro-form\src\main\java\com\wkclz\micro\form\validator\impl\IntegerGtValidator.java
+            - micro-form\src\main\java\com\wkclz\micro\form\validator\impl\IntegerLeValidator.java
+            - micro-form\src\main\java\com\wkclz\micro\form\validator\impl\IntegerLtValidator.java
+            - micro-form\src\main\java\com\wkclz\micro\form\validator\impl\IpValidator.java
+            - micro-form\src\main\java\com\wkclz\micro\form\validator\impl\JsonValidator.java
+            - micro-form\src\main\java\com\wkclz\micro\form\validator\impl\MobileValidator.java
+            - micro-form\src\main\java\com\wkclz\micro\form\validator\impl\RequiredValidator.java
+            - micro-form\src\main\java\com\wkclz\micro\form\validator\impl\StringGeValidator.java
+            - micro-form\src\main\java\com\wkclz\micro\form\validator\impl\StringGtValidator.java
+            - micro-form\src\main\java\com\wkclz\micro\form\validator\impl\StringLeValidator.java
+            - micro-form\src\main\java\com\wkclz\micro\form\validator\impl\StringLtValidator.java
+            - micro-form\src\main\java\com\wkclz\micro\form\validator\impl\TemplateValidator.java
+            - micro-form\src\main\java\com\wkclz\micro\form\validator\impl\TimeValidator.java
+            - micro-form\src\main\java\com\wkclz\micro\form\validator\impl\UrlValidator.java
+            - micro-form\src\main\resources\META-INF\spring\org.springframework.boot.autoconfigure.AutoConfiguration.imports
+            - micro-form\src\main\resources\mapper\MdmFormItemMapper.xml
+            - micro-form\src\main\resources\mapper\MdmFormMapper.xml
+            - micro-form\src\main\resources\mapper\MdmFormRuleFieldMapper.xml
+            - micro-form\src\main\resources\mapper\MdmFormRuleFieldValidatorMapper.xml
+            - micro-form\src\main\resources\mapper\MdmFormRuleMapper.xml
+            - micro-form\src\main\resources\mapper\MdmFormRuleValidatorTemplateMapper.xml
+            - micro-fun\pom.xml
+            - micro-fun\src\main\java\com\wkclz\micro\fun\FunAutoConfig.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\bean\dto\FunCategoryDto.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\bean\dto\FunFunctionDto.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\bean\entity\FunCategory.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\bean\entity\FunFunction.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\bean\req\FunCategoryCreateReq.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\bean\req\FunCategoryInfoReq.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\bean\req\FunCategoryListReq.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\bean\req\FunCategoryUpdateReq.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\bean\req\FunFunctionCreateReq.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\bean\req\FunFunctionInfoReq.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\bean\req\FunFunctionPageReq.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\bean\req\FunFunctionTestReq.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\bean\req\FunFunctionUpdateReq.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\bean\resp\FunCategoryResp.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\bean\resp\FunCategoryTreeResp.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\bean\resp\FunFunctionPageResp.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\bean\resp\FunFunctionResp.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\engine\ScriptEngine.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\engine\ScriptService.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\engine\impl\GraalvmLanguage.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\engine\impl\GroovyEngineImpl.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\engine\impl\JavaScriptEngineImpl.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\engine\impl\NonEngineImpl.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\engine\impl\PythonEngineImpl.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\engine\impl\QLExpressEngineImpl.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\engine\impl\RubyEngineImpl.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\mapper\FunCategoryMapper.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\mapper\FunFunctionMapper.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\rest\FunCategoryRest.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\rest\FunFunctionRest.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\rest\Route.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\service\FunCategoryService.java
+            - micro-fun\src\main\java\com\wkclz\micro\fun\service\FunFunctionService.java
+            - micro-fun\src\main\resources\META-INF\spring\org.springframework.boot.autoconfigure.AutoConfiguration.imports
+            - micro-fun\src\main\resources\mapper\FunCategoryMapper.xml
+            - micro-fun\src\main\resources\mapper\FunFunctionMapper.xml
+            - micro-k8s\pom.xml
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\K8sAutoConfig.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\Route.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\bean\entity\K8sConfig.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\bean\kube\K8sParam.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\bean\kube\Kind.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\bean\req\K8sClusterReq.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\bean\req\K8sConfigCreateReq.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\bean\req\K8sConfigInfoReq.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\bean\req\K8sConfigPageReq.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\bean\req\K8sConfigRemoveReq.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\bean\req\K8sConfigUpdateReq.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\bean\req\K8sKindCreateReq.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\bean\req\K8sKindDeleteReq.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\bean\req\K8sKindListReq.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\bean\req\K8sKindUpdateReq.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\bean\req\K8sKindYamlReq.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\bean\resp\K8sConfigResp.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\K8sApi.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\_README.md
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sClusterRoleBindingImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sClusterRoleImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sConfigMapImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sCronJobImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sCustomResourceDefinitionImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sDaemonSetImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sDeploymentImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sEndpointsImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sEventImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sHorizontalPodAutoscalerImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sIngressImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sJobImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sNamespaceImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sNetworkPolicyImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sPersistentVolumeClaimImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sPersistentVolumeImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sPodDisruptionBudgetImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sPodImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sPodSecurityPolicyImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sPriorityClassImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sReplicaSetImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sResourceQuotaImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sRoleBindingImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sRoleImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sSecretImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sServiceAccountImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sServiceImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sServiceMonitorImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sStatefulSetImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sStorageClassImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sVolumeImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\custom\impl\K8sVolumeSnapshotImpl.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\helper\K8sHelper.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\helper\KubeConfigHelper.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\mapper\K8sConfigMapper.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\rest\K8sConfigRest.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\rest\K8sKindRest.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\rest\K8sRest.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\service\K8sClusterService.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\service\K8sConfigService.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\service\K8sKindService.java
+            - micro-k8s\src\main\java\com\wkclz\micro\k8s\utils\YamlUtil.java
+            - micro-k8s\src\main\java\io\kubernetes\client\custom\IntOrString.java
+            - micro-k8s\src\main\resources\META-INF\spring\org.springframework.boot.autoconfigure.AutoConfiguration.imports
+            - micro-k8s\src\main\resources\mapper\K8sConfigMapper.xml
+            - micro-liteflow\pom.xml
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\LiteFlowAutoConfig.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\bean\dto\LiteflowChainDto.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\bean\dto\LiteflowScriptDto.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\bean\entity\LiteflowChain.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\bean\entity\LiteflowScript.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\bean\req\LiteflowChainCreateReq.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\bean\req\LiteflowChainInfoReq.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\bean\req\LiteflowChainPageReq.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\bean\req\LiteflowChainUpdateReq.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\bean\req\LiteflowScriptCreateReq.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\bean\req\LiteflowScriptInfoReq.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\bean\req\LiteflowScriptPageReq.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\bean\req\LiteflowScriptUpdateReq.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\bean\resp\LiteflowChainPageResp.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\bean\resp\LiteflowChainResp.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\bean\resp\LiteflowScriptPageResp.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\bean\resp\LiteflowScriptResp.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\demo\ACmp.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\demo\BCmp.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\demo\CCmp.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\demo\LiteFlowDemo.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\demo\LiteFlowTestRest.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\mapper\LiteflowChainMapper.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\mapper\LiteflowScriptMapper.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\rest\CommonLiteFlowRest.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\rest\LiteflowChainRest.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\rest\LiteflowScriptRest.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\rest\Route.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\service\LiteflowChainService.java
+            - micro-liteflow\src\main\java\com\wkclz\micro\liteflow\service\LiteflowScriptService.java
+            - micro-liteflow\src\main\resources\META-INF\spring\org.springframework.boot.autoconfigure.AutoConfiguration.imports
+            - micro-liteflow\src\main\resources\config\application.yml
+            - micro-liteflow\src\main\resources\mapper\LiteflowChainMapper.xml
+            - micro-liteflow\src\main\resources\mapper\LiteflowScriptMapper.xml
+            - micro-mask\pom.xml
+            - micro-mask\src\main\java\com\wkclz\micro\mask\MaskAutoConfig.java
+            - micro-mask\src\main\java\com\wkclz\micro\mask\bean\dto\MdmMaskRuleDto.java
+            - micro-mask\src\main\java\com\wkclz\micro\mask\bean\entity\MdmMaskRule.java
+            - micro-mask\src\main\java\com\wkclz\micro\mask\bean\req\MaskRuleCreateReq.java
+            - micro-mask\src\main\java\com\wkclz\micro\mask\bean\req\MaskRuleInfoReq.java
+            - micro-mask\src\main\java\com\wkclz\micro\mask\bean\req\MaskRulePageReq.java
+            - micro-mask\src\main\java\com\wkclz\micro\mask\bean\req\MaskRuleTestReq.java
+            - micro-mask\src\main\java\com\wkclz\micro\mask\bean\req\MaskRuleUpdateReq.java
+            - micro-mask\src\main\java\com\wkclz\micro\mask\bean\resp\MaskRulePageResp.java
+            - micro-mask\src\main\java\com\wkclz\micro\mask\bean\resp\MaskRuleResp.java
+            - micro-mask\src\main\java\com\wkclz\micro\mask\bean\resp\MaskRuleTestResp.java
+            - micro-mask\src\main\java\com\wkclz\micro\mask\cache\MaskCache.java
+            - micro-mask\src\main\java\com\wkclz\micro\mask\config\MaskResponseAdvice.java
+            - micro-mask\src\main\java\com\wkclz\micro\mask\mapper\MdmMaskRuleMapper.java
+            - micro-mask\src\main\java\com\wkclz\micro\mask\rest\MaskMockRest.java
+            - micro-mask\src\main\java\com\wkclz\micro\mask\rest\MaskRuleRest.java
+            - micro-mask\src\main\java\com\wkclz\micro\mask\rest\Route.java
+            - micro-mask\src\main\java\com\wkclz\micro\mask\service\MdmMaskRuleService.java
+            - micro-mask\src\main\resources\META-INF\spring\org.springframework.boot.autoconfigure.AutoConfiguration.imports
+            - micro-mask\src\main\resources\mapper\MdmMaskRuleMapper.xml
+            - micro-material\pom.xml
+            - micro-material\src\main\java\com\wkclz\micro\material\MaterialAutoConfig.java
+            - micro-material\src\main\java\com\wkclz\micro\material\api\MaterialApi.java
+            - micro-material\src\main\java\com\wkclz\micro\material\api\MaterialApiImpl.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\dto\MdmMaterialDto.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\dto\MdmMaterialGroupDto.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\dto\MdmMaterialRefDto.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\dto\MdmMaterialTransferLogDto.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\dto\MdmMaterialVersionDto.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\entity\MdmMaterial.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\entity\MdmMaterialGroup.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\entity\MdmMaterialRef.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\entity\MdmMaterialTransferLog.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\entity\MdmMaterialVersion.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\req\MaterialBatchCreateReq.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\req\MaterialCreateReq.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\req\MaterialGroupCreateReq.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\req\MaterialGroupMoveReq.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\req\MaterialGroupRemoveReq.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\req\MaterialGroupSortReq.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\req\MaterialGroupUpdateReq.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\req\MaterialInfoReq.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\req\MaterialLinkCheckReq.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\req\MaterialLinkCreateReq.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\req\MaterialMoveReq.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\req\MaterialPageReq.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\req\MaterialPickerListReq.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\req\MaterialRefBindReq.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\req\MaterialRefListReq.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\req\MaterialRefUnbindReq.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\req\MaterialRemoveReq.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\req\MaterialReplaceFileReq.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\req\MaterialRestoreReq.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\req\MaterialTransferCreateReq.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\req\MaterialTransferLogReq.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\req\MaterialUpdateReq.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\req\MaterialVersionListReq.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\req\MaterialVersionRollbackReq.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\req\MaterialVisibilityReq.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\resp\MaterialBatchCreateResp.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\resp\MaterialDistributionResp.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\resp\MaterialGroupResp.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\resp\MaterialGroupTreeResp.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\resp\MaterialPageResp.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\resp\MaterialRefResp.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\resp\MaterialResp.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\resp\MaterialTransferLogResp.java
+            - micro-material\src\main\java\com\wkclz\micro\material\bean\resp\MaterialVersionResp.java
+            - micro-material\src\main\java\com\wkclz\micro\material\cache\MaterialGroupCache.java
+            - micro-material\src\main\java\com\wkclz\micro\material\mapper\MdmMaterialGroupMapper.java
+            - micro-material\src\main\java\com\wkclz\micro\material\mapper\MdmMaterialMapper.java
+            - micro-material\src\main\java\com\wkclz\micro\material\mapper\MdmMaterialRefMapper.java
+            - micro-material\src\main\java\com\wkclz\micro\material\mapper\MdmMaterialTransferLogMapper.java
+            - micro-material\src\main\java\com\wkclz\micro\material\mapper\MdmMaterialVersionMapper.java
+            - micro-material\src\main\java\com\wkclz\micro\material\rest\MaterialGroupRest.java
+            - micro-material\src\main\java\com\wkclz\micro\material\rest\MaterialPickerRest.java
+            - micro-material\src\main\java\com\wkclz\micro\material\rest\MaterialRefRest.java
+            - micro-material\src\main\java\com\wkclz\micro\material\rest\MaterialRest.java
+            - micro-material\src\main\java\com\wkclz\micro\material\rest\MaterialStatsRest.java
+            - micro-material\src\main\java\com\wkclz\micro\material\rest\MaterialTransferRest.java
+            - micro-material\src\main\java\com\wkclz\micro\material\rest\MaterialVersionRest.java
+            - micro-material\src\main\java\com\wkclz\micro\material\rest\Route.java
+            - micro-material\src\main\java\com\wkclz\micro\material\service\MdmMaterialGroupService.java
+            - micro-material\src\main\java\com\wkclz\micro\material\service\MdmMaterialRefService.java
+            - micro-material\src\main\java\com\wkclz\micro\material\service\MdmMaterialService.java
+            - micro-material\src\main\java\com\wkclz\micro\material\service\MdmMaterialTransferLogService.java
+            - micro-material\src\main\java\com\wkclz\micro\material\service\MdmMaterialVersionService.java
+            - micro-material\src\main\resources\META-INF\spring\org.springframework.boot.autoconfigure.AutoConfiguration.imports
+            - micro-material\src\main\resources\mapper\MdmMaterialGroupMapper.xml
+            - micro-material\src\main\resources\mapper\MdmMaterialMapper.xml
+            - micro-material\src\main\resources\mapper\MdmMaterialRefMapper.xml
+            - micro-material\src\main\resources\mapper\MdmMaterialTransferLogMapper.xml
+            - micro-material\src\main\resources\mapper\MdmMaterialVersionMapper.xml
+            - micro-msg\pom.xml
+            - micro-msg\src\main\java\com\wkclz\micro\msg\MsgAutoConfig.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\api\MsgApi.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\dto\MsgNotificationDto.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\dto\MsgTemplateDto.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\dto\MsgUserRecordDto.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\dto\MsgUserSettingsDto.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\entity\MsgNotification.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\entity\MsgTemplate.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\entity\MsgUserRecord.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\entity\MsgUserSettings.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\req\MsgNotificationInfoReq.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\req\MsgNotificationPageReq.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\req\MsgNotificationRecordPageReq.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\req\MsgNotificationSentReq.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\req\MsgTemplateCreateReq.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\req\MsgTemplateInfoReq.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\req\MsgTemplatePageReq.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\req\MsgTemplateUpdateReq.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\req\MsgUserRecordInfoReq.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\req\MsgUserRecordListReq.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\req\MsgUserRecordPageReq.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\req\MsgUserRecordReadedReq.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\req\MsgUserSettingsSaveReq.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\resp\MsgNotificationPageResp.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\resp\MsgNotificationRecordPageResp.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\resp\MsgNotificationResp.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\resp\MsgTemplatePageResp.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\resp\MsgTemplateResp.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\resp\MsgUserRecordPageResp.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\resp\MsgUserRecordResp.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\bean\resp\MsgUserSettingsResp.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\mapper\MsgNotificationMapper.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\mapper\MsgTemplateMapper.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\mapper\MsgUserRecordMapper.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\mapper\MsgUserSettingsMapper.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\rest\ManagerMsgTemplateRest.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\rest\ManagerNotificationRest.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\rest\PersonalUserRecordRest.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\rest\PersonalUserSettingsRest.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\rest\Route.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\service\MsgNotificationService.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\service\MsgTemplateService.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\service\MsgUserRecordService.java
+            - micro-msg\src\main\java\com\wkclz\micro\msg\service\MsgUserSettingsService.java
+            - micro-msg\src\main\resources\META-INF\spring\org.springframework.boot.autoconfigure.AutoConfiguration.imports
+            - micro-msg\src\main\resources\mapper\MsgNotificationMapper.xml
+            - micro-msg\src\main\resources\mapper\MsgTemplateMapper.xml
+            - micro-msg\src\main\resources\mapper\MsgUserRecordMapper.xml
+            - micro-msg\src\main\resources\mapper\MsgUserSettingsMapper.xml
+            - micro-pay\pom.xml
+            - micro-pay\src\main\java\com\wkclz\micro\pay\PayAutoConfig.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\dto\PayAlipayConfigDto.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\dto\PayOrderDto.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\dto\PayWxpayConfigDto.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\entity\PayAlipayConfig.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\entity\PayOrder.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\entity\PayWxpayConfig.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\enums\PayMethod.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\enums\PayStatus.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\enums\TerminalType.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\req\AlipayConfigCreateReq.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\req\AlipayConfigInfoReq.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\req\AlipayConfigPageReq.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\req\AlipayConfigRemoveReq.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\req\AlipayConfigUpdateReq.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\req\PayOrderCreateReq.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\req\PayOrderMockPayReq.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\req\PayOrderRefundReq.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\req\PayOrderStatusReq.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\req\WxpayConfigCreateReq.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\req\WxpayConfigInfoReq.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\req\WxpayConfigPageReq.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\req\WxpayConfigRemoveReq.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\req\WxpayConfigUpdateReq.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\resp\AlipayConfigCreateResp.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\resp\AlipayConfigInfoResp.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\resp\AlipayConfigPageResp.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\resp\AlipayConfigUpdateResp.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\resp\PayOrderMockPayResp.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\resp\PayOrderStatusResp.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\resp\WxpayConfigCreateResp.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\resp\WxpayConfigInfoResp.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\resp\WxpayConfigPageResp.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\resp\WxpayConfigUpdateResp.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\bean\vo\AlipayNotify.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\cache\AlipayClientCache.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\cache\WxpayClientCache.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\config\PayConfig.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\helper\AlipayHelper.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\helper\WxpayHelper.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\mapper\PayAlipayConfigMapper.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\mapper\PayOrderMapper.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\mapper\PayWxpayConfigMapper.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\rest\Route.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\rest\config\AlipayConfigRest.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\rest\config\WxpayConfigRest.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\rest\custom\CustomPayOrderRest.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\rest\manager\PayorderRefundRest.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\rest\notify\AlipayNotifyRest.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\rest\notify\WxpayNotifyRest.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\schedule\WxPayTimeoutSchedule.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\schedule\WxpayOrderSchedule.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\service\PayAlipayConfigService.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\service\PayOrderService.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\service\PayWxpayConfigService.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\service\ShopOrderService.java
+            - micro-pay\src\main\java\com\wkclz\micro\pay\spi\PayNoticeSpi.java
+            - micro-pay\src\main\resources\META-INF\spring\org.springframework.boot.autoconfigure.AutoConfiguration.imports
+            - micro-pay\src\main\resources\mapper\PayAlipayConfigMapper.xml
+            - micro-pay\src\main\resources\mapper\PayOrderMapper.xml
+            - micro-pay\src\main\resources\mapper\PayWxpayConfigMapper.xml
+            - micro-pdf\pom.xml
+            - micro-pdf\src\main\java\com\wkclz\micro\pdf\PdfAutoConfig.java
+            - micro-pdf\src\main\java\com\wkclz\micro\pdf\api\PdfApi.java
+            - micro-pdf\src\main\java\com\wkclz\micro\pdf\bean\entity\MdmPdfTemplate.java
+            - micro-pdf\src\main\java\com\wkclz\micro\pdf\bean\req\PdfTemplateCreateReq.java
+            - micro-pdf\src\main\java\com\wkclz\micro\pdf\bean\req\PdfTemplateInfoReq.java
+            - micro-pdf\src\main\java\com\wkclz\micro\pdf\bean\req\PdfTemplateMockReq.java
+            - micro-pdf\src\main\java\com\wkclz\micro\pdf\bean\req\PdfTemplatePageReq.java
+            - micro-pdf\src\main\java\com\wkclz\micro\pdf\bean\req\PdfTemplateRemoveReq.java
+            - micro-pdf\src\main\java\com\wkclz\micro\pdf\bean\req\PdfTemplateUpdateReq.java
+            - micro-pdf\src\main\java\com\wkclz\micro\pdf\bean\resp\PdfTemplateInfoResp.java
+            - micro-pdf\src\main\java\com\wkclz\micro\pdf\bean\resp\PdfTemplatePageResp.java
+            - micro-pdf\src\main\java\com\wkclz\micro\pdf\cache\PdfTemplateCache.java
+            - micro-pdf\src\main\java\com\wkclz\micro\pdf\config\PdfConfig.java
+            - micro-pdf\src\main\java\com\wkclz\micro\pdf\helper\PdfHelper.java
+            - micro-pdf\src\main\java\com\wkclz\micro\pdf\mapper\MdmPdfTemplateMapper.java
+            - micro-pdf\src\main\java\com\wkclz\micro\pdf\rest\PdfTemplateRest.java
+            - micro-pdf\src\main\java\com\wkclz\micro\pdf\rest\Route.java
+            - micro-pdf\src\main\java\com\wkclz\micro\pdf\service\MdmPdfTemplateService.java
+            - micro-pdf\src\main\resources\META-INF\spring\org.springframework.boot.autoconfigure.AutoConfiguration.imports
+            - micro-pdf\src\main\resources\mapper\MdmPdfTemplateMapper.xml
+            - micro-report\AGENTS.md
+            - micro-report\pom.xml
+            - micro-report\src\main\java\com\wkclz\micro\report\ReportAutoConfig.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\dto\ReportDefinitionDto.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\dto\ReportDefinitionParamDto.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\dto\ReportDefinitionResultDto.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\entity\ReportDefinition.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\entity\ReportDefinitionHis.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\entity\ReportDefinitionParam.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\entity\ReportDefinitionResult.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\req\ReportDefinitionCreateReq.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\req\ReportDefinitionHisInfoReq.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\req\ReportDefinitionHisPageReq.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\req\ReportDefinitionInfoReq.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\req\ReportDefinitionPageReq.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\req\ReportDefinitionParamCreateReq.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\req\ReportDefinitionParamExtractReq.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\req\ReportDefinitionParamListReq.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\req\ReportDefinitionParamUpdateReq.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\req\ReportDefinitionResultCreateReq.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\req\ReportDefinitionResultExtractReq.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\req\ReportDefinitionResultListReq.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\req\ReportDefinitionResultUpdateReq.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\req\ReportDefinitionTestReq.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\req\ReportDefinitionUpdateReq.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\req\ReportExecExportReq.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\req\ReportExecInfoReq.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\req\ReportExecQueryReq.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\resp\ReportDefinitionHisPageResp.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\resp\ReportDefinitionHisResp.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\resp\ReportDefinitionPageResp.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\resp\ReportDefinitionParamResp.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\resp\ReportDefinitionResp.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\resp\ReportDefinitionResultResp.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\resp\ReportExecInfoResp.java
+            - micro-report\src\main\java\com\wkclz\micro\report\bean\resp\ReportExecOptionsResp.java
+            - micro-report\src\main\java\com\wkclz\micro\report\cache\ReportCache.java
+            - micro-report\src\main\java\com\wkclz\micro\report\helper\ReportExportHelper.java
+            - micro-report\src\main\java\com\wkclz\micro\report\helper\ReportSqlHelper.java
+            - micro-report\src\main\java\com\wkclz\micro\report\mapper\ReportDefinitionHisMapper.java
+            - micro-report\src\main\java\com\wkclz\micro\report\mapper\ReportDefinitionMapper.java
+            - micro-report\src\main\java\com\wkclz\micro\report\mapper\ReportDefinitionParamMapper.java
+            - micro-report\src\main\java\com\wkclz\micro\report\mapper\ReportDefinitionResultMapper.java
+            - micro-report\src\main\java\com\wkclz\micro\report\rest\ReportDefinitionHisRest.java
+            - micro-report\src\main\java\com\wkclz\micro\report\rest\ReportDefinitionParamRest.java
+            - micro-report\src\main\java\com\wkclz\micro\report\rest\ReportDefinitionRest.java
+            - micro-report\src\main\java\com\wkclz\micro\report\rest\ReportDefinitionResultRest.java
+            - micro-report\src\main\java\com\wkclz\micro\report\rest\ReportExecRest.java
+            - micro-report\src\main\java\com\wkclz\micro\report\rest\Route.java
+            - micro-report\src\main\java\com\wkclz\micro\report\service\ReportDefinitionHisService.java
+            - micro-report\src\main\java\com\wkclz\micro\report\service\ReportDefinitionParamService.java
+            - micro-report\src\main\java\com\wkclz\micro\report\service\ReportDefinitionResultService.java
+            - micro-report\src\main\java\com\wkclz\micro\report\service\ReportDefinitionService.java
+            - micro-report\src\main\java\com\wkclz\micro\report\service\ReportExecService.java
+            - micro-report\src\main\resources\META-INF\spring\org.springframework.boot.autoconfigure.AutoConfiguration.imports
+            - micro-report\src\main\resources\mapper\ReportDefinitionHisMapper.xml
+            - micro-report\src\main\resources\mapper\ReportDefinitionMapper.xml
+            - micro-report\src\main\resources\mapper\ReportDefinitionParamMapper.xml
+            - micro-report\src\main\resources\mapper\ReportDefinitionResultMapper.xml
+            - micro-rmcheck\pom.xml
+            - micro-rmcheck\src\main\java\com\wkclz\micro\rmcheck\RmcheckAutoConfig.java
+            - micro-rmcheck\src\main\java\com\wkclz\micro\rmcheck\api\RmCheckApi.java
+            - micro-rmcheck\src\main\java\com\wkclz\micro\rmcheck\bean\dto\RmCheckRuleDto.java
+            - micro-rmcheck\src\main\java\com\wkclz\micro\rmcheck\bean\dto\RmCheckRuleItemDto.java
+            - micro-rmcheck\src\main\java\com\wkclz\micro\rmcheck\bean\entity\RmCheckRule.java
+            - micro-rmcheck\src\main\java\com\wkclz\micro\rmcheck\bean\entity\RmCheckRuleItem.java
+            - micro-rmcheck\src\main\java\com\wkclz\micro\rmcheck\bean\req\RmCheckRuleCreateReq.java
+            - micro-rmcheck\src\main\java\com\wkclz\micro\rmcheck\bean\req\RmCheckRuleInfoReq.java
+            - micro-rmcheck\src\main\java\com\wkclz\micro\rmcheck\bean\req\RmCheckRuleItemCreateReq.java
+            - micro-rmcheck\src\main\java\com\wkclz\micro\rmcheck\bean\req\RmCheckRuleItemInfoReq.java
+            - micro-rmcheck\src\main\java\com\wkclz\micro\rmcheck\bean\req\RmCheckRuleItemListReq.java
+            - micro-rmcheck\src\main\java\com\wkclz\micro\rmcheck\bean\req\RmCheckRuleItemUpdateReq.java
+            - micro-rmcheck\src\main\java\com\wkclz\micro\rmcheck\bean\req\RmCheckRulePageReq.java
+            - micro-rmcheck\src\main\java\com\wkclz\micro\rmcheck\bean\req\RmCheckRuleUpdateReq.java
+            - micro-rmcheck\src\main\java\com\wkclz\micro\rmcheck\bean\resp\RmCheckRuleItemResp.java
+            - micro-rmcheck\src\main\java\com\wkclz\micro\rmcheck\bean\resp\RmCheckRulePageResp.java
+            - micro-rmcheck\src\main\java\com\wkclz\micro\rmcheck\bean\resp\RmCheckRuleResp.java
+            - micro-rmcheck\src\main\java\com\wkclz\micro\rmcheck\mapper\CheckMapper.java
+            - micro-rmcheck\src\main\java\com\wkclz\micro\rmcheck\mapper\RmCheckRuleItemMapper.java
+            - micro-rmcheck\src\main\java\com\wkclz\micro\rmcheck\mapper\RmCheckRuleMapper.java
+            - micro-rmcheck\src\main\java\com\wkclz\micro\rmcheck\rest\RmCheckRuleItemRest.java
+            - micro-rmcheck\src\main\java\com\wkclz\micro\rmcheck\rest\RmCheckRuleRest.java
+            - micro-rmcheck\src\main\java\com\wkclz\micro\rmcheck\rest\Route.java
+            - micro-rmcheck\src\main\java\com\wkclz\micro\rmcheck\service\RmCheckRuleItemService.java
+            - micro-rmcheck\src\main\java\com\wkclz\micro\rmcheck\service\RmCheckRuleService.java
+            - micro-rmcheck\src\main\resources\META-INF\spring\org.springframework.boot.autoconfigure.AutoConfiguration.imports
+            - micro-rmcheck\src\main\resources\mapper\CheckMapper.xml
+            - micro-rmcheck\src\main\resources\mapper\RmCheckRuleItemMapper.xml
+            - micro-rmcheck\src\main\resources\mapper\RmCheckRuleMapper.xml
+            - micro-seq\pom.xml
+            - micro-seq\src\main\java\com\wkclz\micro\seq\SeqAutoConfig.java
+            - micro-seq\src\main\java\com\wkclz\micro\seq\api\SeqApi.java
+            - micro-seq\src\main\java\com\wkclz\micro\seq\bean\dto\MdmSequenceDto.java
+            - micro-seq\src\main\java\com\wkclz\micro\seq\bean\entity\MdmSequence.java
+            - micro-seq\src\main\java\com\wkclz\micro\seq\bean\req\SequenceInfoReq.java
+            - micro-seq\src\main\java\com\wkclz\micro\seq\bean\req\SequencePageReq.java
+            - micro-seq\src\main\java\com\wkclz\micro\seq\bean\req\SequenceUpdateReq.java
+            - micro-seq\src\main\java\com\wkclz\micro\seq\bean\resp\SequencePageResp.java
+            - micro-seq\src\main\java\com\wkclz\micro\seq\bean\resp\SequenceResp.java
+            - micro-seq\src\main\java\com\wkclz\micro\seq\mapper\MdmSequenceMapper.java
+            - micro-seq\src\main\java\com\wkclz\micro\seq\rest\Route.java
+            - micro-seq\src\main\java\com\wkclz\micro\seq\rest\SequenceRest.java
+            - micro-seq\src\main\java\com\wkclz\micro\seq\service\MdmSequenceService.java
+            - micro-seq\src\main\resources\META-INF\spring\org.springframework.boot.autoconfigure.AutoConfiguration.imports
+            - micro-seq\src\main\resources\mapper\MdmSequenceMapper.xml
+            - micro-seq\src\main\resources\mapper\base\MdmSequenceMapper.xml
+            - micro-seq\src\main\resources\mapper\base\_LEAVE_HERE.md
+            - micro-wxapp\pom.xml
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\MicroAppAutoConfig.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\Route.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\bean\entity\WxappConfig.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\bean\entity\WxappLoginLog.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\bean\entity\WxappUser.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\bean\req\WxMaLoginReq.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\bean\req\WxMaMobileBindReq.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\bean\req\WxMaPhoneReq.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\bean\req\WxMaUserInfoUpdateReq.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\bean\req\WxappConfigCreateReq.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\bean\req\WxappConfigInfoReq.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\bean\req\WxappConfigPageReq.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\bean\req\WxappConfigRemoveReq.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\bean\req\WxappConfigUpdateReq.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\bean\req\validation\WxMaLoginFieldsValid.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\bean\req\validation\WxMaLoginFieldsValidator.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\bean\req\validation\WxMaUserInfoUpdateValid.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\bean\req\validation\WxMaUserInfoUpdateValidator.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\bean\resp\WxMaLoginResp.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\bean\resp\WxMaUserInfoResp.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\bean\resp\WxappConfigPageResp.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\bean\resp\WxappConfigResp.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\bean\vo\WxMaAppInfo.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\config\WxMaConfiguration.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\helper\Checker.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\mapper\WxappConfigMapper.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\mapper\WxappLoginLogMapper.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\mapper\WxappUserMapper.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\rest\WxAppRest.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\rest\WxMaMediaRest.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\rest\WxMaUserRest.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\rest\WxappConfigRest.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\service\WxappConfigService.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\service\WxappLoginLogService.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\service\WxappUserService.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\service\custom\WxMiniappService.java
+            - micro-wxapp\src\main\java\com\wkclz\micro\wxapp\service\custom\WxappLoginService.java
+            - micro-wxapp\src\main\resources\META-INF\spring\org.springframework.boot.autoconfigure.AutoConfiguration.imports
+            - micro-wxapp\src\main\resources\mapper\WxappConfigMapper.xml
+            - micro-wxapp\src\main\resources\mapper\WxappLoginLogMapper.xml
+            - micro-wxapp\src\main\resources\mapper\WxappUserMapper.xml
+            - micro-wxmp\pom.xml
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\WxmpAutoConfig.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\bean\dto\WxMpAppInfo.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\bean\entity\WxmpConfig.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\bean\entity\WxmpKfMsg.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\bean\entity\WxmpLoginLog.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\bean\entity\WxmpUser.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\bean\req\WxMaterialPageReq.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\bean\req\WxSignReq.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\bean\req\WxmpConfigCreateReq.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\bean\req\WxmpConfigInfoReq.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\bean\req\WxmpConfigPageReq.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\bean\req\WxmpConfigUpdateReq.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\bean\req\WxmpKfMsgInfoReq.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\bean\req\WxmpKfMsgPageReq.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\bean\resp\WxUserResp.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\bean\resp\WxmpConfigPageResp.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\bean\resp\WxmpConfigResp.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\bean\resp\WxmpKfMsgPageResp.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\bean\resp\WxmpKfMsgResp.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\bean\resp\WxmpLoginResp.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\builder\AbstractBuilder.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\builder\ImageBuilder.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\builder\TextBuilder.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\config\WxMpConfiguration.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\handler\AbstractHandler.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\handler\KfSessionHandler.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\handler\LocationHandler.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\handler\LogHandler.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\handler\MenuHandler.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\handler\MsgHandler.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\handler\NullHandler.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\handler\ScanHandler.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\handler\StoreCheckNotifyHandler.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\handler\SubscribeHandler.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\handler\UnsubscribeHandler.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\handler\spi\LogSpi.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\handler\spi\MenuSpi.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\handler\spi\MsgSpi.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\handler\spi\SubscribeSpi.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\mapper\WxmpConfigMapper.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\mapper\WxmpKfMsgMapper.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\mapper\WxmpLoginLogMapper.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\mapper\WxmpUserMapper.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\rest\Route.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\rest\cust\WxUserRest.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\rest\cust\WxmpLoginRest.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\rest\mamager\WxmpConfigRest.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\rest\mamager\WxmpKfMsgRest.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\rest\mp\WxMaterialRest.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\rest\mp\WxPortalRest.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\rest\mp\WxSignRest.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\service\WxMaterialService.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\service\WxmpConfigService.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\service\WxmpKfMsgService.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\service\WxmpLoginLogService.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\service\WxmpLoginService.java
+            - micro-wxmp\src\main\java\com\wkclz\micro\wxmp\service\WxmpUserService.java
+            - micro-wxmp\src\main\resources\META-INF\spring\org.springframework.boot.autoconfigure.AutoConfiguration.imports
+            - micro-wxmp\src\main\resources\mapper\WxmpConfigMapper.xml
+            - micro-wxmp\src\main\resources\mapper\WxmpKfMsgMapper.xml
+            - micro-wxmp\src\main\resources\mapper\WxmpLoginLogMapper.xml
+            - micro-wxmp\src\main\resources\mapper\WxmpUserMapper.xml
+        source_files: []
+        children: []
+        depends_on: []
+        related_to: []
+    micro_audit:
+        dir_name: 数据变更审计模块
+        title: 数据变更审计模块
+        scope:
+            - micro-audit/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: micro_mask
+            - path: micro_rmcheck
+            - path: micro_dbview
+            - path: micro_seq
+            - path: micro_pay
+            - path: micro_fileos
+            - path: micro_autotest
+    micro_autotest:
+        dir_name: REST API 自动化测试引擎
+        title: REST API 自动化测试引擎
+        scope:
+            - micro-autotest/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: micro_form
+            - path: micro_mask
+            - path: micro_pay
+            - path: micro_wxapp
+            - path: micro_wxmp
+            - path: micro_k8s
+            - path: micro_report
+            - path: micro_dict
+            - path: micro_material
+            - path: micro_fileos
+            - path: micro_fun
+            - path: micro_liteflow
+            - path: micro_seq
+            - path: micro_rmcheck
+            - path: micro_pdf
+            - path: micro_msg
+            - path: micro_dbview
+            - path: micro_audit
+    micro_dbview:
+        dir_name: 数据库元数据管理与安全执行引擎
+        title: 数据库元数据管理与安全执行引擎
+        scope:
+            - micro-dbview/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: micro_report
+            - path: micro_k8s
+            - path: micro_audit
+            - path: micro_rmcheck
+            - path: micro_autotest
+    micro_dict:
+        dir_name: 数据字典管理服务
+        title: 数据字典管理服务
+        scope:
+            - micro-dict/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: micro_seq
+            - path: micro_msg
+            - path: micro_pdf
+            - path: micro_material
+            - path: micro_form
+            - path: micro_rmcheck
+            - path: micro_report
+            - path: micro_wxapp
+            - path: micro_wxmp
+            - path: micro_autotest
+            - path: micro_k8s
+            - path: micro_liteflow
+    micro_fileos:
+        dir_name: 统一文件对象存储服务
+        title: 统一文件对象存储服务
+        scope:
+            - micro-fileos/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: micro_material
+            - path: micro_pdf
+            - path: micro_k8s
+            - path: micro_wxapp
+            - path: micro_wxmp
+            - path: micro_audit
+            - path: micro_mask
+            - path: micro_autotest
+            - path: micro_rmcheck
+    micro_form:
+        dir_name: 动态表单与规则引擎
+        title: 动态表单与规则引擎
+        scope:
+            - micro-form/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: micro_liteflow
+            - path: micro_autotest
+            - path: micro_mask
+            - path: micro_dict
+            - path: micro_report
+            - path: micro_k8s
+            - path: micro_wxapp
+            - path: micro_wxmp
+            - path: micro_pay
+            - path: micro_rmcheck
+            - path: micro_msg
+            - path: micro_material
+    micro_fun:
+        dir_name: 动态脚本引擎与函数管理
+        title: 动态脚本引擎与函数管理
+        scope:
+            - micro-fun/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: micro_liteflow
+            - path: micro_report
+            - path: micro_mask
+            - path: micro_pdf
+            - path: micro_wxapp
+            - path: micro_wxmp
+            - path: micro_k8s
+            - path: micro_autotest
+            - path: micro_msg
+            - path: micro_rmcheck
+    micro_k8s:
+        dir_name: Kubernetes 集群管理与资源编排模块
+        title: Kubernetes 集群管理与资源编排模块
+        scope:
+            - micro-k8s/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: micro_dbview
+            - path: micro_fileos
+            - path: micro_autotest
+            - path: micro_pay
+            - path: micro_msg
+            - path: micro_wxapp
+            - path: micro_wxmp
+            - path: micro_form
+            - path: micro_fun
+            - path: micro_report
+            - path: micro_pdf
+            - path: micro_mask
+            - path: micro_rmcheck
+            - path: micro_dict
+            - path: micro_seq
+            - path: micro_material
+            - path: micro_liteflow
+    micro_liteflow:
+        dir_name: LiteFlow 规则引擎管理模块
+        title: LiteFlow 规则引擎管理模块
+        scope:
+            - micro-liteflow/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: micro_form
+            - path: micro_fun
+            - path: micro_report
+            - path: micro_pay
+            - path: micro_msg
+            - path: micro_wxapp
+            - path: micro_autotest
+            - path: micro_wxmp
+            - path: micro_dict
+            - path: micro_k8s
+            - path: micro_rmcheck
+    micro_mask:
+        dir_name: 数据脱敏与响应拦截模块
+        title: 数据脱敏与响应拦截模块
+        scope:
+            - micro-mask/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: micro_audit
+            - path: micro_form
+            - path: micro_autotest
+            - path: micro_msg
+            - path: micro_fun
+            - path: micro_report
+            - path: micro_fileos
+            - path: micro_wxapp
+            - path: micro_wxmp
+            - path: micro_k8s
+            - path: micro_rmcheck
+    micro_material:
+        dir_name: 素材主数据管理模块
+        title: 素材主数据管理模块
+        scope:
+            - micro-material/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: micro_fileos
+            - path: micro_wxmp
+            - path: micro_dict
+            - path: micro_rmcheck
+            - path: micro_pdf
+            - path: micro_msg
+            - path: micro_autotest
+            - path: micro_wxapp
+            - path: micro_k8s
+            - path: micro_form
+    micro_msg:
+        dir_name: 消息通知与个人记录管理
+        title: 消息通知与个人记录管理
+        scope:
+            - micro-msg/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: micro_wxmp
+            - path: micro_wxapp
+            - path: micro_dict
+            - path: micro_mask
+            - path: micro_seq
+            - path: micro_pdf
+            - path: micro_k8s
+            - path: micro_liteflow
+            - path: micro_material
+            - path: micro_autotest
+            - path: micro_fun
+            - path: micro_rmcheck
+            - path: micro_form
+    micro_pay:
+        dir_name: 聚合支付与配置管理
+        title: 聚合支付与配置管理
+        scope:
+            - micro-pay/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: micro_wxapp
+            - path: micro_wxmp
+            - path: micro_seq
+            - path: micro_audit
+            - path: micro_autotest
+            - path: micro_k8s
+            - path: micro_liteflow
+            - path: micro_form
+            - path: micro_rmcheck
+    micro_pdf:
+        dir_name: PDF模板管理与渲染服务
+        title: PDF模板管理与渲染服务
+        scope:
+            - micro-pdf/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: micro_fileos
+            - path: micro_dict
+            - path: micro_wxmp
+            - path: micro_material
+            - path: micro_msg
+            - path: micro_fun
+            - path: micro_report
+            - path: micro_wxapp
+            - path: micro_k8s
+            - path: micro_autotest
+            - path: micro_rmcheck
+    micro_report:
+        dir_name: 动态报表定义与执行引擎
+        title: 动态报表定义与执行引擎
+        scope:
+            - micro-report/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: micro_dbview
+            - path: micro_fun
+            - path: micro_liteflow
+            - path: micro_form
+            - path: micro_dict
+            - path: micro_mask
+            - path: micro_autotest
+            - path: micro_pdf
+            - path: micro_wxapp
+            - path: micro_wxmp
+            - path: micro_k8s
+            - path: micro_rmcheck
+    micro_rmcheck:
+        dir_name: 删除依赖校验微服务
+        title: 删除依赖校验微服务
+        scope:
+            - micro-rmcheck/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: micro_audit
+            - path: micro_material
+            - path: micro_dict
+            - path: micro_seq
+            - path: micro_k8s
+            - path: micro_autotest
+            - path: micro_wxapp
+            - path: micro_wxmp
+            - path: micro_pay
+            - path: micro_msg
+            - path: micro_form
+            - path: micro_liteflow
+            - path: micro_report
+            - path: micro_pdf
+            - path: micro_fun
+            - path: micro_dbview
+            - path: micro_fileos
+            - path: micro_mask
+    micro_seq:
+        dir_name: 分布式序列号生成服务
+        title: 分布式序列号生成服务
+        scope:
+            - micro-seq/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: micro_dict
+            - path: micro_pay
+            - path: micro_audit
+            - path: micro_msg
+            - path: micro_rmcheck
+            - path: micro_autotest
+            - path: micro_k8s
+    micro_wxapp:
+        dir_name: 微信小程序集成与用户管理
+        title: 微信小程序集成与用户管理
+        scope:
+            - micro-wxapp/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: micro_wxmp
+            - path: micro_pay
+            - path: micro_msg
+            - path: micro_fileos
+            - path: micro_autotest
+            - path: micro_dict
+            - path: micro_fun
+            - path: micro_k8s
+            - path: micro_liteflow
+            - path: micro_report
+            - path: micro_pdf
+            - path: micro_mask
+            - path: micro_form
+            - path: micro_material
+            - path: micro_rmcheck
+    micro_wxmp:
+        dir_name: 微信公众号业务集成模块
+        title: 微信公众号业务集成模块
+        scope:
+            - micro-wxmp/
+        source_files: []
+        children: []
+        depends_on: []
+        related_to:
+            - path: micro_wxapp
+            - path: micro_pay
+            - path: micro_msg
+            - path: micro_material
+            - path: micro_pdf
+            - path: micro_fileos
+            - path: micro_autotest
+            - path: micro_dict
+            - path: micro_k8s
+            - path: micro_fun
+            - path: micro_report
+            - path: micro_mask
+            - path: micro_form
+            - path: micro_liteflow
+            - path: micro_rmcheck
