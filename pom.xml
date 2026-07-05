@@ -38,6 +38,7 @@
         <module>micro-msg</module>
         <module>micro-pdf</module>
         <module>micro-points</module>
+        <module>micro-pay</module>
         <module>micro-rmcheck</module>
         <module>micro-seq</module>
         <module>micro-wxapp</module>
