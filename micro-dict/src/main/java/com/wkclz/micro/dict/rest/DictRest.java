@@ -2,388 +2,127 @@ package com.wkclz.micro.dict.rest;
 
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.base.R;
-import com.wkclz.core.enums.ResultCode;
-import com.wkclz.core.exception.ValidationException;
-import com.wkclz.micro.dict.cache.DictCache;
 import com.wkclz.micro.dict.bean.dto.MdmDictDto;
+import com.wkclz.micro.dict.bean.dto.MdmDictItemDto;
 import com.wkclz.micro.dict.bean.entity.MdmDict;
 import com.wkclz.micro.dict.bean.entity.MdmDictItem;
-import com.wkclz.micro.dict.service.MdmDictItemService;
+import com.wkclz.micro.dict.bean.req.*;
+import com.wkclz.micro.dict.bean.resp.DictCopyResp;
+import com.wkclz.micro.dict.bean.resp.DictItemResp;
+import com.wkclz.micro.dict.bean.resp.DictOptionsResp;
+import com.wkclz.micro.dict.bean.resp.DictPageResp;
+import com.wkclz.micro.dict.bean.resp.DictResp;
 import com.wkclz.micro.dict.service.MdmDictService;
-import org.apache.commons.lang3.StringUtils;
+import com.wkclz.tool.utils.BeanUtil;
+import com.wkclz.web.bean.RemoveReq;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created: wangkaicun @ 2018-10-30 15:11:51
  */
+@Tag(name = "1.字典类型", description = "字典类型管理接口")
 @RestController
 @RequestMapping(Route.PREFIX)
+@Validated
 public class DictRest {
 
     @Autowired
-    private DictCache dictCache;
-    @Autowired
     private MdmDictService mdmDictService;
-    @Autowired
-    private MdmDictItemService mdmDictItemService;
 
-    /**
-     * @api {get} /dict/page 1. 字典类型列表分页
-     * @apiGroup DICT
-     *
-     * @apiVersion 0.0.1
-     * @apiDescription 字典类型列表分页
-     *
-     * @apiParam {String} [dictCtg] <code>param</code>字典分组
-     * @apiParam {String} [dictType] <code>param</code>类型名称【支持模糊查询】
-     * @apiParam {String} [description] <code>param</code>描述信息【支持模糊查询】
-     *
-     * @apiParamExample {param} 请求样例:
-     * ?id=1
-     *
-     * @apiSuccess {Integer} [id] 字典ID
-     * @apiSuccess {String} [dictCtg] 字典分组
-     * @apiSuccess {String} [dictType] 字典类型
-     * @apiSuccess {String} [description] 描述信息
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * {
-     *     "code": 1,
-     *     "data": {
-     *         "data": [
-     *             {
-     *                 "id": "id",
-     *                 "dictCtg": "dictCtg",
-     *                 "dictType": "dictType",
-     *                 "description": "description"
-     *             },
-     *             ...
-     *         ],
-     *         "totalCount": 1,
-     *         "totalPage": 1,
-     *         "pageNo": 1,
-     *         "pageSize": 10
-     *     }
-     * }
-     *
-     */
+    @Operation(summary = "1.字典类型-分页查询", description = "根据条件分页查询字典类型列表")
     @GetMapping(Route.DICT_PAGE)
-    public R dictPage(MdmDict entity) {
-        PageData<MdmDict> dicts = mdmDictService.getDictPage(entity);
-        return R.ok(dicts);
+    public R<PageData<DictPageResp>> dictPage(@Valid DictPageReq req) {
+        MdmDict entity = BeanUtil.cp(req, MdmDict.class);
+        PageData<MdmDict> page = mdmDictService.getDictPage(entity);
+        PageData<DictPageResp> newPage = page.convert(DictPageResp.class);
+        return R.ok(newPage);
     }
 
-
-    /**
-     * @api {get} /dict/info 2. 字典类型列表详情
-     * @apiGroup DICT
-     *
-     * @apiVersion 0.0.1
-     * @apiDescription 字典类型详情
-     *
-     * @apiParam {Long} id <code>param</code>数据Id
-     *
-     * @apiParamExample {param} 请求样例:
-     * ?id=1
-     *
-     * @apiSuccess {Long} [id] ID
-     * @apiSuccess {String} [dictCtg] 类分组
-     * @apiSuccess {String} [dictType] 类型
-     * @apiSuccess {String} [description] 类型描述信息
-     * @apiSuccess {Integer} [sort] 排序
-     * @apiSuccess {Date} [createTime] 创建时间
-     * @apiSuccess {Long} [createBy] 创建人
-     * @apiSuccess {Date} [updateTime] 更新时间
-     * @apiSuccess {Long} [updateBy] 更新人
-     * @apiSuccess {String} [remark] 备注
-     * @apiSuccess {Integer} [version] 版本号
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * {
-     *     "code": 1,
-     *     "data": {
-     *          "id": "id",
-     *          "dictCtg": "dictCtg",
-     *          "dictType": "dictType",
-     *          "description": "description",
-     *          "sort": "sort",
-     *          "createTime": "createTime",
-     *          "createBy": "createBy",
-     *          "updateTime": "updateTime",
-     *          "updateBy": "updateBy",
-     *          "remark": "remark",
-     *          "version": "version",
-     *     }
-     * }
-     *
-     */
+    @Operation(summary = "2.字典类型-详情", description = "根据ID查询字典类型详情")
     @GetMapping(Route.DICT_INFO)
-    public R dictInfo(MdmDict entity) {
-        Assert.notNull(entity.getId(), ResultCode.PARAM_NO_ID.getMessage());
-        entity = mdmDictService.selectById(entity.getId());
+    public R<DictResp> dictInfo(@Valid DictInfoReq req) {
+        MdmDict entity = mdmDictService.selectById(req.getId());
         if (entity == null) {
             return R.error("id is error");
         }
-        return R.ok(entity);
+        DictResp resp = BeanUtil.cp(entity, DictResp.class);
+        return R.ok(resp);
     }
 
-    /**
-     * @api {post} /dict/create 3. 字典类型添加
-     * @apiGroup DICT
-     *
-     * @apiVersion 0.0.1
-     * @apiDescription 新增信息
-     *
-     * @apiParam {String} dictCtg <code>body</code>字典分组
-     * @apiParam {String} dictType <code>body</code>类型名称
-     * @apiParam {String} [description] <code>body</code>描述信息
-     *
-     * @apiParamExample {json} 请求样例:
-     * {
-     *      "dictCtg": "dictCtg",
-     *      "dictType": "dictType",
-     *      "description": "description",
-     *      "sort": "sort"
-     * }
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * {
-     *     "code": 1,
-     *     "data": ObjectDto
-     * }
-     *
-     */
+    @Operation(summary = "3.字典类型-创建", description = "新增字典类型")
     @PostMapping(Route.DICT_CREATE)
-    @Transactional(rollbackFor = Exception.class)
-    public R dictCreate(@RequestBody MdmDict entity) {
-        entity.setId(null);
-        paramCheck(entity);
-
-        MdmDict param = new MdmDict();
-        param.setDictType(entity.getDictType());
-        long count = mdmDictService.selectCountByEntity(param);
-        if (count > 0) {
-            throw ValidationException.of(entity.getDictType() + " 已存在，不可重复");
-        }
-
-        mdmDictService.insert(entity);
-        dictCache.clearCache();
-        return R.ok(entity);
+    public R<DictResp> dictCreate(@RequestBody DictCreateReq req) {
+        MdmDict entity = BeanUtil.cp(req, MdmDict.class);
+        entity = mdmDictService.dictCreate(entity);
+        DictResp resp = BeanUtil.cp(entity, DictResp.class);
+        return R.ok(resp);
     }
 
-
-    /**
-     * @api {post} /dict/update 4. 字典类型修改
-     * @apiGroup DICT
-     *
-     * @apiVersion 0.0.1
-     * @apiDescription 新增信息
-     *
-     * @apiParam {String} id <code>body</code>ID
-     * @apiParam {String} dictCtg <code>body</code>字典分组
-     * @apiParam {String} dictType <code>body</code>类型名称
-     * @apiParam {String} [description] <code>body</code>描述信息
-     *
-     * @apiParamExample {json} 请求样例:
-     * {
-     *      "dictCtg": "dictCtg",
-     *      "dictType": "dictType",
-     *      "description": "description",
-     *      "sort": "sort"
-     * }
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * {
-     *     "code": 1,
-     *     "data": ObjectDto
-     * }
-     *
-     */
+    @Operation(summary = "4.字典类型-修改", description = "修改字典类型")
     @PostMapping(Route.DICT_UPDATE)
-    @Transactional(rollbackFor = Exception.class)
-    public R dictUpdate(@RequestBody MdmDict entity) {
-        Assert.notNull(entity.getId(), ResultCode.PARAM_NO_ID.getMessage());
-        paramCheck(entity);
+    public R<DictResp> dictUpdate(@RequestBody DictUpdateReq req) {
+        MdmDict entity = BeanUtil.cp(req, MdmDict.class);
         entity = mdmDictService.dictUpdate(entity);
-        dictCache.clearCache();
-        return R.ok(entity);
+        DictResp resp = BeanUtil.cp(entity, DictResp.class);
+        return R.ok(resp);
     }
 
-
-    /**
-     * @api {post} /dict/remove 5. 字典类型删除
-     * @apiGroup DICT
-     *
-     * @apiVersion 0.0.1
-     * @apiDescription 字典类型删除
-     *
-     * @apiParam {Integer} [id] <code>body</code> 主键 id
-     *
-     * @apiParamExample {json} 请求样例:
-     * {
-     *     "id": 1
-     * }
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * {
-     *     "code": 1,
-     *     "data": 1
-     * }
-     *
-     */
+    @Operation(summary = "5.字典类型-删除", description = "删除字典类型")
     @PostMapping(Route.DICT_REMOVE)
-    @Transactional(rollbackFor = Exception.class)
-    public R dictRemove(@RequestBody MdmDict entity) {
-        Assert.notNull(entity.getId(), ResultCode.PARAM_NO_ID.getMessage());
-
-        MdmDict mdmDict = mdmDictService.selectById(entity.getId());
-        if (mdmDict == null) {
-            throw ValidationException.of("数据不存在");
-        }
-
-        // 修改子表
-        MdmDictItem itemParam = new MdmDictItem();
-        itemParam.setDictType(mdmDict.getDictType());
-        long count = mdmDictItemService.selectCountByEntity(itemParam);
-        if (count > 0) {
-            throw ValidationException.of("请先删除字典枚举，再删除字典");
-        }
-
-        Integer rt = mdmDictService.deleteById(entity);
-        dictCache.clearCache();
+    public R<Integer> dictRemove(@RequestBody RemoveReq req) {
+        Integer rt = mdmDictService.dictRemove(req.getId());
         return R.ok(rt);
     }
 
-
-    /**
-     * @api {get} /dict/copy 6. 字典-COPY
-     * @apiGroup DICT
-     *
-     * @apiVersion 0.0.1
-     * @apiDescription 字典复制
-     *
-     * @apiParam {String} [dictType] <code>param</code>字典类型
-     * @apiParam {String} [dictTypes] <code>param</code>字典类型,英文逗号分隔
-     *
-     * @apiParamExample {param} 请求样例:
-     * ?dictType=xxxx
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * {
-     *     "code": 1,
-     *     "data": [{}]
-     * }
-     *
-     */
+    @Operation(summary = "6.字典-复制", description = "复制字典数据为JSON")
     @GetMapping(Route.DICT_COPY)
-    public R dictCopy(MdmDictDto dto) {
-        List<MdmDictDto> copy = mdmDictService.copy(dto);
-        return R.ok(copy);
+    public R<List<DictCopyResp>> dictCopy(@Valid DictCopyReq req) {
+        MdmDictDto dto = BeanUtil.cp(req, MdmDictDto.class);
+        List<MdmDictDto> copyList = mdmDictService.copy(dto);
+        List<DictCopyResp> respList = copyList.stream().map(d -> {
+            DictCopyResp resp = BeanUtil.cp(d, DictCopyResp.class);
+            if (d.getItems() != null) {
+                List<DictItemResp> itemResps = BeanUtil.cp(d.getItems(), DictItemResp.class);
+                resp.setItems(itemResps);
+            }
+            return resp;
+        }).toList();
+        return R.ok(respList);
     }
 
-
-    /**
-     * @api {post} /dict/paste 7. 字典-PASTE
-     * @apiGroup DICT
-     *
-     * @apiVersion 0.0.1
-     * @apiDescription 字典粘贴
-     *
-     * @apiParam {Object[]} [json] <code>body</code>从 copy 中获得的 json 数据
-     *
-     * @apiParamExample {param} 请求样例:
-     * {}
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * {
-     *     "code": 1,
-     *     "data": 1
-     * }
-     *
-     */
+    @Operation(summary = "7.字典-粘贴", description = "粘贴导入字典数据")
     @PostMapping(Route.DICT_PASTE)
-    public R dictPaste(@RequestBody List<MdmDictDto> dto) {
-        if (CollectionUtils.isEmpty(dto)) {
+    public R<Integer> dictPaste(@Valid @RequestBody DictPasteReq req) {
+        if (req.getList() == null || req.getList().isEmpty()) {
             return R.error("没有可制作的数据！");
         }
-
-        for (MdmDictDto d : dto) {
-            if (StringUtils.isBlank(d.getDictCtg())) {
-                return R.error("数据中缺少 dictCtg");
+        List<MdmDictDto> dtoList = new ArrayList<>();
+        for (DictPasteReq.DictPasteItem item : req.getList()) {
+            MdmDictDto dto = BeanUtil.cp(item, MdmDictDto.class);
+            if (item.getItems() != null) {
+                List<MdmDictItem> items = item.getItems().stream().map(i -> BeanUtil.cp(i, MdmDictItem.class)).toList();
+                dto.setItems(items);
             }
-            if (StringUtils.isBlank(d.getDictType())) {
-                return R.error("数据中缺少 dictType");
-            }
-            List<MdmDictItem> items = d.getItems();
-            if (CollectionUtils.isEmpty(items)) {
-                return R.error("数据中缺少 items");
-            }
-            if (d.getSort() == null) {
-                d.setSort(0);
-            }
-            for (MdmDictItem i : items) {
-                if (StringUtils.isBlank(i.getDictType())) {
-                    return R.error("数据中缺少 dictType");
-                }
-                if (StringUtils.isBlank(i.getDictValue())) {
-                    return R.error("数据中缺少 dictValue");
-                }
-                if (StringUtils.isBlank(i.getDictLabel())) {
-                    return R.error("数据中缺少 dictLabel");
-                }
-                if (i.getEnableFlag() == null) {
-                    i.setEnableFlag(1);
-                }
-                if (i.getSort() == null) {
-                    i.setSort(0);
-                }
-            }
+            dtoList.add(dto);
         }
-
-        Integer paste = mdmDictService.paste(dto);
+        Integer paste = mdmDictService.paste(dtoList);
         return R.ok(paste);
     }
 
-    /**
-     * @api {get} /dict/options 8. 字典类型选项
-     * @apiGroup DICT
-     *
-     * @apiVersion 0.0.1
-     * @apiDescription 获取所有字典类型的选项列表
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * {
-     *     "code": 1,
-     *     "data": [
-     *         {
-     *             "dictType": "dictType",
-     *             "description": "description",
-     *             "sort": "sort",
-     *         },
-     *         ...
-     *     ]
-     * }
-     *
-     */
+    @Operation(summary = "8.字典类型-选项", description = "获取所有字典类型的选项列表")
     @GetMapping(Route.DICT_OPTIONS)
-    public R dictOptions() {
+    public R<List<DictOptionsResp>> dictOptions() {
         List<MdmDict> dicts = mdmDictService.dictOptions();
-        return R.ok(dicts);
-    }
-
-
-    private void paramCheck(MdmDict entity) {
-        if (entity.getId() != null) {
-            Assert.notNull(entity.getVersion(), ResultCode.UPDATE_NO_VERSION.getMessage());
-        }
-        Assert.notNull(entity.getDictCtg(), "dictCtg 不能为空");
-        Assert.notNull(entity.getDictType(), "dictType 不能为空");
+        List<DictOptionsResp> respList = BeanUtil.cp(dicts, DictOptionsResp.class);
+        return R.ok(respList);
     }
 
 }

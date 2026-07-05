@@ -3,6 +3,7 @@ package com.wkclz.micro.dict.service;
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.exception.ValidationException;
 import com.wkclz.iam.sdk.helper.SessionHelper;
+import com.wkclz.micro.dict.cache.DictCache;
 import com.wkclz.micro.dict.mapper.MdmDictItemMapper;
 import com.wkclz.micro.dict.mapper.MdmDictMapper;
 import com.wkclz.micro.dict.bean.dto.MdmDictDto;
@@ -30,13 +31,31 @@ import java.util.stream.Collectors;
 public class MdmDictService extends BaseService<MdmDict, MdmDictMapper> {
 
     @Autowired
+    private DictCache dictCache;
+    @Autowired
     private MdmDictItemMapper dictItemMapper;
+    @Autowired
+    private MdmDictItemService mdmDictItemService;
 
     public PageData<MdmDict> getDictPage(MdmDict model) {
         return PageQuery.page(model, mapper::getDictList);
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public MdmDict dictCreate(MdmDict entity) {
+        entity.setId(null);
+        MdmDict param = new MdmDict();
+        param.setDictType(entity.getDictType());
+        long count = selectCountByEntity(param);
+        if (count > 0) {
+            throw ValidationException.of(entity.getDictType() + " 已存在，不可重复");
+        }
+        insert(entity);
+        dictCache.clearCache();
+        return entity;
+    }
 
+    @Transactional(rollbackFor = Exception.class)
     public MdmDict dictUpdate(MdmDict entity) {
         MdmDict mdmDict = selectById(entity.getId());
         if (mdmDict == null) {
@@ -55,9 +74,30 @@ public class MdmDictService extends BaseService<MdmDict, MdmDictMapper> {
             dictItemMapper.updateDictTypeBatch(mdmDict.getDictType(), entity.getDictType());
         }
         updateById(entity);
+        dictCache.clearCache();
         return entity;
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public Integer dictRemove(Long id) {
+        MdmDict mdmDict = selectById(id);
+        if (mdmDict == null) {
+            throw ValidationException.of("数据不存在");
+        }
+
+        MdmDictItem itemParam = new MdmDictItem();
+        itemParam.setDictType(mdmDict.getDictType());
+        long count = mdmDictItemService.selectCountByEntity(itemParam);
+        if (count > 0) {
+            throw ValidationException.of("请先删除字典枚举，再删除字典");
+        }
+
+        MdmDict deleteEntity = new MdmDict();
+        deleteEntity.setId(id);
+        Integer rt = deleteById(deleteEntity);
+        dictCache.clearCache();
+        return rt;
+    }
 
     public List<MdmDictDto> copy(MdmDictDto dto) {
         MdmDictDto param = new MdmDictDto();
@@ -88,6 +128,41 @@ public class MdmDictService extends BaseService<MdmDict, MdmDictMapper> {
         if (CollectionUtils.isEmpty(dtos)) {
             return 0;
         }
+
+        // 校验和默认值设置
+        for (MdmDictDto d : dtos) {
+            if (StringUtils.isBlank(d.getDictCtg())) {
+                throw ValidationException.of("数据中缺少 dictCtg");
+            }
+            if (StringUtils.isBlank(d.getDictType())) {
+                throw ValidationException.of("数据中缺少 dictType");
+            }
+            List<MdmDictItem> items = d.getItems();
+            if (CollectionUtils.isEmpty(items)) {
+                throw ValidationException.of("数据中缺少 items");
+            }
+            if (d.getSort() == null) {
+                d.setSort(0);
+            }
+            for (MdmDictItem i : items) {
+                if (StringUtils.isBlank(i.getDictType())) {
+                    throw ValidationException.of("数据中缺少 dictType");
+                }
+                if (StringUtils.isBlank(i.getDictValue())) {
+                    throw ValidationException.of("数据中缺少 dictValue");
+                }
+                if (StringUtils.isBlank(i.getDictLabel())) {
+                    throw ValidationException.of("数据中缺少 dictLabel");
+                }
+                if (i.getEnableFlag() == null) {
+                    i.setEnableFlag(1);
+                }
+                if (i.getSort() == null) {
+                    i.setSort(0);
+                }
+            }
+        }
+
         String userCode = SessionHelper.getUserCode();
         if (userCode == null) {
             userCode = "anonymous";
@@ -220,13 +295,13 @@ public class MdmDictService extends BaseService<MdmDict, MdmDictMapper> {
             }
             count += items2Update.size();
         }
+
+        dictCache.clearCache();
         return count;
     }
-
 
     public List<MdmDict> dictOptions() {
         return mapper.dictOptions();
     }
 
 }
-

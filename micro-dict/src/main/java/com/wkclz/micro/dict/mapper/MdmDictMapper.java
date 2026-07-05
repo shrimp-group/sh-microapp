@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Description Create by shrimp-gen
  * @author wangkaicun
- * @table mdm_dict (字典) DAO 接口，代码重新生成不覆盖
+ * @table mdm_dict (字典) Mapper 接口，代码重新生成不覆盖
  */
 
 @Mapper

@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @Component
 public class DictCache implements MessageListener {
 
-    private static final String DICT_CACHE_CHANNEL = "shrimp:micro:dict:cache:refresh";
+    private static final String DICT_CACHE_CHANNEL = "sh:micro:dict:cache:refresh";
 
     private static volatile long CACHE_TIME = 0;
     private static volatile Map<String, Map<String, String>> CACHE_DICT = null;

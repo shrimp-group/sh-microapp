@@ -4,26 +4,28 @@ import com.wkclz.core.base.DbColumnEntity;
 import com.wkclz.micro.dict.bean.dto.MdmDictDto;
 import com.wkclz.micro.dict.bean.dto.MdmDictItemDto;
 import com.wkclz.micro.dict.bean.entity.MdmDictItem;
+import com.wkclz.micro.dict.cache.DictCache;
 import com.wkclz.micro.dict.mapper.MdmDictItemMapper;
 import com.wkclz.mybatis.service.BaseService;
+import com.wkclz.tool.utils.StringUtil;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Description Create by shrimp-gen
- * @author wangkaicun
- * @table mdm_dict_item (字典内容) 单表服务类，代码重新生成不覆盖. 只建议完成单表的逻辑，或主表为 mdm_dict_item 的逻辑. 其他逻辑放 custom 中
- */
- 
 @Service
 public class MdmDictItemService extends BaseService<MdmDictItem, MdmDictItemMapper> {
 
+    @Autowired
+    private DictCache dictCache;
 
     public List<MdmDictItem> getDictItemList(String dictType) {
+        if (StringUtils.isNotBlank(dictType) && !dictType.equals(dictType.toUpperCase())) {
+            dictType = StringUtil.camelToUnderline(dictType).toUpperCase();
+        }
         return mapper.getDictItemList(dictType);
     }
 
@@ -38,12 +40,25 @@ public class MdmDictItemService extends BaseService<MdmDictItem, MdmDictItemMapp
         return mapper.getDictItemsByDictTypes(dictTypes);
     }
 
-
     @Transactional(rollbackFor = Exception.class)
     public Integer dictItemSave(MdmDictDto dto) {
+        if (dto.getItems() == null) {
+            dto.setItems(new ArrayList<>());
+        } else {
+            for (MdmDictItem item : dto.getItems()) {
+                if (item.getEnableFlag() == null) {
+                    item.setEnableFlag(1);
+                }
+                if (item.getSort() == null) {
+                    item.setSort(99);
+                }
+                item.setDictType(dto.getDictType());
+            }
+        }
+
         List<MdmDictItem> newItems = dto.getItems();
 
-        // 历史所有  items
+        // 历史所有 items
         MdmDictItem param = new MdmDictItem();
         param.setDictType(dto.getDictType());
         List<MdmDictItem> oldItems = selectByEntity(param);
@@ -109,7 +124,11 @@ public class MdmDictItemService extends BaseService<MdmDictItem, MdmDictItemMapp
             deleteByIds(delParam);
         }
 
-        return inserts.size() + updates.size() + deletes.size();
+        int modifys = inserts.size() + updates.size() + deletes.size();
+        if (modifys > 0) {
+            dictCache.clearCache();
+        }
+        return modifys;
     }
 
 }
