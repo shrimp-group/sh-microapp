@@ -10,7 +10,6 @@ import com.wkclz.mybatis.helper.PageQuery;
 import com.wkclz.mybatis.service.BaseService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 import java.util.List;
 
@@ -39,8 +38,6 @@ public class K8sConfigService extends BaseService<K8sConfig, K8sConfigMapper> {
 
     public K8sConfig update(K8sConfig entity) {
         duplicateCheck(entity);
-        Assert.notNull(entity.getId(), "请求错误！参数[id]不能为空");
-        Assert.notNull(entity.getVersion(), "请求错误！参数[version]不能为空");
         K8sConfig oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
             throw ValidationException.of(ResultCode.RECORD_NOT_EXIST);
@@ -55,7 +52,6 @@ public class K8sConfigService extends BaseService<K8sConfig, K8sConfigMapper> {
     }
 
     public K8sConfig remove(K8sConfig entity) {
-        Assert.notNull(entity.getId(), "请求错误！参数[id]不能为空");
         K8sConfig oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
             throw ValidationException.of(ResultCode.RECORD_NOT_EXIST);

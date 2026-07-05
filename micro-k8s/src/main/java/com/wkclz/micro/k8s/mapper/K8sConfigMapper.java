@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Description Create by sh-generator
  * @author shrimp
- * @table k8s_config (k8s配置) DAO 接口，代码重新生成不覆盖
+ * @table k8s_config (k8s配置) Mapper 接口，代码重新生成不覆盖
  */
 
 @Mapper

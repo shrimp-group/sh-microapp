@@ -2,13 +2,21 @@ package com.wkclz.micro.k8s.rest;
 
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.base.R;
-import com.wkclz.core.enums.ResultCode;
-import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.k8s.Route;
 import com.wkclz.micro.k8s.bean.entity.K8sConfig;
+import com.wkclz.micro.k8s.bean.req.K8sConfigCreateReq;
+import com.wkclz.micro.k8s.bean.req.K8sConfigInfoReq;
+import com.wkclz.micro.k8s.bean.req.K8sConfigPageReq;
+import com.wkclz.micro.k8s.bean.req.K8sConfigRemoveReq;
+import com.wkclz.micro.k8s.bean.req.K8sConfigUpdateReq;
+import com.wkclz.micro.k8s.bean.resp.K8sConfigResp;
 import com.wkclz.micro.k8s.service.K8sConfigService;
+import com.wkclz.tool.utils.BeanUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,242 +26,64 @@ import java.util.List;
  * @author wangkaicun
  * @table k8s_config (k8s配置) 示例rest 接口，代码重新生成会覆盖
  */
+@Tag(name = "1.K8s配置", description = "K8s集群配置管理接口")
 @RestController
 @RequestMapping(Route.PREFIX)
+@Validated
 public class K8sConfigRest {
 
     @Autowired
     private K8sConfigService k8sConfigService;
 
-    /**
-     * @api {get} /micro-config/page 1. k8s配置-获取分页
-     * @apiGroup CONFIG
-     *
-     * @apiVersion 0.0.1
-     * @apiDescription k8s配置-获取分页
-     *
-     * @apiParam {String} [clusterName] <code>param</code>集群名称
-     *
-     * @apiParamExample {param} 请求样例:
-     * ?id=1
-     *
-     * @apiSuccess {String} [clusterName] 集群名称
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * {
-     *     "code": 1,
-     *     "data": {
-     *         "rows": [
-     *             {
-     *                 "clusterName": "clusterName",
-     *             },
-     *             ...
-     *         ],
-     *         "current": 1,
-     *         "size": 10,
-     *         "total": 1,
-     *         "page": 1,
-     *     }
-     * }
-     *
-     */
+    @Operation(summary = "1.K8s配置-分页查询", description = "根据条件分页查询K8s集群配置列表")
     @GetMapping(Route.CONFIG_PAGE)
-    public R configPage(K8sConfig entity) {
+    public R<PageData<K8sConfigResp>> configPage(@Valid K8sConfigPageReq req) {
+        K8sConfig entity = BeanUtil.cp(req, K8sConfig.class);
         PageData<K8sConfig> page = k8sConfigService.getClusterPage(entity);
-        return R.ok(page);
+        PageData<K8sConfigResp> newPage = page.convert(K8sConfigResp.class);
+        return R.ok(newPage);
     }
 
-    /**
-     * @api {get} /micro-config/info 2. k8s配置-获取详情
-     * @apiGroup CONFIG
-     *
-     * @apiVersion 0.0.1
-     * @apiDescription k8s配置-获取详情
-     *
-     * @apiParam {Long} id <code>param</code>数据Id
-     *
-     * @apiParamExample {param} 请求样例:
-     * ?id=1
-     *
-     * @apiSuccess {Long} [id] id
-     * @apiSuccess {String} [clusterName] 集群名称
-     * @apiSuccess {String} [kubeConfig] 配置信息
-     * @apiSuccess {Integer} [sort] 排序
-     * @apiSuccess {Date} [createTime] 创建时间
-     * @apiSuccess {String} [createBy] 创建人
-     * @apiSuccess {Date} [updateTime] 更新时间
-     * @apiSuccess {String} [updateBy] 更新人
-     * @apiSuccess {String} [remark] 备注
-     * @apiSuccess {Integer} [version] 版本号
-     * @apiSuccess {Integer} [status] status
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * {
-     *     "code": 1,
-     *     "data": {
-     *          "id": "id",
-     *          "clusterName": "clusterName",
-     *          "kubeConfig": "kubeConfig",
-     *          "sort": "sort",
-     *          "createTime": "createTime",
-     *          "createBy": "createBy",
-     *          "updateTime": "updateTime",
-     *          "updateBy": "updateBy",
-     *          "remark": "remark",
-     *          "version": "version",
-     *          "status": "status",
-     *     }
-     * }
-     *
-     */
+    @Operation(summary = "2.K8s配置-详情", description = "根据ID查询K8s集群配置详情")
     @GetMapping(Route.CONFIG_INFO)
-    public R configInfo(K8sConfig entity) {
-        Assert.notNull(entity.getId(), "id不能为空");
-        entity = k8sConfigService.selectById(entity.getId());
-        return R.ok(entity);
+    public R<K8sConfigResp> configInfo(@Valid K8sConfigInfoReq req) {
+        K8sConfig entity = k8sConfigService.selectById(req.getId());
+        K8sConfigResp resp = BeanUtil.cp(entity, K8sConfigResp.class);
+        return R.ok(resp);
     }
 
-    /**
-     * @api {post} /micro-config/create 3. k8s配置-创建
-     * @apiGroup CONFIG
-     *
-     * @apiVersion 0.0.1
-     * @apiDescription k8s配置-新增信息
-     *
-     * @apiParam {String} [clusterName] <code>body</code>集群名称
-     * @apiParam {String} [kubeConfig] <code>body</code>配置信息
-     * @apiParam {Integer} [sort] <code>body</code>排序
-     * @apiParam {Date} [createTime] <code>body</code>创建时间
-     * @apiParam {String} [createBy] <code>body</code>创建人
-     * @apiParam {Date} [updateTime] <code>body</code>更新时间
-     * @apiParam {String} [updateBy] <code>body</code>更新人
-     * @apiParam {String} [remark] <code>body</code>备注
-     * @apiParam {Integer} [version] <code>body</code>版本号
-     * @apiParam {Integer} [status] <code>body</code>status
-     *
-     * @apiParamExample {json} 请求样例:
-     * {
-     *      "clusterName": "clusterName",
-     *      "kubeConfig": "kubeConfig",
-     *      "sort": "sort",
-     *      "createTime": "createTime",
-     *      "createBy": "createBy",
-     *      "updateTime": "updateTime",
-     *      "updateBy": "updateBy",
-     *      "remark": "remark",
-     *      "version": "version",
-     *      "status": "status",
-     * }
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * {
-     *     "code": 1,
-     *     "data": ObjectEntity
-     * }
-     *
-     */
+    @Operation(summary = "3.K8s配置-创建", description = "新增K8s集群配置")
     @PostMapping(Route.CONFIG_CREATE)
-    public R configCreate(@RequestBody K8sConfig entity) {
-        checkParam(entity);
+    public R<K8sConfigResp> configCreate(@Valid @RequestBody K8sConfigCreateReq req) {
+        K8sConfig entity = BeanUtil.cp(req, K8sConfig.class);
         entity = k8sConfigService.create(entity);
-        return R.ok(entity);
+        K8sConfigResp resp = BeanUtil.cp(entity, K8sConfigResp.class);
+        return R.ok(resp);
     }
 
-    /**
-     * @api {post} /micro-config/update 4. k8s配置-更新
-     * @apiGroup CONFIG
-     *
-     * @apiVersion 0.0.1
-     * @apiDescription k8s配置-更新信息
-     *
-     * @apiParam {Long} id <code>body</code>id
-     * @apiParam {String} [clusterName] <code>body</code>集群名称
-     * @apiParam {String} [kubeConfig] <code>body</code>配置信息
-     * @apiParam {Integer} [sort] <code>body</code>排序
-     * @apiParam {Date} [createTime] <code>body</code>创建时间
-     * @apiParam {String} [createBy] <code>body</code>创建人
-     * @apiParam {Date} [updateTime] <code>body</code>更新时间
-     * @apiParam {String} [updateBy] <code>body</code>更新人
-     * @apiParam {String} [remark] <code>body</code>备注
-     * @apiParam {Integer} [version] <code>body</code>版本号
-     * @apiParam {Integer} [status] <code>body</code>status
-     *
-     * @apiParamExample {json} 请求样例:
-     * {
-     *      "id": "id",
-     *      "clusterName": "clusterName",
-     *      "kubeConfig": "kubeConfig",
-     *      "sort": "sort",
-     *      "createTime": "createTime",
-     *      "createBy": "createBy",
-     *      "updateTime": "updateTime",
-     *      "updateBy": "updateBy",
-     *      "remark": "remark",
-     *      "version": "version",
-     *      "status": "status",
-     * }
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * {
-     *     "code": 1,
-     *     "data": ObjectEntity
-     * }
-     *
-     */
+    @Operation(summary = "4.K8s配置-更新", description = "更新K8s集群配置")
     @PostMapping(Route.CONFIG_UPDATE)
-    public R configUpdate(@RequestBody K8sConfig entity) {
-        checkParam(entity);
-        Assert.notNull(entity.getId(), ResultCode.PARAM_NO_ID.getMessage());
-        Assert.notNull(entity.getVersion(), ResultCode.UPDATE_NO_VERSION.getMessage());
+    public R<K8sConfigResp> configUpdate(@Valid @RequestBody K8sConfigUpdateReq req) {
+        K8sConfig entity = BeanUtil.cp(req, K8sConfig.class);
         entity = k8sConfigService.update(entity);
-        return R.ok(entity);
+        K8sConfigResp resp = BeanUtil.cp(entity, K8sConfigResp.class);
+        return R.ok(resp);
     }
 
-    /**
-     * @api {post} /micro-config/remove 6. k8s配置-删除
-     * @apiGroup CONFIG
-     *
-     * @apiVersion 0.0.1
-     * @apiDescription k8s配置-删除
-     *
-     * @apiParam {Long} [id] <code>body</code> 主键 id
-     *
-     * @apiParamExample {json} 请求样例:
-     * {
-     *     "id": 1,
-     *     "ids": [1]
-     * }
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * {
-     *     "code": 1,
-     *     "data": 1
-     * }
-     *
-     */
+    @Operation(summary = "5.K8s配置-删除", description = "删除K8s集群配置")
     @PostMapping(Route.CONFIG_REMOVE)
-    public R configRemove(@RequestBody K8sConfig entity) {
-        Assert.notNull(entity.getId(), ResultCode.PARAM_NO_ID.getMessage());
-        k8sConfigService.deleteById(entity);
+    public R<Integer> configRemove(@Valid @RequestBody K8sConfigRemoveReq req) {
+        k8sConfigService.deleteById(req.getId());
         return R.ok(1);
     }
 
-
+    @Operation(summary = "6.K8s配置-选项列表", description = "获取K8s集群名称选项列表")
     @GetMapping(Route.CONFIG_OPTIONS)
-    public R configRemove() {
+    public R<List<String>> configOptions() {
         List<String> clusterOptions = k8sConfigService.getClusterOptions();
         return R.ok(clusterOptions);
     }
 
-
-    private void checkParam(K8sConfig entity) {
-        if (entity == null) {
-            throw ValidationException.of("entity can not be null");
-        }
-        Assert.notNull(entity.getClusterName(), "clusterName 不能为空");
-        Assert.notNull(entity.getKubeConfig(), "kubeConfig 不能为空");
-
-    }
 
 }
 
