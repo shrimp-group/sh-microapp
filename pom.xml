@@ -37,6 +37,7 @@
         <module>micro-seq</module>
         <module>micro-wxapp</module>
         <module>micro-wxmp</module>
+        <module>micro-report</module>
     </modules>
 
 </project>

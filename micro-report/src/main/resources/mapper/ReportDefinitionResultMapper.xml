@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.report.mapper.ReportDefinitionResultMapper">
+
+    <select id="getResultList" parameterType="com.wkclz.micro.report.bean.entity.ReportDefinitionResult" resultType="com.wkclz.micro.report.bean.entity.ReportDefinitionResult">
+        SELECT
+            id,
+            report_code,
+            field_code,
+            field_name,
+            field_type,
+            field_form_type,
+            width,
+            sort,
+            create_time,
+            create_by,
+            update_time,
+            update_by,
+            remark,
+            version
+        FROM
+            report_definition_result
+        WHERE
+            deleted = 0
+            <if test="reportCode != null"> AND report_code = #{reportCode} </if>
+            <if test="fieldCode != null"> AND field_code LIKE CONCAT('%', #{fieldCode}, '%') </if>
+            <if test="fieldName != null"> AND field_name LIKE CONCAT('%', #{fieldName}, '%') </if>
+        ORDER BY
+            sort ASC,
+            id ASC
+    </select>
+
+    <update id="updateReportCodeBatch">
+        UPDATE report_definition_result
+        SET report_code = #{newCode}
+        WHERE report_code = #{oldCode} AND deleted = 0
+    </update>
+
+    <update id="deleteByReportCode">
+        UPDATE report_definition_result
+        SET deleted = NOW()
+        WHERE report_code = #{reportCode} AND deleted = 0
+    </update>
+
+</mapper>
