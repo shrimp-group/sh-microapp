@@ -22,6 +22,9 @@ public interface Route {
     @ApiDesc("5. 微信小程序-配置-删除")
     String WXAPP_CONFIG_REMOVE = "/config/remove";
 
+    @ApiDesc("6. 微信小程序-用户-分页")
+    String WXAPP_USER_PAGE = "/user/page";
+
 
 
     @ApiDesc("1. 小程序登录")

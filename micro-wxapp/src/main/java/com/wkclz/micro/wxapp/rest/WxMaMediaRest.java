@@ -7,11 +7,14 @@ import com.google.common.io.Files;
 import com.wkclz.core.base.R;
 import com.wkclz.micro.wxapp.Route;
 import com.wkclz.micro.wxapp.config.WxMaConfiguration;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.bean.result.WxMediaUploadResult;
 import me.chanjar.weixin.common.error.WxErrorException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -30,37 +33,20 @@ import java.util.List;
  *
  * @author <a href="https://github.com/binarywang">Binary Wang</a>
  */
+@Tag(name = "小程序素材", description = "微信小程序临时素材管理接口")
 @Slf4j
 @RestController
 @RequestMapping(Route.PREFIX)
+@Validated
 public class WxMaMediaRest {
 
     @Autowired
     private WxMaConfiguration configuration;
 
 
-    /**
-     * @api {get} /customer/wx/media/upload 6. customer-上传临时素材
-     * @apiGroup WX
-     *
-     * @apiVersion 0.0.1
-     *
-     * @apiParam {String} appid <code>PathVariable</code>appid
-     *
-     * @apiParamExample {json} 请求样例:
-     * /customer/wx/portal/xxxxxxxxxxxx
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * {
-     *      "code": 1,
-     *      "data": [
-     *          "mediaId1",
-     *          "mediaId2"
-     *      ]
-     * }
-     */
+    @Operation(summary = "1. 上传临时素材")
     @PostMapping(Route.CUSTOMER_WX_MEDIA_UPLOAD)
-    public R uploadMedia(HttpServletRequest request) throws WxErrorException {
+    public R<List<String>> uploadMedia(HttpServletRequest request) throws WxErrorException {
         final WxMaService wxService = configuration.getMaService();
 
         StandardServletMultipartResolver resolver = new StandardServletMultipartResolver();
@@ -89,21 +75,7 @@ public class WxMaMediaRest {
         return R.ok(result);
     }
 
-    /**
-     * @api {get} /customer/wx/media/download/{mediaId} 7. customer-下载临时素材
-     * @apiGroup WX
-     *
-     * @apiVersion 0.0.1
-     *
-     * @apiParam {String} appid <code>PathVariable</code>appid
-     * @apiParam {String} mediaId <code>PathVariable</code>素材ID
-     *
-     * @apiParamExample {json} 请求样例:
-     * /customer/wx/media/appidappidappidappid/download/mediaIdmediaIdmediaIdmediaId
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * File
-     */
+    @Operation(summary = "2. 下载临时素材")
     @GetMapping(Route.CUSTOMER_WX_MEDIA_DOWNLOAD)
     public File getMedia(@PathVariable String mediaId) throws WxErrorException {
         final WxMaService wxService = configuration.getMaService();

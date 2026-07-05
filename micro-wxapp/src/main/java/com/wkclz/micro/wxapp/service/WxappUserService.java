@@ -1,22 +1,28 @@
 package com.wkclz.micro.wxapp.service;
 
+import com.wkclz.core.base.PageData;
 import com.wkclz.core.enums.ResultCode;
 import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.wxapp.bean.entity.WxappUser;
 import com.wkclz.micro.wxapp.mapper.WxappUserMapper;
+import com.wkclz.mybatis.helper.PageQuery;
 import com.wkclz.mybatis.service.BaseService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 /**
  * Description Create by shrimp-gen
  * @author wangkaicun
  * @table wxapp_user (小程序用户) 单表服务类，代码重新生成不覆盖. 只建议完成单表的逻辑，或主表为 wxapp_user 的逻辑. 其他逻辑放 custom 中
  */
- 
+
+@Slf4j
 @Service
 public class WxappUserService extends BaseService<WxappUser, WxappUserMapper> {
 
+    public PageData<WxappUser> getUserPage(WxappUser entity) {
+        return PageQuery.page(entity, mapper::getUserList);
+    }
 
     public WxappUser create(WxappUser entity) {
         duplicateCheck(entity);
@@ -26,8 +32,6 @@ public class WxappUserService extends BaseService<WxappUser, WxappUserMapper> {
 
     public WxappUser update(WxappUser entity) {
         duplicateCheck(entity);
-        Assert.notNull(entity.getId(), ResultCode.PARAM_NO_ID.getMessage());
-        Assert.notNull(entity.getId(), ResultCode.UPDATE_NO_VERSION.getMessage());
         WxappUser oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
             throw ValidationException.of(ResultCode.NOT_FOUND);

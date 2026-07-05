@@ -24,5 +24,35 @@
             AND user_code = #{userCode}
     </select>
 
+    <select id="getUserList" parameterType="com.wkclz.micro.wxapp.bean.entity.WxappUser" resultType="com.wkclz.micro.wxapp.bean.entity.WxappUser">
+        SELECT
+            id,
+            user_code,
+            nickname,
+            app_id,
+            open_id,
+            union_id,
+            mobile,
+            email,
+            gender,
+            avatar,
+            login_times,
+            create_time,
+            create_by,
+            update_time,
+            update_by,
+            remark
+        FROM
+            wxapp_user
+        WHERE
+            deleted = 0
+            <if test="appId != null">AND app_id = #{appId} </if>
+            <if test="openId != null">AND open_id = #{openId} </if>
+            <if test="nickname != null">AND nickname LIKE CONCAT('%', #{nickname}, '%') </if>
+            <if test="mobile != null">AND mobile LIKE CONCAT('%', #{mobile}, '%') </if>
+        ORDER BY
+            id DESC
+    </select>
+
 </mapper>
 

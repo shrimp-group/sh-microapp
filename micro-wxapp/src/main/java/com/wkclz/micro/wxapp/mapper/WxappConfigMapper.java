@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Description Create by shrimp-gen
  * @author wangkaicun
- * @table wxapp_config (小程序) DAO 接口，代码重新生成不覆盖
+ * @table wxapp_config (小程序) Mapper 接口，代码重新生成不覆盖
  */
 
 @Mapper

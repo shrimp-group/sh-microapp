@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 /**
  * Description Create by shrimp-gen
  * @author wangkaicun
- * @table wxapp_login_log (小程序用户登录日志) DAO 接口，代码重新生成不覆盖
+ * @table wxapp_login_log (小程序用户登录日志) Mapper 接口，代码重新生成不覆盖
  */
 
 @Mapper

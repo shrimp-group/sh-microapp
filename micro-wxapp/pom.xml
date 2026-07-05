@@ -16,7 +16,7 @@
     <dependencies>
         <dependency>
             <groupId>com.wkclz.microapp</groupId>
-            <artifactId>micro-file</artifactId>
+            <artifactId>micro-fileos</artifactId>
             <version>${revision}</version>
         </dependency>
         <dependency>

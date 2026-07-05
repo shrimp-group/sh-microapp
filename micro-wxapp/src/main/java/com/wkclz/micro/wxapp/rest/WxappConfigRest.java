@@ -2,16 +2,19 @@ package com.wkclz.micro.wxapp.rest;
 
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.base.R;
-import com.wkclz.core.enums.ResultCode;
-import com.wkclz.core.exception.ValidationException;
 import com.wkclz.iam.sdk.helper.SessionHelper;
 import com.wkclz.micro.wxapp.Route;
 import com.wkclz.micro.wxapp.bean.entity.WxappConfig;
-import com.wkclz.micro.wxapp.helper.Checker;
+import com.wkclz.micro.wxapp.bean.req.*;
+import com.wkclz.micro.wxapp.bean.resp.WxappConfigPageResp;
+import com.wkclz.micro.wxapp.bean.resp.WxappConfigResp;
 import com.wkclz.micro.wxapp.service.WxappConfigService;
-import org.apache.commons.lang3.StringUtils;
+import jakarta.validation.Valid;
+import com.wkclz.tool.utils.BeanUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -19,273 +22,63 @@ import org.springframework.web.bind.annotation.*;
  * @author wangkaicun
  * @table wxapp_config (小程序) 示例rest 接口，代码重新生成会覆盖
  */
+@Tag(name = "小程序配置", description = "微信小程序配置管理接口")
 @RestController
 @RequestMapping(Route.PREFIX)
+@Validated
 public class WxappConfigRest {
 
     @Autowired
     private WxappConfigService wxappConfigService;
 
-    /**
-     * @api {get} /micro-wxappp/config/page 1. 微信小程序-配置-分页
-     * @apiGroup WXMP_CONFIG
-     *
-     * @apiVersion 0.0.1
-     * @apiDescription 小程序-获取分页
-     *
-     * @apiParam {String} [tenantCode] <code>param</code>租户编码
-     * @apiParam {String} [appId] <code>param</code>小程序appid
-     * @apiParam {String} [appSecret] <code>param</code>小程序Secret
-     * @apiParam {String} [appToken] <code>param</code>小程序appToken
-     * @apiParam {String} [aesKey] <code>param</code>小程序AESKey
-     *
-     * @apiParamExample {param} 请求样例:
-     * ?id=1
-     *
-     * @apiSuccess {String} [tenantCode] 租户编码
-     * @apiSuccess {String} [appId] 小程序appid
-     * @apiSuccess {String} [appSecret] 小程序Secret
-     * @apiSuccess {String} [appToken] 小程序appToken
-     * @apiSuccess {String} [aesKey] 小程序AESKey
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * {
-     *     "code": 1,
-     *     "data": {
-     *         "rows": [
-     *             {
-     *                 "id": "id",
-     *                 "tenantCode": "tenantCode",
-     *                 "appId": "appId",
-     *                 "appSecret": "appSecret",
-     *                 "appToken": "appToken",
-     *                 "aesKey": "aesKey",
-     *                 "sort": "sort",
-     *                 "createTime": "createTime",
-     *                 "createBy": "createBy",
-     *                 "updateTime": "updateTime",
-     *                 "updateBy": "updateBy",
-     *                 "remark": "remark",
-     *                 "version": "version",
-     *             },
-     *             ...
-     *         ],
-     *         "current": 1,
-     *         "size": 10,
-     *         "total": 1,
-     *         "page": 1,
-     *     }
-     * }
-     *
-     */
+    @Operation(summary = "1. 小程序配置-分页查询")
     @GetMapping(Route.WXAPP_CONFIG_PAGE)
-    public R wxappConfigPage(WxappConfig entity) {
+    public R<PageData<WxappConfigPageResp>> wxappConfigPage(@Valid WxappConfigPageReq req) {
+        WxappConfig entity = BeanUtil.cp(req, WxappConfig.class);
         entity.setTenantCode(SessionHelper.getTenantCode());
         PageData<WxappConfig> page = wxappConfigService.getConfigPage(entity);
-        return R.ok(page);
+        PageData<WxappConfigPageResp> newPage = page.convert(WxappConfigPageResp.class);
+        return R.ok(newPage);
     }
 
-
-
-    /**
-     * @api {get} /micro-wxappp/config/info 2. 微信小程序-配置-详情
-     * @apiGroup WXMP_CONFIG
-     *
-     * @apiVersion 0.0.1
-     * @apiDescription 小程序-获取详情
-     *
-     * @apiParam {Long} id <code>param</code>数据id
-     *
-     * @apiParamExample {param} 请求样例:
-     * ?id=1
-     *
-     * @apiSuccess {Long} [id] ID
-     * @apiSuccess {String} [tenantCode] 租户编码
-     * @apiSuccess {String} [appId] 小程序appid
-     * @apiSuccess {String} [appSecret] 小程序Secret
-     * @apiSuccess {String} [appToken] 小程序appToken
-     * @apiSuccess {String} [aesKey] 小程序AESKey
-     * @apiSuccess {String} [welcomeMsg] 欢迎信息
-     * @apiSuccess {Integer} [sort] 排序
-     * @apiSuccess {Date} [createTime] 创建时间
-     * @apiSuccess {String} [createBy] 创建人
-     * @apiSuccess {Date} [updateTime] 更新时间
-     * @apiSuccess {String} [updateBy] 更新人
-     * @apiSuccess {String} [remark] 备注
-     * @apiSuccess {Integer} [version] 版本号
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * {
-     *     "code": 1,
-     *     "data": {
-     *          "id": "id",
-     *          "tenantCode": "tenantCode",
-     *          "appId": "appId",
-     *          "appSecret": "appSecret",
-     *          "appToken": "appToken",
-     *          "aesKey": "aesKey",
-     *          "welcomeMsg": "welcomeMsg",
-     *          "sort": "sort",
-     *          "createTime": "createTime",
-     *          "createBy": "createBy",
-     *          "updateTime": "updateTime",
-     *          "updateBy": "updateBy",
-     *          "remark": "remark",
-     *          "version": "version",
-     *          "status": "status",
-     *     }
-     * }
-     *
-     */
+    @Operation(summary = "2. 小程序配置-详情")
     @GetMapping(Route.WXAPP_CONFIG_INFO)
-    public R wxappConfigInfo(WxappConfig entity) {
-        Assert.notNull(entity.getId(), ResultCode.PARAM_NO_ID.getMessage());
+    public R<WxappConfigResp> wxappConfigInfo(@Valid WxappConfigInfoReq req) {
+        WxappConfig entity = new WxappConfig();
+        entity.setId(req.getId());
         entity.setTenantCode(SessionHelper.getTenantCode());
         entity = wxappConfigService.getConfigInfo(entity);
-        return R.ok(entity);
+        WxappConfigResp resp = BeanUtil.cp(entity, WxappConfigResp.class);
+        return R.ok(resp);
     }
 
-
-
-    /**
-     * @api {post} /micro-wxappp/config/create 3. 微信小程序-配置-创建
-     * @apiGroup WXMP_CONFIG
-     *
-     * @apiVersion 0.0.1
-     * @apiDescription 小程序-新增信息
-     *
-     * @apiParam {String} [tenantCode] <code>body</code>租户编码
-     * @apiParam {String} [appId] <code>body</code>小程序appid
-     * @apiParam {String} [appSecret] <code>body</code>小程序Secret
-     * @apiParam {String} [appToken] <code>body</code>小程序appToken
-     * @apiParam {String} [aesKey] <code>body</code>小程序AESKey
-     * @apiParam {String} [welcomeMsg] <code>body</code>欢迎信息
-     * @apiParam {Integer} [sort] <code>body</code>排序
-     * @apiParam {String} [remark] <code>body</code>备注
-     *
-     * @apiParamExample {json} 请求样例:
-     * {
-     *      "tenantCode": "tenantCode",
-     *      "appId": "appId",
-     *      "appSecret": "appSecret",
-     *      "appToken": "appToken",
-     *      "aesKey": "aesKey",
-     *      "welcomeMsg": "welcomeMsg",
-     *      "sort": "sort",
-     *      "remark": "remark",
-     * }
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * {
-     *     "code": 1,
-     *     "data": ObjectEntity
-     * }
-     *
-     */
+    @Operation(summary = "3. 小程序配置-创建")
     @PostMapping(Route.WXAPP_CONFIG_CREATE)
-    public R wxappConfigCreate(@RequestBody WxappConfig entity) {
-        paramCheck(entity);
+    public R<WxappConfigResp> wxappConfigCreate(@Valid @RequestBody WxappConfigCreateReq req) {
+        WxappConfig entity = BeanUtil.cp(req, WxappConfig.class);
         entity.setTenantCode(SessionHelper.getTenantCode());
         entity = wxappConfigService.create(entity);
-        return R.ok(entity);
+        WxappConfigResp resp = BeanUtil.cp(entity, WxappConfigResp.class);
+        return R.ok(resp);
     }
 
-
-
-
-    /**
-     * @api {post} /micro-wxappp/config/update 4. 微信小程序-配置-更新
-     * @apiGroup WXMP_CONFIG
-     *
-     * @apiVersion 0.0.1
-     * @apiDescription 小程序-更新信息
-     *
-     * @apiParam {Long} id <code>body</code>ID
-     * @apiParam {String} [tenantCode] <code>body</code>租户编码
-     * @apiParam {String} [appId] <code>body</code>小程序appid
-     * @apiParam {String} [appSecret] <code>body</code>小程序Secret
-     * @apiParam {String} [appToken] <code>body</code>小程序appToken
-     * @apiParam {String} [aesKey] <code>body</code>小程序AESKey
-     * @apiParam {String} [welcomeMsg] <code>body</code>欢迎信息
-     * @apiParam {Integer} [sort] <code>body</code>排序
-     * @apiParam {String} [remark] <code>body</code>备注
-     * @apiParam {Integer} version <code>body</code>版本号
-     *
-     * @apiParamExample {json} 请求样例:
-     * {
-     *      "id": "id",
-     *      "tenantCode": "tenantCode",
-     *      "appId": "appId",
-     *      "appSecret": "appSecret",
-     *      "appToken": "appToken",
-     *      "aesKey": "aesKey",
-     *      "welcomeMsg": "welcomeMsg",
-     *      "sort": "sort",
-     *      "remark": "remark",
-     *      "version": "version",
-     * }
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * {
-     *     "code": 1,
-     *     "data": ObjectEntity
-     * }
-     *
-     */
+    @Operation(summary = "4. 小程序配置-更新")
     @PostMapping(Route.WXAPP_CONFIG_UPDATE)
-    public R wxappConfigUpdate(@RequestBody WxappConfig entity) {
-        Assert.notNull(entity.getId(), ResultCode.PARAM_NO_ID.getMessage());
-        Assert.notNull(entity.getVersion(), ResultCode.UPDATE_NO_VERSION.getMessage());
-        paramCheck(entity);
+    public R<WxappConfigResp> wxappConfigUpdate(@Valid @RequestBody WxappConfigUpdateReq req) {
+        WxappConfig entity = BeanUtil.cp(req, WxappConfig.class);
         entity = wxappConfigService.update(entity);
-        return R.ok(entity);
+        WxappConfigResp resp = BeanUtil.cp(entity, WxappConfigResp.class);
+        return R.ok(resp);
     }
 
-
-
-    /**
-     * @api {post} /micro-wxappp/config/remove 5. 微信小程序-配置-删除
-     * @apiGroup WXMP_CONFIG
-     *
-     * @apiVersion 0.0.1
-     * @apiDescription 小程序-删除
-     *
-     * @apiParam {Long} [id] <code>body</code>数据id
-     *
-     * @apiParamExample {json} 请求样例:
-     * {
-     *     "id": 1
-     * }
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * {
-     *     "code": 1,
-     *     "data": 1
-     * }
-     *
-     */
+    @Operation(summary = "5. 小程序配置-删除")
     @PostMapping(Route.WXAPP_CONFIG_REMOVE)
-    public R wxappConfigRemove(@RequestBody WxappConfig entity) {
+    public R<Integer> wxappConfigRemove(@Valid @RequestBody WxappConfigRemoveReq req) {
+        WxappConfig entity = new WxappConfig();
+        entity.setId(req.getId());
+        entity.setIds(req.getIds());
         wxappConfigService.deleteById(entity);
         return R.ok(1);
     }
 
-
-
-    private void paramCheck(WxappConfig entity) {
-        Assert.notNull(entity.getAppId(), "appId 不能为空");
-        Assert.notNull(entity.getAppSecret(), "appSecret 不能为空");
-
-        if (!Checker.isValidWxAppId(entity.getAppId())) {
-            throw ValidationException.of("appId 格式错误!");
-        }
-
-        if (StringUtils.isBlank(entity.getTenantCode())) {
-            entity.setTenantCode(SessionHelper.getTenantCode());
-        }
-
-    }
-
-
 }
-

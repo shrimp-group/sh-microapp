@@ -1,6 +1,5 @@
 package com.wkclz.micro.wxapp.service;
 
-import cn.hutool.core.lang.Assert;
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.enums.ResultCode;
 import com.wkclz.core.exception.ValidationException;
@@ -31,8 +30,6 @@ public class WxappConfigService extends BaseService<WxappConfig, WxappConfigMapp
     }
 
     public WxappConfig getConfigInfo(WxappConfig entity) {
-        Assert.notNull(entity.getId(), ResultCode.PARAM_NO_ID.getMessage());
-        Assert.notNull(entity.getTenantCode(), "请求错误！参数[tenantCode]不能为空");
         WxappConfig config = selectOneByEntity(entity);
         if (config == null) {
             throw ValidationException.of(ResultCode.RECORD_NOT_EXIST);
@@ -63,9 +60,6 @@ public class WxappConfigService extends BaseService<WxappConfig, WxappConfigMapp
 
     public WxappConfig update(WxappConfig entity) {
         duplicateCheck(entity);
-        Assert.notNull(entity.getId(), ResultCode.PARAM_NO_ID.getMessage());
-        Assert.notNull(entity.getId(), ResultCode.UPDATE_NO_VERSION.getMessage());
-        Assert.notNull(entity.getId(), ResultCode.UPDATE_NO_VERSION.getMessage());
         WxappConfig oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
             throw ValidationException.of(ResultCode.RECORD_NOT_EXIST);

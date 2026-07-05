@@ -1,52 +1,34 @@
 package com.wkclz.micro.wxapp.service.custom;
 
-import com.alibaba.fastjson2.JSON;
-import com.wkclz.iam.sdk.config.IamSdkConfig;
-import com.wkclz.iam.sdk.enums.LoginStatus;
-import com.wkclz.iam.sdk.model.LoginResponse;
-import com.wkclz.iam.sdk.model.UserJwt;
-import com.wkclz.iam.sdk.model.UserSession;
-import com.wkclz.iam.sdk.util.JwtUtil;
+import com.wkclz.iam.sdk.bean.req.SessionCreateReq;
+import com.wkclz.iam.sdk.bean.resp.LoginResp;
+import com.wkclz.iam.sdk.facade.SsoFacade;
 import com.wkclz.micro.wxapp.bean.entity.WxappUser;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class WxappLoginService {
 
     @Autowired
-    private IamSdkConfig iamSdkConfig;
-    @Autowired
-    private RedisTemplate<String, String> redisTemplate;
+    private SsoFacade ssoFacade;
+    public LoginResp login(WxappUser user) {
 
-    public LoginResponse login(WxappUser user) {
-        LoginResponse response = new LoginResponse();
+        // 7. 登录成功，通过 SsoFacade 创建会话
+        SessionCreateReq sessionCreateReq = new SessionCreateReq();
+        sessionCreateReq.setUserCode(user.getUserCode());
+        sessionCreateReq.setUsername(user.getOpenId());
+        sessionCreateReq.setAuthIdentifier(user.getOpenId());
+        sessionCreateReq.setNickname(user.getNickname());
+        sessionCreateReq.setAvatar(user.getAvatar());
+        sessionCreateReq.setAuthType("WXAPP");
+        log.info("用户 {} 认证成功，调用 SsoFacade 创建会话", user.getOpenId());
 
-        // JWT, 生成 token 返回给前端
-        UserJwt jwt = new UserJwt();
-        jwt.setUserCode(user.getUserCode());
-        jwt.setUsername(user.getOpenId());
-        jwt.setNickname(user.getNickname());
-        jwt.setAvatar(user.getAvatar());
-        String jwtToken = JwtUtil.generateToken(jwt, iamSdkConfig.getJwtSecretKey());
-
-        // 用户信息，缓存到 Redis
-        UserSession us = new UserSession();
-        us.setUserCode(user.getUserCode());
-        us.setUsername(user.getOpenId());
-        us.setNickname(user.getNickname());
-        us.setAuthType("WXAPP");
-
-        String tokenRedisKey = JwtUtil.getTokenRedisKey(jwtToken, jwt.getUsername());
-        redisTemplate.opsForValue().set(tokenRedisKey, JSON.toJSONString(us));
-
-        response.setLoginStatus(LoginStatus.SUCCESS.getCode());
-        response.setLoginMessage(LoginStatus.SUCCESS.getMessage());
-        response.setToken(jwtToken);
-        return response;
+        return ssoFacade.login(sessionCreateReq);
     }
 
 }

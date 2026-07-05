@@ -3,35 +3,29 @@ package com.wkclz.micro.wxapp.rest;
 import cn.binarywang.wx.miniapp.api.WxMaService;
 import com.wkclz.micro.wxapp.Route;
 import com.wkclz.micro.wxapp.config.WxMaConfiguration;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "微信小程序验签", description = "微信小程序服务器验签接口")
 @Slf4j
 @RestController
 @RequestMapping(Route.PREFIX)
+@Validated
 public class WxAppRest {
 
 
     @Autowired
     private WxMaConfiguration configuration;
 
-    /**
-     * @api {get} /public/miniapp/portal 1. customer-微信验签[暂时废弃]
-     * @apiGroup WX
-     *
-     * @apiVersion 0.0.1
-     *
-     * @apiParamExample {json} 请求样例:
-     * /customer/wx/portal
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * vvvvvvvvvvvvvv
-     */
+    @Operation(summary = "1. 微信小程序验签")
     @GetMapping(value = Route.CUSTOMER_WX_PORTAL, produces = "text/plain;charset=utf-8")
     public String authGet(@RequestParam(name = "signature", required = false) String signature,
                           @RequestParam(name = "timestamp", required = false) String timestamp,

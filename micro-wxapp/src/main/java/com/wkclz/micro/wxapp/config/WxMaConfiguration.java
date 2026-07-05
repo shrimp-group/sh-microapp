@@ -16,7 +16,6 @@ import me.chanjar.weixin.common.error.WxErrorException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.util.Assert;
 
 import java.io.File;
 import java.util.Map;
@@ -36,7 +35,7 @@ public class WxMaConfiguration {
     private WxappConfigService wxappConfigService;
 
     public WxMaService getMaService(String appid) {
-        Assert.notNull(appid, "appid 不能为空");
+        if (appid == null || appid.isBlank()) throw ValidationException.of("appid 不能为空");
         String tenantCode = MA_APPID_TENANT.get(appid);
         if (tenantCode == null) {
             init(appid);
@@ -59,7 +58,7 @@ public class WxMaConfiguration {
     }
 
     public WxMaMessageRouter getRouter(String appid) {
-        Assert.notNull(appid, "appid 不能为空");
+        if (appid == null || appid.isBlank()) throw ValidationException.of("appid 不能为空");
         String tenantCode = MA_APPID_TENANT.get(appid);
         if (StringUtils.isBlank(tenantCode)) {
             init(appid);

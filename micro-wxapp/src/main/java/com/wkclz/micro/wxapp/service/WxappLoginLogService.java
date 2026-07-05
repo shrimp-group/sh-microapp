@@ -6,7 +6,6 @@ import com.wkclz.micro.wxapp.bean.entity.WxappLoginLog;
 import com.wkclz.micro.wxapp.mapper.WxappLoginLogMapper;
 import com.wkclz.mybatis.service.BaseService;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 /**
  * Description Create by shrimp-gen
@@ -30,8 +29,6 @@ public class WxappLoginLogService extends BaseService<WxappLoginLog, WxappLoginL
 
     public WxappLoginLog update(WxappLoginLog entity) {
         duplicateCheck(entity);
-        Assert.notNull(entity.getId(), ResultCode.PARAM_NO_ID.getMessage());
-        Assert.notNull(entity.getId(), ResultCode.UPDATE_NO_VERSION.getMessage());
         WxappLoginLog oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
             throw ValidationException.of(ResultCode.RECORD_NOT_EXIST);
