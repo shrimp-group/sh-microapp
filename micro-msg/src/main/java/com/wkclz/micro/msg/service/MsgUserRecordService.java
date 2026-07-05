@@ -51,6 +51,22 @@ public class MsgUserRecordService extends BaseService<MsgUserRecord, MsgUserReco
         return info;
     }
 
+    public MsgUserRecordDto getNoticeById(Long id) {
+        if (id == null) {
+            return null;
+        }
+        MsgUserRecordDto param = new MsgUserRecordDto();
+        param.setId(id);
+        param.setUserCode(SessionHelper.getUserCode());
+        MsgUserRecordDto info = mapper.getNoticeInfoById(param);
+        if (info == null) {
+            throw ValidationException.of("消息不存在！");
+        }
+        // 阅读 + 1
+        mapper.updateShowTimes(info.getId());
+        return info;
+    }
+
     public Integer userMarkRecodeReaded(MsgUserRecord entity) {
         List<Long> ids = new ArrayList<>();
         if (entity.getId() != null) {

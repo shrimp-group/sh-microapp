@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Description Create by sh-generator
  * @author shrimp
- * @table msg_notification (消息通知) DAO 接口，代码重新生成不覆盖
+ * @table msg_notification (消息通知) Mapper 接口，代码重新生成不覆盖
  */
 
 @Mapper

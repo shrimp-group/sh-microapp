@@ -2,7 +2,12 @@ package com.wkclz.micro.msg.rest;
 
 import com.wkclz.core.base.R;
 import com.wkclz.micro.msg.bean.entity.MsgUserSettings;
+import com.wkclz.micro.msg.bean.req.MsgUserSettingsSaveReq;
+import com.wkclz.micro.msg.bean.resp.MsgUserSettingsResp;
 import com.wkclz.micro.msg.service.MsgUserSettingsService;
+import com.wkclz.tool.utils.BeanUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
  * @author wangkaicun
  * @table msg_user_settings (用户消息设置) 示例rest 接口，代码重新生成会覆盖
  */
+@Tag(name = "4.个人消息设置", description = "个人消息设置管理接口")
 @RestController
 @RequestMapping(Route.PREFIX)
 public class PersonalUserSettingsRest {
@@ -18,70 +24,20 @@ public class PersonalUserSettingsRest {
     @Autowired
     private MsgUserSettingsService msgUserSettingsService;
 
-
-
-    /**
-     * @api {get} /micro-msg/personal/settings 21. 个人消息获取配置
-     * @apiGroup MSG
-     *
-     * @apiVersion 0.0.1
-     * @apiDescription 个人消息获取配置
-     *
-     * @apiSuccess {String} [notifyEvent] 事件消息配置(JSON)
-     * @apiSuccess {String} [notifySystem] 系统消息配置(JSON)
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * {
-     *     "code": 1,
-     *     "data": {
-     *          "notifyEvent": "notifyEvent",
-     *          "notifySystem": "notifySystem",
-     *     }
-     * }
-     *
-     */
+    @Operation(summary = "1.个人消息设置-获取配置", description = "获取当前用户的消息配置")
     @GetMapping(Route.PERSONAL_MSG_SETTINGS)
-    public R personalMsgSettings() {
+    public R<MsgUserSettingsResp> personalMsgSettings() {
         MsgUserSettings settings = msgUserSettingsService.getUserSettings();
-        MsgUserSettings target = new MsgUserSettings();
-        target.setNotifySystem(settings.getNotifySystem());
-        target.setNotifyEvent(settings.getNotifyEvent());
-        return R.ok(target);
+        MsgUserSettingsResp resp = BeanUtil.cp(settings, MsgUserSettingsResp.class);
+        return R.ok(resp);
     }
 
-
-
-    /**
-     * @api {post} /micro-msg/personal/settings/save 22. 个人消息保存配置
-     * @apiGroup MSG
-     *
-     * @apiVersion 0.0.1
-     * @apiDescription 个人消息保存配置
-     *
-     * @apiParam {String} [notifyEvent] <code>body</code>事件消息配置(JSON字符串)
-     * @apiParam {String} [notifySystem] <code>body</code>系统消息配置(JSON字符串)
-     *
-     * @apiParamExample {json} 请求样例:
-     * {
-     *      "notifyEvent": {
-     *          "aa": "bb",
-     *          "cc": "dd"
-     *      },
-     *      "notifySystem": {}
-     * }
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * {
-     *     "code": 1,
-     *     "data": ObjectEntity
-     * }
-     *
-     */
+    @Operation(summary = "2.个人消息设置-保存配置", description = "保存当前用户的消息配置")
     @PostMapping(Route.PERSONAL_MSG_SETTINGS_SAVE)
-    public R personalMsgSettingsSave(@RequestBody MsgUserSettings entity) {
+    public R<Integer> personalMsgSettingsSave(@RequestBody MsgUserSettingsSaveReq req) {
+        MsgUserSettings entity = BeanUtil.cp(req, MsgUserSettings.class);
         Integer i = msgUserSettingsService.setUserSettings(entity);
         return R.ok(i);
     }
 
 }
-

@@ -23,17 +23,4 @@ public class MsgNotificationDto extends MsgNotification {
     private String sentToUser;
     private List<String> sentToUsers;
 
-
-
-    /**
-     * entity 转 Dto
-     * @param source
-     * @return
-     */
-    public static MsgNotificationDto copy(MsgNotification source) {
-        MsgNotificationDto target = new MsgNotificationDto();
-        MsgNotification.copy(source, target);
-        return target;
-    }
 }
-

@@ -80,6 +80,29 @@
        LIMIT 1
     </select>
 
+    <select id="getNoticeInfoById" parameterType="com.wkclz.micro.msg.bean.dto.MsgUserRecordDto" resultType="com.wkclz.micro.msg.bean.dto.MsgUserRecordDto">
+        SELECT
+            ur.id,
+            ur.user_code,
+            ur.notice_no,
+            ur.read_status,
+            ur.read_time,
+            ur.create_time,
+            n.user_code sender,
+            n.title,
+            n.content,
+            n.ext_url
+        FROM
+            msg_user_record ur
+            INNER JOIN msg_notification n ON n.notice_no = ur.notice_no
+        WHERE
+            ur.deleted = 0
+           AND n.deleted = 0
+           AND ur.user_code = #{userCode}
+           AND ur.id = #{id}
+       LIMIT 1
+    </select>
+
     <update id="updateShowTimes" parameterType="java.lang.Long">
         UPDATE
             msg_user_record

@@ -15,7 +15,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,8 +69,6 @@ public class MsgNotificationService extends BaseService<MsgNotification, MsgNoti
     }
 
     public MsgNotification update(MsgNotification entity) {
-        Assert.notNull(entity.getId(), ResultCode.PARAM_NO_ID.getMessage());
-        Assert.notNull(entity.getId(), ResultCode.UPDATE_NO_VERSION.getMessage());
         MsgNotification oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
             throw ValidationException.of(ResultCode.RECORD_NOT_EXIST);

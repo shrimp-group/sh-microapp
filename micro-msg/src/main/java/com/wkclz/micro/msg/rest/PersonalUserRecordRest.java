@@ -5,10 +5,20 @@ import com.wkclz.core.base.R;
 import com.wkclz.iam.sdk.helper.SessionHelper;
 import com.wkclz.micro.msg.bean.dto.MsgUserRecordDto;
 import com.wkclz.micro.msg.bean.entity.MsgUserRecord;
+import com.wkclz.micro.msg.bean.req.MsgUserRecordListReq;
+import com.wkclz.micro.msg.bean.req.MsgUserRecordInfoReq;
+import com.wkclz.micro.msg.bean.req.MsgUserRecordPageReq;
+import com.wkclz.micro.msg.bean.req.MsgUserRecordReadedReq;
+import com.wkclz.micro.msg.bean.resp.MsgUserRecordPageResp;
+import com.wkclz.micro.msg.bean.resp.MsgUserRecordResp;
 import com.wkclz.micro.msg.service.MsgUserRecordService;
+import com.wkclz.tool.utils.BeanUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,195 +28,57 @@ import java.util.List;
  * @author wangkaicun
  * @table msg_user_record (用户消息记录) 示例rest 接口，代码重新生成会覆盖
  */
+@Tag(name = "3.个人消息记录", description = "个人消息记录管理接口")
 @RestController
 @RequestMapping(Route.PREFIX)
+@Validated
 public class PersonalUserRecordRest {
 
     @Autowired
     private MsgUserRecordService msgUserRecordService;
 
-
-
-    /**
-     * @api {get} /micro-msg/personal/list 11. 个人消息列表(最多99,展示为99+)
-     * @apiGroup MSG
-     *
-     * @apiVersion 0.0.1
-     * @apiDescription 用户消息记录-获取分页
-     *
-     * @apiParam {String} [noticeNo] <code>param</code>消息编码
-     * @apiParam {Integer} [readStatus] <code>param</code>阅读状态
-     * @apiParam {String} [title] <code>param</code>标题(模糊查询)
-     *
-     * @apiParamExample {param} 请求样例:
-     * ?id=1
-     *
-     * @apiSuccess {String} [userCode] 用户编码
-     * @apiSuccess {String} [noticeNo] 消息编码
-     * @apiSuccess {Integer} [readStatus] 阅读状态
-     * @apiSuccess {Date} [readTime] 阅读时间
-     * @apiSuccess {String} [sender] 发送人用户编码
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * {
-     *     "code": 1,
-     *     "data": [
-     *             {
-     *                 "id": "id",
-     *                 "userCode": "userCode",
-     *                 "noticeNo": "noticeNo",
-     *                 "readStatus": "readStatus",
-     *                 "readTime": "readTime",
-     *                 "updateTime": "updateTime",
-     *                 "sender": "sender"
-     *             },
-     *             ...
-     *         ]
-     * }
-     *
-     */
+    @Operation(summary = "1.个人消息-列表", description = "获取个人消息列表(最多99条,展示为99+)")
     @GetMapping(Route.PERSONAL_MSG_LIST)
-    public R personalMsgList(MsgUserRecordDto dto) {
+    public R<List<MsgUserRecordResp>> personalMsgList(MsgUserRecordListReq req) {
+        MsgUserRecordDto dto = BeanUtil.cp(req, MsgUserRecordDto.class);
         dto.setUserCode(SessionHelper.getUserCode());
         if (dto.getSize() == null) {
             dto.setSize(100L);
         }
         List<MsgUserRecordDto> list = msgUserRecordService.getPersonalRecordList(dto);
-        return R.ok(list);
+        List<MsgUserRecordResp> respList = BeanUtil.cp(list, MsgUserRecordResp.class);
+        return R.ok(respList);
     }
 
-
-    /**
-     * @api {get} /micro-msg/personal/page 12. 个人消息分页
-     * @apiGroup MSG
-     *
-     * @apiVersion 0.0.1
-     * @apiDescription 用户消息记录-获取分页
-     *
-     * @apiParam {String} [noticeNo] <code>param</code>消息编码
-     * @apiParam {Integer} [readStatus] <code>param</code>阅读状态
-     * @apiParam {Date} [readTime] <code>param</code>阅读时间
-     * @apiParam {String} [title] <code>param</code>标题(模糊查询)
-     *
-     * @apiParamExample {param} 请求样例:
-     * ?id=1
-     *
-     * @apiSuccess {String} [userCode] 用户编码
-     * @apiSuccess {String} [noticeNo] 消息编码
-     * @apiSuccess {Integer} [readStatus] 阅读状态
-     * @apiSuccess {Date} [readTime] 阅读时间
-     * @apiSuccess {String} [sender] 发送人用户编码
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * {
-     *     "code": 1,
-     *     "data": {
-     *         "rows": [
-     *             {
-     *                 "id": "id",
-     *                 "userCode": "userCode",
-     *                 "noticeNo": "noticeNo",
-     *                 "readStatus": "readStatus",
-     *                 "readTime": "readTime",
-     *                 "sender": "sender"
-     *             },
-     *             ...
-     *         ],
-     *         "current": 1,
-     *         "size": 10,
-     *         "total": 1,
-     *         "page": 1,
-     *     }
-     * }
-     *
-     */
+    @Operation(summary = "2.个人消息-分页", description = "分页查询个人消息记录")
     @GetMapping(Route.PERSONAL_MSG_PAGE)
-    public R personalMsgPage(MsgUserRecordDto dto) {
+    public R<PageData<MsgUserRecordPageResp>> personalMsgPage(MsgUserRecordPageReq req) {
+        MsgUserRecordDto dto = BeanUtil.cp(req, MsgUserRecordDto.class);
         dto.setUserCode(SessionHelper.getUserCode());
         PageData<MsgUserRecordDto> page = msgUserRecordService.getPersonalRecordPage(dto);
-        return R.ok(page);
+        PageData<MsgUserRecordPageResp> newPage = page.convert(MsgUserRecordPageResp.class);
+        return R.ok(newPage);
     }
 
-
-    /**
-     * @api {get} /micro-msg/personal/info 13. 个人消息详情(阅读)
-     * @apiGroup MSG
-     *
-     * @apiVersion 0.0.1
-     * @apiDescription 用户消息记录-获取详情
-     *
-     * @apiParam {Long} id <code>param</code>数据id
-     *
-     * @apiParamExample {param} 请求样例:
-     * ?id=1
-     *
-     * @apiSuccess {Long} [id] ID
-     * @apiSuccess {String} [userCode] 用户编码
-     * @apiSuccess {String} [noticeNo] 消息编码
-     * @apiSuccess {Integer} [readStatus] 阅读状态
-     * @apiSuccess {Date} [readTime] 阅读时间
-     * @apiSuccess {Date} [updateTime] 更新时间
-     * @apiSuccess {String} [title] 通知标题
-     * @apiSuccess {String} [content] 通知正文
-     * @apiSuccess {String} [extUrl] 扩展URL
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * {
-     *     "code": 1,
-     *     "data": {
-     *          "id": "id",
-     *          "userCode": "userCode",
-     *          "noticeNo": "noticeNo",
-     *          "readStatus": "readStatus",
-     *          "readTime": "readTime",
-     *          "updateTime": "updateTime",
-     *          "title": "title",
-     *          "content": "content",
-     *          "extUrl": "extUrl"
-     *     }
-     * }
-     *
-     */
+    @Operation(summary = "3.个人消息-详情(阅读)", description = "查看个人消息详情并标记阅读")
     @GetMapping(Route.PERSONAL_MSG_INFO)
-    public R personalMsgInfo(MsgUserRecordDto dto) {
-        Assert.notNull(dto.getNoticeNo(), "noticeNo 不能为空！");
-        dto = msgUserRecordService.getNotice(dto.getNoticeNo());
-        return R.ok(dto);
+    public R<MsgUserRecordResp> personalMsgInfo(MsgUserRecordInfoReq req) {
+        MsgUserRecordDto dto = msgUserRecordService.getNoticeById(req.getId());
+        MsgUserRecordResp resp = BeanUtil.cp(dto, MsgUserRecordResp.class);
+        return R.ok(resp);
     }
 
-
-
-    /**
-     * @api {post} /micro-msg/personal/readed 14. 个人消息，批量标注已读
-     * @apiGroup MSG
-     *
-     * @apiVersion 0.0.1
-     * @apiDescription 用户消息记录-删除
-     *
-     * @apiParam {Long} [id] <code>body</code>数据id
-     * @apiParam {Long[]} [ids] <code>body</code>数据ids(当支持批量删除时)
-     *
-     * @apiParamExample {json} 请求样例:
-     * {
-     *     "id": 1,
-     *     "ids": [1]
-     * }
-     *
-     * @apiSuccessExample {json} 返回样例:
-     * {
-     *     "code": 1,
-     *     "data": 1
-     * }
-     *
-     */
+    @Operation(summary = "4.个人消息-批量已读", description = "批量标注个人消息为已读")
     @PostMapping(Route.PERSONAL_MSG_READED)
-    public R personalMsgReaded(@RequestBody MsgUserRecord entity) {
-        if (entity.getId() == null && CollectionUtils.isEmpty(entity.getIds())) {
+    public R<Integer> personalMsgReaded(@Valid @RequestBody MsgUserRecordReadedReq req) {
+        if (req.getId() == null && CollectionUtils.isEmpty(req.getIds())) {
             return R.error("请传 id 或者 ids");
         }
+        MsgUserRecord entity = new MsgUserRecord();
+        entity.setId(req.getId());
+        entity.setIds(req.getIds());
         Integer count = msgUserRecordService.userMarkRecodeReaded(entity);
         return R.ok(count);
     }
 
 }
-

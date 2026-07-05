@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 /**
  * Description Create by sh-generator
  * @author shrimp
- * @table msg_template (消息模板) DAO 接口，代码重新生成不覆盖
+ * @table msg_template (消息模板) Mapper 接口，代码重新生成不覆盖
  */
 
 @Mapper

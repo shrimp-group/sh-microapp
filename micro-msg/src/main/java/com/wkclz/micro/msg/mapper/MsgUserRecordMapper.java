@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Description Create by sh-generator
  * @author shrimp
- * @table msg_user_record (用户消息记录) DAO 接口，代码重新生成不覆盖
+ * @table msg_user_record (用户消息记录) Mapper 接口，代码重新生成不覆盖
  */
 
 @Mapper
@@ -22,6 +22,8 @@ public interface MsgUserRecordMapper extends BaseMapper<MsgUserRecord> {
     List<MsgUserRecordDto> getPersonalRecordList4Page(MsgUserRecordDto dto);
 
     MsgUserRecordDto getNoticeInfo(MsgUserRecordDto dto);
+
+    MsgUserRecordDto getNoticeInfoById(MsgUserRecordDto dto);
 
     Integer updateShowTimes(@Param("id") Long id);
 

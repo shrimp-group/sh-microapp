@@ -10,7 +10,6 @@ import com.wkclz.redis.helper.RedisIdGenerator;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 /**
  * Description Create by sh-generator
@@ -40,8 +39,6 @@ public class MsgTemplateService extends BaseService<MsgTemplate, MsgTemplateMapp
 
     public MsgTemplate update(MsgTemplate entity) {
         duplicateCheck(entity);
-        Assert.notNull(entity.getId(), "请求错误！参数[id]不能为空");
-        Assert.notNull(entity.getVersion(), "请求错误！参数[version]不能为空");
         MsgTemplate oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
             throw ValidationException.of(ResultCode.RECORD_NOT_EXIST);
@@ -57,7 +54,6 @@ public class MsgTemplateService extends BaseService<MsgTemplate, MsgTemplateMapp
     }
 
     public MsgTemplate remove(MsgTemplate entity) {
-        Assert.notNull(entity.getId(), "请求错误！参数[id]不能为空");
         MsgTemplate oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
             throw ValidationException.of(ResultCode.RECORD_NOT_EXIST);

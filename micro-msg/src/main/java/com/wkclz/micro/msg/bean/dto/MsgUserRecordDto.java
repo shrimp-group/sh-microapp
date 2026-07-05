@@ -20,17 +20,4 @@ public class MsgUserRecordDto extends MsgUserRecord {
     private String content;
     private String extUrl;
 
-
-
-    /**
-     * entity 转 Dto
-     * @param source
-     * @return
-     */
-    public static MsgUserRecordDto copy(MsgUserRecord source) {
-        MsgUserRecordDto target = new MsgUserRecordDto();
-        MsgUserRecord.copy(source, target);
-        return target;
-    }
 }
-

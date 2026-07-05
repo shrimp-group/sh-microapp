@@ -14,18 +14,4 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public class MsgTemplateDto extends MsgTemplate {
 
-
-
-
-    /**
-     * entity 转 Dto
-     * @param source
-     * @return
-     */
-    public static MsgTemplateDto copy(MsgTemplate source) {
-        MsgTemplateDto target = new MsgTemplateDto();
-        MsgTemplate.copy(source, target);
-        return target;
-    }
 }
-
