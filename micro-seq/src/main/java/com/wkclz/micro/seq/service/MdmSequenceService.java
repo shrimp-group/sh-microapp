@@ -3,15 +3,14 @@ package com.wkclz.micro.seq.service;
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.enums.ResultCode;
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.micro.seq.dao.MdmSequenceMapper;
-import com.wkclz.micro.seq.pojo.entity.MdmSequence;
+import com.wkclz.micro.seq.mapper.MdmSequenceMapper;
+import com.wkclz.micro.seq.bean.entity.MdmSequence;
 import com.wkclz.mybatis.helper.PageQuery;
 import com.wkclz.mybatis.service.BaseService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,8 +36,6 @@ public class MdmSequenceService extends BaseService<MdmSequence, MdmSequenceMapp
 
     public MdmSequence update(MdmSequence entity) {
         duplicateCheck(entity);
-        Assert.notNull(entity.getId(), ResultCode.PARAM_NO_ID.getMessage());
-        Assert.notNull(entity.getId(), ResultCode.UPDATE_NO_VERSION.getMessage());
         MdmSequence oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
             throw ValidationException.of(ResultCode.RECORD_NOT_EXIST);

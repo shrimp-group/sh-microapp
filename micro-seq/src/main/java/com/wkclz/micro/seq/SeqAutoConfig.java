@@ -5,7 +5,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@MapperScan({"com.wkclz.micro.seq.dao"})
+@MapperScan({"com.wkclz.micro.seq.mapper"})
 @ComponentScan(basePackages = {"com.wkclz.micro.seq"})
 public class SeqAutoConfig {
 }

@@ -1,6 +1,6 @@
-package com.wkclz.micro.seq.pojo.dto;
+package com.wkclz.micro.seq.bean.dto;
 
-import com.wkclz.micro.seq.pojo.entity.MdmSequence;
+import com.wkclz.micro.seq.bean.entity.MdmSequence;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

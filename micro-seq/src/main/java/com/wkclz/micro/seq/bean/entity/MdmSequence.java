@@ -1,4 +1,4 @@
-package com.wkclz.micro.seq.pojo.entity;
+package com.wkclz.micro.seq.bean.entity;
 
 import com.wkclz.core.annotation.FieldDesc;
 import com.wkclz.core.base.BaseEntity;
