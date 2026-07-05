@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.pay.mapper.PayWxpayConfigMapper">
+
+
+    <select id="getWxpayConfigList" parameterType="com.wkclz.micro.pay.bean.dto.PayWxpayConfigDto" resultType="com.wkclz.micro.pay.bean.dto.PayWxpayConfigDto">
+        SELECT
+            wc.id,
+            wc.tenant_code,
+            wc.app_id,
+            wc.mch_id,
+            wc.sort,
+            wc.create_time,
+            wc.create_by,
+            wc.update_time,
+            wc.update_by,
+            wc.remark,
+            wc.version
+        FROM
+            pay_wxpay_config wc
+        WHERE
+            wc.deleted = 0
+            <if test="tenantCode != null">AND wc.tenant_code = #{tenantCode} </if>
+            <if test="appId != null">AND wc.app_id = #{appId} </if>
+            <if test="mchId != null">AND wc.mch_id = #{mchId} </if>
+        ORDER BY
+            wc.id DESC
+    </select>
+
+</mapper>
+

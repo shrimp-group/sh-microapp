@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.pay.mapper.PayAlipayConfigMapper">
+
+
+    <select id="getAlipayConfigList" parameterType="com.wkclz.micro.pay.bean.dto.PayAlipayConfigDto" resultType="com.wkclz.micro.pay.bean.dto.PayAlipayConfigDto">
+        SELECT
+            ac.id,
+            ac.tenant_code,
+            ac.app_id,
+            ac.notify_url,
+            ac.return_url,
+            ac.sign_type,
+            ac.charset,
+            ac.is_prod,
+            ac.sort,
+            ac.create_time,
+            ac.create_by,
+            ac.update_time,
+            ac.update_by,
+            ac.remark,
+            ac.version
+        FROM
+            pay_alipay_config ac
+        WHERE
+            ac.deleted = 0
+            <if test="tenantCode != null">AND ac.tenant_code = #{tenantCode} </if>
+            <if test="appId != null">AND ac.app_id = #{appId} </if>
+        ORDER BY
+            ac.id DESC
+    </select>
+
+</mapper>
+
