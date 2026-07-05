@@ -1,19 +1,56 @@
+# Compiled class files
+*.class
 
-# spring
-*.iml
-application-local.yml
-
-
-# maven
-target
+# Build output
+target/
 .flattened-pom.xml
 
-# idea
-.idea
+# Package files
+*.jar
+*.war
+*.ear
+*.nar
 
+# Maven
+.mvn/wrapper/maven-wrapper.jar
 
-# Mac
+# IDE - IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# IDE - Eclipse
+.settings/
+.project
+.classpath
+.factorypath
+
+# IDE - VS Code
+.vscode/
+
+# IDE - NetBeans
+nbproject/
+nbbuild/
+dist/
+nbdist/
+
+# OS files
 .DS_Store
+Thumbs.db
 
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Spring
+application-local.yml
+application-*.yml
+application-*.properties
+
+# Trae
 .trae/specs
-

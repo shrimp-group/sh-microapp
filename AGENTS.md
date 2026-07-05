@@ -366,6 +366,13 @@ micro-points ← micro-pay (积分支付/退款积分回退)
 ## 变更记录
 见 [changes/](changes/) 目录
 
+### 2026-07-05 Harness 升级
+- 新增 `changes/` 变更目录及 README
+- 新增 `.editorconfig` 统一编辑器格式
+- 新增 `docs/tech-debts/` 下 5 个分类子目录（性能风险、内存隐患、线程与并发风险、安全风险、其他潜在风险）
+- 同步 `docs/harness-spec.md`、`docs/dev-process.md`、`docs/standards/harness.md` 与 sh-harness 最新版
+- 增强 `.gitignore` 合并 harness 标准 Java 忽略规则
+
 ## 项目上下文
 见 [CONTEXT.md](CONTEXT.md)
 

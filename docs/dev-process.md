@@ -15,7 +15,7 @@
 
 1. 选择对应语言模板（Java / Node）
 2. 根据项目特点调整目录结构
-3. 配置 lint、test、CI/CD 等工具链
+3. 配置 lint、test 等工具链
 4. 初始化 Git 仓库并创建初始提交
 5. 创建 `docs/` 目录并放入规范文档
 
@@ -24,7 +24,6 @@
 - [ ] 目录结构符合 [harness-spec.md](harness-spec.md) 定义
 - [ ] lint 配置已就绪
 - [ ] test 配置已就绪
-- [ ] CI/CD 流水线已配置
 - [ ] .editorconfig 已配置
 - [ ] .gitignore 已配置
 - [ ] README.md 已创建
