@@ -6,12 +6,12 @@
     <parent>
         <groupId>com.wkclz.framework</groupId>
         <artifactId>sh-parent</artifactId>
-        <version>5.0.0-SNAPSHOT</version>
+        <version>5.0.1-SNAPSHOT</version>
     </parent>
 
     <groupId>com.wkclz.microapp</groupId>
     <artifactId>sh-microapp</artifactId>
-    <version>5.0.0-SNAPSHOT</version>
+    <version>5.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>sh-microapp</name>
