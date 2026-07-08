@@ -90,6 +90,7 @@ public class AuditImpl implements AuditApi {
             log.setTableName(tableName);
             log.setOperateType("INSERT");
             log.setDataTo(AuditCompareUtil.getDataValueJson(to));
+            log.setSort(0);
         }
         mdmChangeLogService.insertBatch(logs);
     }
@@ -154,6 +155,7 @@ public class AuditImpl implements AuditApi {
             log.setOperateType("UPDATE");
             log.setDataFrom(AuditCompareUtil.getDataValueJson(from));
             log.setDataTo(AuditCompareUtil.getDataValueJson(to));
+            log.setSort(0);
         }
         mdmChangeLogService.insertBatch(logs);
     }
@@ -202,6 +204,7 @@ public class AuditImpl implements AuditApi {
             log.setTableName(tableName);
             log.setOperateType("DELETE");
             log.setDataFrom(AuditCompareUtil.getDataValueJson(from));
+            log.setSort(0);
         }
         mdmChangeLogService.insertBatch(logs);
     }
