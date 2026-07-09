@@ -1,6 +1,6 @@
 package com.wkclz.micro.material.service;
 
-import com.wkclz.iam.sdk.helper.SessionHelper;
+import com.wkclz.iam.contract.context.PrincipalContext;
 import com.wkclz.micro.material.mapper.MdmMaterialRefMapper;
 import com.wkclz.micro.material.bean.entity.MdmMaterialRef;
 import com.wkclz.mybatis.service.BaseService;
@@ -25,22 +25,22 @@ public class MdmMaterialRefService extends BaseService<MdmMaterialRef, MdmMateri
         ref.setBizType(bizType);
         ref.setBizCode(bizCode);
         ref.setRefDesc(refDesc);
-        ref.setTenantCode(SessionHelper.getTenantCode());
-        ref.setUserCode(SessionHelper.getUserCode());
+        ref.setTenantCode(PrincipalContext.getTenantCode());
+        ref.setUserCode(PrincipalContext.getUserCode());
         return insert(ref);
     }
 
     @Transactional(rollbackFor = Exception.class)
     public Integer unbind(String materialCode, String bizType, String bizCode) {
-        return mapper.deleteByBiz(materialCode, bizType, bizCode, SessionHelper.getTenantCode());
+        return mapper.deleteByBiz(materialCode, bizType, bizCode, PrincipalContext.getTenantCode());
     }
 
     public List<MdmMaterialRef> listByMaterialCode(String materialCode) {
-        return mapper.getByMaterialCode(materialCode, SessionHelper.getTenantCode());
+        return mapper.getByMaterialCode(materialCode, PrincipalContext.getTenantCode());
     }
 
     public Map<String, Object> check(String materialCode) {
-        Long count = mapper.countByMaterialCode(materialCode, SessionHelper.getTenantCode());
+        Long count = mapper.countByMaterialCode(materialCode, PrincipalContext.getTenantCode());
         Map<String, Object> result = new HashMap<>();
         result.put("referenced", count != null && count > 0);
         result.put("count", count != null ? count : 0);

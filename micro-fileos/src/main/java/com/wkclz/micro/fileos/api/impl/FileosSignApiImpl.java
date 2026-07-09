@@ -1,7 +1,7 @@
 package com.wkclz.micro.fileos.api.impl;
 
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.core.user.UserContext;
+import com.wkclz.iam.contract.context.PrincipalContext;
 import com.wkclz.micro.fileos.api.FileosSignApi;
 import com.wkclz.micro.fileos.bean.dto.ImageProcessParam;
 import com.wkclz.micro.fileos.bean.entity.MdmFileosBucket;
@@ -95,7 +95,7 @@ public class FileosSignApiImpl extends AbstractFileosApi implements FileosSignAp
         }
         String tmpFileId = getFileId(fileId);
         tmpFileId = URLDecoder.decode(tmpFileId, StandardCharsets.UTF_8);
-        String tenantCode = UserContext.getTenantCode();
+        String tenantCode = PrincipalContext.getTenantCode();
         MdmFileosRecord record = mdmFileosRecordService.getRecordByFileId(tmpFileId, tenantCode);
         if (record == null) {
             log.warn("文件: {} 不存在，无法完成签名", fileId);
@@ -135,7 +135,7 @@ public class FileosSignApiImpl extends AbstractFileosApi implements FileosSignAp
             timeUnit = TimeUnit.MINUTES;
         }
 
-        String tenantCode = UserContext.getTenantCode();
+        String tenantCode = PrincipalContext.getTenantCode();
         List<SignRecord> rs = new ArrayList<>();
         for (Object f : fileIds) {
             SignRecord r = new SignRecord();

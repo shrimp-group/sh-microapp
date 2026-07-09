@@ -89,7 +89,7 @@ public class DictCache implements MessageListener {
 ```java
 @Transactional(rollbackFor = Exception.class)
 public Integer paste(List<MdmDictDto> dtos) {
-    // 1. 获取当前用户（SessionHelper）
+    // 1. 获取当前用户（PrincipalContext）
     // 2. 收集所有导入的 dictTypes
     // 3. 查询数据库中已有的 dict 和 item
     // 4. 构建 Map<dictType, MdmDictDto> 和 Map<dictType:dictValue, MdmDictItem>
@@ -240,4 +240,4 @@ synchronized + 3 秒防抖 → 查询 DB → 重建 CACHE_DICT
 | sh-core | BaseEntity、ValidationException、R 返回对象 |
 | sh-mybatis | BaseService、BaseMapper、PageQuery |
 | sh-redis | StringRedisTemplate、RedisMessageListenerContainer |
-| iam-sdk | SessionHelper（paste 操作获取当前用户编码） |
+| iam-contract-api | PrincipalContext（paste 操作获取当前用户编码） |

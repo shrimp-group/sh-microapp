@@ -693,7 +693,7 @@ micro-points 模块遵循 sh-mybatis 全局配置（`mapUnderscoreToCamelCase=tr
 | `sh-spring` | SpringContextHolder |
 | `sh-xxljob` | `@XxlJob` 注解（积分过期定时任务，弱依赖，可由 Spring `@Scheduled` 兜底） |
 | `sh-web` | ErrorHandler、RestHelper |
-| `iam-sdk` | SessionHelper（获取 tenantCode / userCode） |
+| `iam-contract-api` | PrincipalContext（获取 tenantCode / userCode） |
 
 ### 模块间依赖
 

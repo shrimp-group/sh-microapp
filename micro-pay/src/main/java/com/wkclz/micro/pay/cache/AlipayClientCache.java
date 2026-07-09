@@ -5,7 +5,7 @@ import com.alipay.api.AlipayClient;
 import com.alipay.api.AlipayConfig;
 import com.alipay.api.DefaultAlipayClient;
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.iam.sdk.helper.SessionHelper;
+import com.wkclz.iam.contract.context.PrincipalContext;
 import com.wkclz.micro.pay.mapper.PayAlipayConfigMapper;
 import com.wkclz.micro.pay.bean.entity.PayAlipayConfig;
 import lombok.extern.slf4j.Slf4j;
@@ -73,7 +73,7 @@ public class AlipayClientCache {
     }
 
     public synchronized PayAlipayConfig getConfig() {
-        String tenantCode = SessionHelper.getTenantCode();
+        String tenantCode = PrincipalContext.getTenantCode();
         return getConfig(tenantCode);
     }
     public synchronized PayAlipayConfig getConfig(String tenantCode) {
@@ -93,7 +93,7 @@ public class AlipayClientCache {
     }
 
     public synchronized AlipayClient getClient() {
-        String tenantCode = SessionHelper.getTenantCode();
+        String tenantCode = PrincipalContext.getTenantCode();
         return getClient(tenantCode);
     }
     public synchronized AlipayClient getClient(String tenantCode) {

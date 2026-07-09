@@ -2,7 +2,7 @@ package com.wkclz.micro.dict.service;
 
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.iam.sdk.helper.SessionHelper;
+import com.wkclz.iam.contract.context.PrincipalContext;
 import com.wkclz.micro.dict.cache.DictCache;
 import com.wkclz.micro.dict.mapper.MdmDictItemMapper;
 import com.wkclz.micro.dict.mapper.MdmDictMapper;
@@ -163,7 +163,7 @@ public class MdmDictService extends BaseService<MdmDict, MdmDictMapper> {
             }
         }
 
-        String userCode = SessionHelper.getUserCode();
+        String userCode = PrincipalContext.getUserCode();
         if (userCode == null) {
             userCode = "anonymous";
         }
@@ -178,9 +178,9 @@ public class MdmDictService extends BaseService<MdmDict, MdmDictMapper> {
         List<MdmDictItem> existingItems = dictItemMapper.dictItems4Update(itemParam);
 
         Map<String, MdmDictDto> existingDictMap = existingDicts.stream()
-                .collect(Collectors.toMap(MdmDictDto::getDictType, d -> d, (a, b) -> a));
+            .collect(Collectors.toMap(MdmDictDto::getDictType, d -> d, (a, b) -> a));
         Map<String, MdmDictItem> existingItemMap = existingItems.stream()
-                .collect(Collectors.toMap(i -> i.getDictType() + ":" + i.getDictValue(), i -> i, (a, b) -> a));
+            .collect(Collectors.toMap(i -> i.getDictType() + ":" + i.getDictValue(), i -> i, (a, b) -> a));
 
         List<MdmDict> dicts2Insert = new ArrayList<>();
         // dicts2Update

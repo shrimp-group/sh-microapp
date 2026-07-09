@@ -1,7 +1,7 @@
 package com.wkclz.micro.fileos.api.impl;
 
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.core.user.UserContext;
+import com.wkclz.iam.contract.context.PrincipalContext;
 import com.wkclz.micro.fileos.api.FileosDeleteApi;
 import com.wkclz.micro.fileos.bean.entity.MdmFileosBucket;
 import com.wkclz.micro.fileos.bean.entity.MdmFileosRecord;
@@ -25,7 +25,7 @@ public class FileosDeleteApiImpl extends AbstractFileosApi implements FileosDele
         if (record == null) {
             return 0;
         }
-        String currentTenantCode = UserContext.getTenantCode();
+        String currentTenantCode = PrincipalContext.getTenantCode();
         if (!currentTenantCode.equals(record.getTenantCode())) {
             log.warn("删除文件租户校验失败, 当前租户: {}, 文件所属租户: {}, fileId: {}", currentTenantCode, record.getTenantCode(), fileId);
             throw ValidationException.of("无权删除其他租户的文件");
@@ -40,7 +40,7 @@ public class FileosDeleteApiImpl extends AbstractFileosApi implements FileosDele
             return 0;
         }
 
-        String currentTenantCode = UserContext.getTenantCode();
+        String currentTenantCode = PrincipalContext.getTenantCode();
         List<MdmFileosRecord> otherTenantRecords = records.stream()
             .filter(r -> !currentTenantCode.equals(r.getTenantCode()))
             .toList();

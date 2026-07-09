@@ -47,7 +47,7 @@ description: "物料/素材管理模块。当需要实现素材CRUD、分组树�
 │                     Infrastructure                                   │
 │  MaterialGroupCache (Redis Pub/Sub)  MaterialApi (对外API)          │
 │  FileosSignApi / FileosDeleteApi (micro-fileos)                     │
-│  RedisIdGenerator (编码生成)  SessionHelper (会话)                   │
+│  RedisIdGenerator (编码生成)  PrincipalContext (会话)                   │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -148,7 +148,7 @@ MdmMaterial material = mdmMaterialService.create(
 // 内部流程:
 // 1. RedisIdGenerator 生成 materialCode (前缀 "m_")
 // 2. sourceType 固定为 "UPLOAD"
-// 3. 从 SessionHelper 获取 tenantCode/userCode
+// 3. 从 PrincipalContext 获取 tenantCode/userCode
 // 4. insert 到数据库
 ```
 
@@ -227,7 +227,7 @@ Integer count = mdmMaterialTransferLogService.transfer(ids, toUserCode);
 | 配置来源 | 说明 |
 |---|---|
 | `micro-fileos` | FileosSignApi / FileosDeleteApi，素材文件存储与签名 |
-| `iam-sdk` | SessionHelper 获取 tenantCode / userCode |
+| `iam-contract-api` | PrincipalContext 获取 tenantCode / userCode |
 | `sh-redis` | RedisIdGenerator (编码前缀 `m_` / `mg_`)、Redis Pub/Sub 缓存频道 |
 | Spring Boot AutoConfiguration | `com.wkclz.micro.material.MaterialAutoConfig` |
 
@@ -239,7 +239,7 @@ Integer count = mdmMaterialTransferLogService.transfer(ids, toUserCode);
 
 | groupId | artifactId | 用途 |
 |---|---|---|
-| `com.wkclz.iam` | `iam-sdk` | 会话上下文 (SessionHelper) |
+| `com.wkclz.iam` | `iam-contract-api` | 会话上下文 (PrincipalContext) |
 | `com.wkclz.framework` | `sh-mybatis` | BaseMapper / BaseService / PageQuery |
 | `com.wkclz.framework` | `sh-redis` | RedisIdGenerator / Redis Pub/Sub |
 | `com.wkclz.microapp` | `micro-fileos` | 文件签名 (FileosSignApi) / 文件删除 (FileosDeleteApi) |
@@ -248,7 +248,7 @@ Integer count = mdmMaterialTransferLogService.transfer(ids, toUserCode);
 
 ```
 micro-fileos ← micro-material (文件存储与签名)
-iam-sdk      ← micro-material (会话上下文)
+iam-contract-api      ← micro-material (会话上下文)
 ```
 
 ---

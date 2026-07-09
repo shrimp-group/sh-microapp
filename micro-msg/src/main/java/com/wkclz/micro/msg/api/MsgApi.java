@@ -1,6 +1,6 @@
 package com.wkclz.micro.msg.api;
 
-import com.wkclz.iam.sdk.helper.SessionHelper;
+import com.wkclz.iam.contract.context.PrincipalContext;
 import com.wkclz.micro.msg.bean.dto.MsgNotificationDto;
 import com.wkclz.micro.msg.service.MsgNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +63,7 @@ public class MsgApi {
         notice.setTitle(title);
         notice.setContent(content);
         notice.setExtUrl(extUrl);
-        notice.setUserCode(SessionHelper.getUserCode());
+        notice.setUserCode(PrincipalContext.getUserCode());
         notice.setSentToUsers(toUserCodes);
         return msgNotificationService.createNotification(notice);
     }

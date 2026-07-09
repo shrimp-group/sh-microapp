@@ -197,7 +197,7 @@ dictCache.clearCache();
 - `sh-core`：BaseEntity、ValidationException、R 返回对象
 - `sh-mybatis`：BaseService、BaseMapper、PageQuery
 - `sh-redis`：StringRedisTemplate、RedisMessageListenerContainer
-- `iam-sdk`：SessionHelper（paste 操作获取当前用户）
+- `iam-contract-api`：PrincipalContext（paste 操作获取当前用户）
 
 ## 常见问题
 

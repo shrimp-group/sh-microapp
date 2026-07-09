@@ -155,22 +155,20 @@ if (user == null) {
 return wxappLoginService.login(user);
 ```
 
-### 4.2 JWT 登录会话创建
+### 4.2 登录会话创建
 
 ```java
 // WxappLoginService.login()
-UserJwt jwt = new UserJwt();
-jwt.setUserCode(user.getUserCode());
-jwt.setUsername(user.getOpenId());
-jwt.setNickname(user.getNickname());
-jwt.setAvatar(user.getAvatar());
-String jwtToken = JwtUtil.generateToken(jwt, iamSdkConfig.getJwtSecretKey());
+SessionCreateReq req = new SessionCreateReq();
+req.setUserCode(user.getUserCode());
+req.setUsername(user.getUserCode());
+req.setNickname(user.getNickname());
+req.setAvatar(user.getAvatar());
+req.setAuthType("WXAPP");
+req.setAuthIdentifier(user.getOpenId());
 
-UserSession us = new UserSession();
-us.setUserCode(user.getUserCode());
-us.setUsername(user.getOpenId());
-us.setAuthType("WXAPP");
-redisTemplate.opsForValue().set(JwtUtil.getTokenRedisKey(jwtToken, jwt.getUsername()), JSON.toJSONString(us));
+LoginResp loginResp = ssoFacadeContract.login(req);
+String jwtToken = loginResp.getToken();
 ```
 
 ### 4.3 手机号绑定
@@ -256,7 +254,7 @@ GET /micro-wxapp/customer/wx/media/download/{mediaId}
 |------|------|
 | `micro-fileos` | 文件签名（头像 URL 签名：`fileosSignApi.sign()`） |
 | `weixin-java-miniapp` | WxJava 微信小程序 SDK（`WxMaService`、`WxMaMessageRouter` 等） |
-| `iam-sdk` | 认证 SDK（`SessionHelper`、`JwtUtil`、`IamSdkConfig`、`LoginResponse`） |
+| `iam-contract-api` | IAM 契约层（`PrincipalContext`、`SsoFacadeContract`、`LoginResp`） |
 | `sh-mybatis` | ORM（`BaseMapper`、`BaseService`、`PageQuery`） |
 | `sh-redis` | Redis（`RedisIdGenerator` 生成用户编码前缀 `wxapp_`） |
 | `sh-web` | Web 工具（`IpHelper` 获取登录 IP） |
@@ -265,7 +263,7 @@ GET /micro-wxapp/customer/wx/media/download/{mediaId}
 
 ```
 micro-fileos ← micro-wxapp (头像 URL 签名)
-iam-sdk      ← micro-wxapp (JWT 生成、Session 管理、用户上下文)
+iam-contract-api      ← micro-wxapp (JWT 生成、Session 管理、用户上下文)
 ```
 
 ---

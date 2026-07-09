@@ -2,6 +2,7 @@ package com.wkclz.micro.material.rest;
 
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.base.R;
+import com.wkclz.iam.contract.context.PrincipalContext;
 import com.wkclz.micro.material.bean.entity.MdmMaterial;
 import com.wkclz.micro.material.bean.req.MaterialPageReq;
 import com.wkclz.micro.material.bean.resp.MaterialDistributionResp;
@@ -41,7 +42,7 @@ public class MaterialStatsRest {
     @GetMapping(Route.STATS_DISTRIBUTION)
     public R<List<MaterialDistributionResp>> distribution() {
         MdmMaterial param = new MdmMaterial();
-        param.setTenantCode(com.wkclz.iam.sdk.helper.SessionHelper.getTenantCode());
+        param.setTenantCode(PrincipalContext.getTenantCode());
         List<MdmMaterial> all = mdmMaterialService.selectByEntity(param);
         Map<String, Long> typeCount = all.stream()
                 .filter(m -> m.getMaterialType() != null)

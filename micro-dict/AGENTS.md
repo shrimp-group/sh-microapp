@@ -244,7 +244,7 @@ Body: [上一步返回的 JSON 数组]
 
 ```xml
 <!-- pom.xml -->
-<dependency>com.wkclz.iam:iam-sdk</dependency>       <!-- SessionHelper -->
+<dependency>com.wkclz.iam:iam-contract-api</dependency>       <!-- PrincipalContext -->
 <dependency>com.wkclz.framework:sh-mybatis</dependency>  <!-- BaseService/BaseMapper -->
 <dependency>com.wkclz.framework:sh-redis</dependency>    <!-- Redis Pub/Sub -->
 ```
@@ -252,7 +252,7 @@ Body: [上一步返回的 JSON 数组]
 - `sh-core`: BaseEntity、ValidationException、R 返回对象
 - `sh-mybatis`: BaseService、BaseMapper、PageQuery
 - `sh-redis`: StringRedisTemplate、RedisMessageListenerContainer
-- `iam-sdk`: SessionHelper（paste 操作获取当前用户）
+- `iam-contract-api`: PrincipalContext（paste 操作获取当前用户）
 
 ---
 

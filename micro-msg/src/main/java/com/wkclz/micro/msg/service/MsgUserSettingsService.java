@@ -1,6 +1,6 @@
 package com.wkclz.micro.msg.service;
 
-import com.wkclz.iam.sdk.helper.SessionHelper;
+import com.wkclz.iam.contract.context.PrincipalContext;
 import com.wkclz.micro.msg.mapper.MsgUserSettingsMapper;
 import com.wkclz.micro.msg.bean.entity.MsgUserSettings;
 import com.wkclz.mybatis.service.BaseService;
@@ -27,7 +27,7 @@ public class MsgUserSettingsService extends BaseService<MsgUserSettings, MsgUser
     @Transactional(rollbackFor = Exception.class)
     public MsgUserSettings getUserSettings(String userCode) {
         if (StringUtils.isBlank(userCode)) {
-            userCode = SessionHelper.getUserCode();
+            userCode = PrincipalContext.getUserCode();
         }
         MsgUserSettings settings = new MsgUserSettings();
         settings.setUserCode(userCode);

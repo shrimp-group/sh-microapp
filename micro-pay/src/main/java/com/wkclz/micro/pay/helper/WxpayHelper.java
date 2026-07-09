@@ -23,7 +23,7 @@ import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
 import com.wkclz.core.base.R;
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.iam.sdk.helper.SessionHelper;
+import com.wkclz.iam.contract.context.PrincipalContext;
 import com.wkclz.micro.pay.bean.dto.OrderPayResult;
 import com.wkclz.micro.pay.bean.dto.PayOrderDto;
 import com.wkclz.micro.pay.bean.entity.PayOrder;
@@ -66,7 +66,7 @@ public class WxpayHelper {
     private WxpayClientCache wxpayClientCache;
 
     public PayOrderDto pay(PayOrder payOrder, HttpServletRequest req, HttpServletResponse rep) {
-        String openId = SessionHelper.getUserSession().getAuthIdentifier();
+        String openId = PrincipalContext.getAuthIdentifier();
         if (StringUtils.isBlank(openId)) {
             throw ValidationException.of("非微信登录，无法支付");
         }

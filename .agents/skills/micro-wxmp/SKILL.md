@@ -208,9 +208,8 @@ wxmpUserService.userUnSbscribe(openId); // subscribeStatus=0
 WxOAuth2AccessToken accessToken = mpService.getOAuth2Service().getAccessToken(code);
 WxOAuth2UserInfo user = mpService.getOAuth2Service().getUserInfo(accessToken, "zh_CN");
 WxmpUser u = wxmpUserService.initUser(u); // 初始化/更新用户
-// 生成 JWT + 缓存 UserSession 到 Redis
-String jwtToken = JwtUtil.generateToken(jwt, iamSdkConfig.getJwtSecretKey());
-redisTemplate.opsForValue().set(tokenRedisKey, JSON.toJSONString(us));
+// 调用 SsoFacadeContract 远程创建会话
+SsoFacadeContract.login(user.getUserCode(), user.getNickname(), "WXMP");
 // 记录登录日志
 WxmpLoginLog log = new WxmpLoginLog();
 log.setUserCode(user.getUserCode());
@@ -285,9 +284,9 @@ if (StringUtils.isBlank(entity.getAppSecret()) || "******".equals(entity.getAppS
 |---|---|
 | `micro-fileos` | 文件签名 API（头像 URL 签名） |
 | `weixin-java-mp` | WxJava 微信公众号 SDK |
-| `iam-sdk` | IAM 认证 SDK（JWT 生成/验证、UserSession） |
+| `iam-contract-api` | IAM 认证契约（SsoFacadeContract 远程创建会话、PrincipalContext） |
 | `sh-mybatis` | BaseMapper / BaseService / PageQuery |
-| `sh-redis` | RedisIdGenerator（用户编码生成）、RedisTemplate（JWT 缓存） |
+| `sh-redis` | RedisIdGenerator（用户编码生成） |
 
 ### 框架依赖传递
 

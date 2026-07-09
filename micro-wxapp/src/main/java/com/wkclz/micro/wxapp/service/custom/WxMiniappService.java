@@ -5,16 +5,15 @@ import cn.binarywang.wx.miniapp.bean.WxMaJscode2SessionResult;
 import cn.binarywang.wx.miniapp.bean.WxMaPhoneNumberInfo;
 import cn.binarywang.wx.miniapp.bean.WxMaUserInfo;
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.iam.sdk.bean.resp.LoginResp;
-import com.wkclz.iam.sdk.facade.SsoFacade;
-import com.wkclz.iam.sdk.helper.SessionHelper;
+import com.wkclz.iam.contract.bean.resp.LoginResp;
+import com.wkclz.iam.contract.facade.SsoFacadeContract;
+import com.wkclz.iam.contract.context.PrincipalContext;
 import com.wkclz.micro.fileos.api.FileosSignApi;
 import com.wkclz.micro.wxapp.bean.entity.WxappLoginLog;
 import com.wkclz.micro.wxapp.bean.entity.WxappUser;
 import com.wkclz.micro.wxapp.bean.req.WxMaLoginReq;
 import com.wkclz.micro.wxapp.bean.req.WxMaMobileBindReq;
 import com.wkclz.micro.wxapp.bean.req.WxMaPhoneReq;
-import com.wkclz.micro.wxapp.bean.resp.WxMaLoginResp;
 import com.wkclz.micro.wxapp.bean.resp.WxMaUserInfoResp;
 import com.wkclz.micro.wxapp.config.WxMaConfiguration;
 import com.wkclz.micro.wxapp.mapper.WxappLoginLogMapper;
@@ -39,7 +38,7 @@ import java.util.List;
 @AllArgsConstructor
 public class WxMiniappService {
 
-    private final SsoFacade ssoFacade;;
+    private final SsoFacadeContract ssoFacadeContract;
     private final FileosSignApi fileosSignApi;
     private final WxMaConfiguration configuration;
     private final WxappUserMapper wxappUserMapper;
@@ -49,7 +48,7 @@ public class WxMiniappService {
     private final WxappLoginService wxappLoginService;
 
     @Transactional(rollbackFor = Exception.class)
-    public WxMaLoginResp miniappLogin(WxMaLoginReq req, HttpServletRequest httpReq) {
+    public LoginResp miniappLogin(WxMaLoginReq req, HttpServletRequest httpReq) {
         boolean withUserInfo = StringUtils.isNotBlank(req.getEncryptedData())
             && StringUtils.isNotBlank(req.getIv())
             && StringUtils.isNotBlank(req.getRawData())
@@ -156,14 +155,8 @@ public class WxMiniappService {
         wxappLoginLogMapper.insert(loginLog);
 
         // 基础信息验证完了后，进入统一的创建session的过程
-        ssoFacade.logout();
-        LoginResp loginResponse = wxappLoginService.login(user);
-
-        WxMaLoginResp resp = new WxMaLoginResp();
-        resp.setLoginStatus(loginResponse.getLoginStatus());
-        resp.setLoginMessage(loginResponse.getLoginMessage());
-        resp.setToken(loginResponse.getToken());
-        return resp;
+        ssoFacadeContract.logout();
+        return wxappLoginService.login(user);
     }
 
     public WxMaUserInfoResp miniappUserInfoResp() {
@@ -182,13 +175,13 @@ public class WxMiniappService {
     }
 
     public WxappUser miniappUserInfo() {
-        String userCode = SessionHelper.getUserCode();
+        String userCode = PrincipalContext.getUserCode();
         return wxappUserMapper.getWxappUserByUserCode(userCode);
     }
 
     @Transactional(rollbackFor = Exception.class)
     public boolean miniappUserinfoUpdate(WxappUser wu) {
-        String userCode = SessionHelper.getUserCode();
+        String userCode = PrincipalContext.getUserCode();
 
         WxappUser user = wxappUserMapper.getWxappUserByUserCode(userCode);
         if (user == null) {
@@ -226,7 +219,7 @@ public class WxMiniappService {
     }
 
     public void miniappMobileBind(WxMaMobileBindReq req) {
-        String userCode = SessionHelper.getUserCode();
+        String userCode = PrincipalContext.getUserCode();
 
         WxMaService wxMaService = configuration.getMaService(req.getAppId());
         WxMaPhoneNumberInfo phoneNumberInfo;

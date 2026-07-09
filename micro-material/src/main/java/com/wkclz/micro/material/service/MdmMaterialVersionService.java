@@ -1,6 +1,6 @@
 package com.wkclz.micro.material.service;
 
-import com.wkclz.iam.sdk.helper.SessionHelper;
+import com.wkclz.iam.contract.context.PrincipalContext;
 import com.wkclz.micro.material.mapper.MdmMaterialVersionMapper;
 import com.wkclz.micro.material.bean.entity.MdmMaterialVersion;
 import com.wkclz.mybatis.service.BaseService;
@@ -16,6 +16,6 @@ public class MdmMaterialVersionService extends BaseService<MdmMaterialVersion, M
     private MdmMaterialVersionMapper mapper;
 
     public List<MdmMaterialVersion> listByMaterialCode(String materialCode) {
-        return mapper.getByMaterialCode(materialCode, SessionHelper.getTenantCode());
+        return mapper.getByMaterialCode(materialCode, PrincipalContext.getTenantCode());
     }
 }

@@ -1,6 +1,6 @@
 package com.wkclz.micro.material.service;
 
-import com.wkclz.iam.sdk.helper.SessionHelper;
+import com.wkclz.iam.contract.context.PrincipalContext;
 import com.wkclz.micro.material.mapper.MdmMaterialTransferLogMapper;
 import com.wkclz.micro.material.mapper.MdmMaterialMapper;
 import com.wkclz.micro.material.bean.entity.MdmMaterial;
@@ -23,8 +23,8 @@ public class MdmMaterialTransferLogService extends BaseService<MdmMaterialTransf
 
     @Transactional(rollbackFor = Exception.class)
     public Integer transfer(List<Long> ids, String toUserCode) {
-        String userCode = SessionHelper.getUserCode();
-        String tenantCode = SessionHelper.getTenantCode();
+        String userCode = PrincipalContext.getUserCode();
+        String tenantCode = PrincipalContext.getTenantCode();
 
         List<MdmMaterial> materials = materialMapper.selectByIds(ids);
         if (CollectionUtils.isEmpty(materials)) {
@@ -53,6 +53,6 @@ public class MdmMaterialTransferLogService extends BaseService<MdmMaterialTransf
     }
 
     public List<MdmMaterialTransferLog> listByMaterialCode(String materialCode) {
-        return mapper.getByMaterialCode(materialCode, SessionHelper.getTenantCode());
+        return mapper.getByMaterialCode(materialCode, PrincipalContext.getTenantCode());
     }
 }

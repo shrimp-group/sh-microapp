@@ -267,8 +267,9 @@ public class K8sXxxImpl implements K8sApi {
 | groupId | artifactId | 说明 |
 |---|---|---|
 | `io.kubernetes` | `client-java` | Kubernetes Java 客户端（版本由 sh-bom 管理） |
-| `com.wkclz.iam` | `iam-sdk` | IAM 认证 SDK |
 | `com.wkclz.framework` | `sh-mybatis` | MyBatis 基础框架（BaseMapper/BaseService） |
+
+> 此模块不依赖 IAM 契约层。
 
 ### 框架模块依赖
 

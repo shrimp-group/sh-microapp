@@ -177,7 +177,7 @@ dto.setMaskRuleRegular("(\\d{3})\\d{4}(\\d{4})");
 | Redis 连接 | `spring.data.redis.*` | MaskCache 使用 StringRedisTemplate 同步缓存变更 |
 | MyBatis 配置 | `sh-mybatis` | BaseMapper 自动配置 |
 | Jackson ObjectMapper | `spring-boot-starter-jackson` | MaskResponseAdvice 使用默认 ObjectMapper 序列化 |
-| IAM SDK | `iam-sdk` | SessionHelper 获取 userCode 用于缓存 Key |
+| IAM SDK | `iam-contract-api` | PrincipalContext 获取 userCode 用于缓存 Key |
 | AntPathMatcher | `sh-web RequestHelper` | URI 模式匹配 |
 
 缓存参数（硬编码）：
@@ -202,7 +202,7 @@ dto.setMaskRuleRegular("(\\d{3})\\d{4}(\\d{4})");
 | `sh-mybatis` | BaseMapper、BaseService、PageQuery |
 | `sh-redis` | RedisIdGenerator（生成 maskRuleCode）、StringRedisTemplate |
 | `sh-web` | RequestHelper.match（AntPathMatcher）、RequestHelper |
-| `iam-sdk` | SessionHelper.getUserCode（获取当前用户标识） |
+| `iam-contract-api` | PrincipalContext.getUserCode（获取当前用户标识） |
 | `spring-boot-starter-jackson` | ObjectMapper 序列化响应 |
 
 ### 模块间依赖

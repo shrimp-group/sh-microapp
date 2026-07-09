@@ -1,7 +1,7 @@
 package com.wkclz.micro.material.service;
 
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.iam.sdk.helper.SessionHelper;
+import com.wkclz.iam.contract.context.PrincipalContext;
 import com.wkclz.micro.material.cache.MaterialGroupCache;
 import com.wkclz.micro.material.mapper.MdmMaterialGroupMapper;
 import com.wkclz.micro.material.mapper.MdmMaterialMapper;
@@ -32,21 +32,21 @@ public class MdmMaterialGroupService extends BaseService<MdmMaterialGroup, MdmMa
     private RedisIdGenerator redisIdGenerator;
 
     public List<MdmMaterialGroup> getTree() {
-        String tenantCode = SessionHelper.getTenantCode();
-        String userCode = SessionHelper.getUserCode();
+        String tenantCode = PrincipalContext.getTenantCode();
+        String userCode = PrincipalContext.getUserCode();
         return mapper.getGroupTree(tenantCode, userCode);
     }
 
     public List<MdmMaterialGroup> getPickerTree() {
-        String tenantCode = SessionHelper.getTenantCode();
-        String userCode = SessionHelper.getUserCode();
+        String tenantCode = PrincipalContext.getTenantCode();
+        String userCode = PrincipalContext.getUserCode();
         return mapper.getPickerGroupTree(tenantCode, userCode);
     }
 
     @Transactional(rollbackFor = Exception.class)
     public MdmMaterialGroup create(MdmMaterialGroup entity) {
-        String tenantCode = SessionHelper.getTenantCode();
-        String userCode = SessionHelper.getUserCode();
+        String tenantCode = PrincipalContext.getTenantCode();
+        String userCode = PrincipalContext.getUserCode();
 
         if (StringUtils.isBlank(entity.getParentCode()) || "0".equals(entity.getParentCode())) {
             entity.setParentCode("0");
@@ -81,7 +81,7 @@ public class MdmMaterialGroupService extends BaseService<MdmMaterialGroup, MdmMa
             throw ValidationException.of("分组不存在");
         }
 
-        List<MdmMaterialGroup> children = mapper.getChildGroupCodes(existing.getGroupCode(), SessionHelper.getTenantCode());
+        List<MdmMaterialGroup> children = mapper.getChildGroupCodes(existing.getGroupCode(), PrincipalContext.getTenantCode());
         if (CollectionUtils.isNotEmpty(children)) {
             throw ValidationException.of("分组下存在子分组，无法删除");
         }
@@ -149,7 +149,7 @@ public class MdmMaterialGroupService extends BaseService<MdmMaterialGroup, MdmMa
     }
 
     private int getSubtreeDepth(String groupCode) {
-        List<MdmMaterialGroup> children = mapper.getChildGroupCodes(groupCode, SessionHelper.getTenantCode());
+        List<MdmMaterialGroup> children = mapper.getChildGroupCodes(groupCode, PrincipalContext.getTenantCode());
         if (CollectionUtils.isEmpty(children)) {
             return 1;
         }
@@ -161,7 +161,7 @@ public class MdmMaterialGroupService extends BaseService<MdmMaterialGroup, MdmMa
     }
 
     private MdmMaterialGroup findGroupByCode(String groupCode) {
-        String tenantCode = SessionHelper.getTenantCode();
+        String tenantCode = PrincipalContext.getTenantCode();
         MdmMaterialGroup param = new MdmMaterialGroup();
         param.setGroupCode(groupCode);
         param.setTenantCode(tenantCode);

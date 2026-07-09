@@ -140,7 +140,8 @@ Body: {"templateContext":"<html><body><span th:text=\"${name}\"></span></body></
 |------|------|
 | `sh-mybatis` | BaseMapper / BaseService / PageQuery |
 | `sh-redis` | StringRedisTemplate（缓存同步） |
-| `iam-sdk` | IAM 认证集成 |
+
+> 此模块不依赖 IAM 契约层。
 
 ### 第三方依赖
 

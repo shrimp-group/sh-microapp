@@ -297,7 +297,6 @@ List<MdmFormRuleFieldValidatorDto> validators = service.getFormRuleFieldValidato
 
 | 依赖 | 说明 |
 |------|------|
-| `iam-sdk` | IAM SDK（权限控制） |
 | `sh-mybatis` | BaseMapper / BaseService / PageQuery / TableInfoService |
 | `sh-redis` | StringRedisTemplate / RedisIdGenerator |
 | `spring-boot-starter-aop` | AOP 支持 |

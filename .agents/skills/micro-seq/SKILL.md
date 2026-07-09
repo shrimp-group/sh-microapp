@@ -170,10 +170,11 @@ POST /micro-seq/sequence/update
 
 ### Maven 依赖
 
-| groupId | artifactId | 说明 |
-|---|---|---|
-| `com.wkclz.iam` | `iam-sdk` | IAM 认证 SDK |
+| 依赖 | 说明 |
+|---|---|
 | `com.wkclz.framework` | `sh-mybatis` | MyBatis 基础框架 (BaseMapper/BaseService/PageQuery) |
+
+> 此模块不依赖 IAM 契约层，序列号生成通过数据库 SERIALIZABLE 隔离级别 + synchronized + 乐观锁保证并发安全。
 
 ### 模块间依赖
 

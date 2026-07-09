@@ -2,7 +2,7 @@ package com.wkclz.micro.pay.service;
 
 import com.wkclz.core.enums.ResultCode;
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.iam.sdk.helper.SessionHelper;
+import com.wkclz.iam.contract.context.PrincipalContext;
 import com.wkclz.micro.pay.bean.entity.PayOrder;
 import com.wkclz.micro.pay.mapper.PayOrderMapper;
 import com.wkclz.mybatis.service.BaseService;
@@ -26,7 +26,7 @@ public class PayOrderService extends BaseService<PayOrder, PayOrderMapper> {
     }
 
     public PayOrder getPayOrderStatus2Custom(PayOrder entity) {
-        entity.setUserCode(SessionHelper.getUserCode());
+        entity.setUserCode(PrincipalContext.getUserCode());
 
         entity = mapper.getOrderStatus(entity);
         if (entity == null) {

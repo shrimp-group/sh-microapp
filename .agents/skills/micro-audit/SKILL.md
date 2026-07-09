@@ -230,7 +230,8 @@ CREATE TABLE mdm_change_log (
 |------|------|
 | `sh-mybatis` | BaseMapper、BaseService、PageQuery、TableInfoService |
 | `sh-redis` | RedisIdGenerator（批次号生成） |
-| `iam-sdk` | IAM SDK |
+
+> 此模块不依赖 IAM 契约层。
 
 ### 框架组件使用
 

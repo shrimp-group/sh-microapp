@@ -181,7 +181,7 @@ com.wkclz.iam.contract.defaults.config.IamContractAutoConfig
 
 ### 设计要点
 
-- **采用 `@Value` 注入**（对齐现有 IamSdkConfig 风格，非 `@ConfigurationProperties`）
+- **采用 `@Value` 注入**（非 `@ConfigurationProperties`）
 - **`@PostConstruct` 同步到 `ContractSettings`**：将 7 个配置项同步到 `ContractSettings` 静态持有器，供契约接口的 default 方法访问
 
 ### @PostConstruct 初始化
@@ -538,7 +538,7 @@ sh:
 
 1. **默认实现不含 JWT/Redis 依赖**：`iam-contract-default` 模块仅依赖 `iam-contract-api` + spring-boot-autoconfigure + spring-boot-starter-web，不引入 jjwt / sh-redis 等实现依赖。业务方必须自行实现契约或引入额外依赖（如示例 1 需要 jjwt + sh-redis）
 2. **DefaultAuthFilter order = HIGHEST_PRECEDENCE + 10**：业务方其他过滤器（如 CORS、日志）注意顺序，必要时调整 `order` 或使用 `@Order` 注解
-3. **ContractConfig 用 @Value 注入**（非 `@ConfigurationProperties`）：对齐现有 IamSdkConfig 风格，配置项以 `iam.contract.*` 为前缀（注意不是 `sh.iam.contract.*`，`sh.iam.contract.enabled` 是控制项）
+3. **ContractConfig 用 @Value 注入**（非 `@ConfigurationProperties`）：配置项以 `iam.contract.*` 为前缀（注意不是 `sh.iam.contract.*`，`sh.iam.contract.enabled` 是控制项）
 4. **替换默认实现后，默认 Bean 不会注册**（`@ConditionalOnMissingBean`）：业务方声明同类型 `@Component` Bean 即可让默认实现失效，无需额外配置
 5. **public-path-pattern 默认 `/*/public/**`**：业务方需自行保证公开路径符合此模式，或修改配置项以匹配实际路径（如 `/api/public/**`）
 6. **ContractSettings 必须在启动时初始化**：`ContractConfig.@PostConstruct` 将配置同步到 `ContractSettings` 静态持有器，契约接口的 default 方法依赖此初始化。若禁用整个自动配置（`sh.iam.contract.enabled=false`），业务方需自行初始化 `ContractSettings`

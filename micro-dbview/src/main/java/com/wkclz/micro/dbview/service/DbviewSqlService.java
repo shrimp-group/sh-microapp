@@ -2,7 +2,7 @@ package com.wkclz.micro.dbview.service;
 
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.core.user.UserContext;
+import com.wkclz.iam.contract.context.PrincipalContext;
 import com.wkclz.dynamicdb.DynamicDataSourceHolder;
 import com.wkclz.micro.dbview.bean.dto.SqlExecuteRequest;
 import com.wkclz.micro.dbview.bean.dto.SqlResult;
@@ -73,7 +73,7 @@ public class DbviewSqlService {
         info.setPassword(password);
 
         long startTime = System.currentTimeMillis();
-        String userCode = UserContext.getUserCode();
+        String userCode = PrincipalContext.getUserCode();
 
         try {
             SqlResult result = CompletableFuture.supplyAsync(() -> {

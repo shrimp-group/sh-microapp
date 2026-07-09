@@ -19,7 +19,7 @@ description: "积分账户模块。提供积分钱包、发放、试算、消费
 - 实现对账（消费流水 vs COMPLETED 动作记录一致性核对）
 - 排查积分流程问题（幂等冲突、用户锁死锁、异步扣减失败、PARTIAL 异常等）
 - 实现管理端查询（钱包/获取流水/消费流水/扣减明细 4 类接口）
-- 实现 C 端查询（基于登录态 SessionHelper 的钱包与流水分页）
+- 实现 C 端查询（基于登录态 PrincipalContext 的钱包与流水分页）
 
 ---
 
@@ -384,7 +384,7 @@ public R<PointsIssueResp> adminIssue(@Valid @RequestBody PointsIssueReq req) {
     // 1. 强制 pointSourceType=ADMIN_ISSUE（REST 层控制，忽略入参传入值）
     req.setPointSourceType(PointsSourceType.ADMIN_ISSUE.name());
     // 2. 租户编码取管理员登录态（不允许跨租户发放）
-    req.setTenantCode(SessionHelper.getTenantCode());
+    req.setTenantCode(PrincipalContext.getTenantCode());
     log.info("管理员手动发放积分, tenantCode={}, userCode={}, points={}, sourceNo={}", ...);
     // 3. 复用 PointsIssueService.issuePoints，与业务方发放走同一服务（见 §4.1）
     //    幂等 bizType=ADMIN_ISSUE（与 ISSUANCE 区分，避免业务方与管理员同时发放互相冲突）
@@ -397,7 +397,7 @@ public R<PointsIssueResp> adminIssue(@Valid @RequestBody PointsIssueReq req) {
 - 强制 `pointSourceType=ADMIN_ISSUE`（REST 层覆盖入参，防止业务方误传 `ISSUANCE`）
 - 复用 `PointsIssueService.issuePoints`，与业务方发放走同一服务（见 §4.1）
 - 幂等检测：`bizType=ADMIN_ISSUE`，与 `ISSUANCE` 区分（避免业务方与管理员同时发放互相冲突）
-- 租户编码取管理员登录态（`SessionHelper.getTenantCode`），不允许跨租户发放
+- 租户编码取管理员登录态（`PrincipalContext.getTenantCode`），不允许跨租户发放
 - `createBy` 由框架 `MyBatisUpdateInterceptor` 自动填充管理员账号
 - 流水号前缀 `PI`，由 `RedisIdGenerator.generateIdWithPrefix` 生成
 - 不在 REST 层获取用户锁，由 `PointsIssueService` 内部 `PointsLockHelper.executeWithUserLock` 统一管理
@@ -421,7 +421,7 @@ public R<PointsIssueResp> adminIssue(@Valid @RequestBody PointsIssueReq req) {
 
 ### 4.10 C 端查询
 
-C 端查询接口基于登录态 userCode（`SessionHelper.getTenantCode/getUserCode`），均为**只读**，无幂等检测、无用户锁、无事务。
+C 端查询接口基于登录态 userCode（`PrincipalContext.getTenantCode/getUserCode`），均为**只读**，无幂等检测、无用户锁、无事务。
 
 接口路径加 `/custom` 前缀（与 micro-pay 的 `CustomPayOrderRest` 约定对齐）：完整路径形如 `/micro-points/custom/wallet`。
 
@@ -429,7 +429,7 @@ C 端查询接口基于登录态 userCode（`SessionHelper.getTenantCode/getUser
 
 | 接口 | 路径 | 入参 | 实现 |
 |------|------|------|------|
-| 钱包查询 | `GET /micro-points/custom/wallet` | 无 | `SessionHelper.getTenantCode/getUserCode` → `PointsWalletService.getOrCreateWallet(tenantCode, userCode)` → 转换为 `PointsWalletResp`（available/frozen/totalEarned） |
+| 钱包查询 | `GET /micro-points/custom/wallet` | 无 | `PrincipalContext.getTenantCode/getUserCode` → `PointsWalletService.getOrCreateWallet(tenantCode, userCode)` → 转换为 `PointsWalletResp`（available/frozen/totalEarned） |
 | 获取流水分页 | `GET /micro-points/custom/earn/page` | `PointsEarnPageReq`（仅分页参数） | `BeanUtil.cp(req, PointsEarnRecord.class)` + 强制覆盖 `tenantCode/userCode` 为登录态 → `PageQuery.page(query, earnMapper::selectByEntity)` → `convert(PointsEarnRecordResp.class)` |
 | 消费流水分页 | `GET /micro-points/custom/consume/page` | `PointsConsumePageReq`（仅分页参数） | `BeanUtil.cp(req, PointsConsumeRecord.class)` + 强制覆盖 `tenantCode/userCode` 为登录态 → `PageQuery.page(query, consumeMapper::selectByEntity)` → `convert(PointsConsumeRecordResp.class)` |
 
@@ -559,7 +559,7 @@ public PointsConsumeResp releaseConsume(String orderNo, String reason) {
 | `com.wkclz.framework` | `sh-spring` | SpringContextHolder |
 | `com.wkclz.framework` | `sh-xxljob` | @XxlJob 注解 |
 | `com.wkclz.framework` | `sh-web` | ErrorHandler、RestHelper |
-| `com.wkclz.iam` | `iam-sdk` | SessionHelper（获取 tenantCode/userCode） |
+| `com.wkclz.iam` | `iam-contract-api` | PrincipalContext（获取 tenantCode/userCode） |
 
 ### 模块间依赖
 

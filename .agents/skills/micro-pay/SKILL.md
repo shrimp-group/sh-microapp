@@ -390,7 +390,7 @@ public String wxRefundNotify(WxPayRefundNotifyV3Result refundNotifyResult) {
 |------|------|
 | `sh-mybatis` | BaseMapper, BaseService, PageQuery |
 | `sh-redis` | RedisIdGenerator(支付流水号生成) |
-| `iam-sdk` | SessionHelper(获取tenantCode/userCode) |
+| `iam-contract-api` | PrincipalContext(获取tenantCode/userCode) |
 
 ### 模块间依赖（硬依赖）
 

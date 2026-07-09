@@ -1,7 +1,7 @@
 package com.wkclz.micro.fileos.service;
 
 import com.wkclz.core.base.PageData;
-import com.wkclz.core.user.UserContext;
+import com.wkclz.iam.contract.context.PrincipalContext;
 import com.wkclz.micro.fileos.bean.entity.MdmFileosBucket;
 import com.wkclz.micro.fileos.helper.BucketCache;
 import com.wkclz.micro.fileos.mapper.MdmFileosBucketMapper;
@@ -34,7 +34,7 @@ public class MdmFileosBucketService extends BaseService<MdmFileosBucket, MdmFile
     public void setDefaultFlag(MdmFileosBucket entity) {
         String tenantCode = entity.getTenantCode();
         if (tenantCode == null) {
-            tenantCode = UserContext.getTenantCode();
+            tenantCode = PrincipalContext.getTenantCode();
         }
 
         MdmFileosBucket query = new MdmFileosBucket();

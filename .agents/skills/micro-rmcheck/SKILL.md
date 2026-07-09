@@ -287,7 +287,7 @@ CREATE TABLE rm_check_rule_item (
 |------|------|
 | `sh-mybatis` | BaseMapper、BaseService、PageQuery、TableInfoService、ShMyBatisConfig |
 | `sh-redis` | RedisIdGenerator（规则编码生成） |
-| `iam-sdk` | IAM SDK |
+> 此模块不依赖 IAM 契约层。
 
 ### 框架组件使用
 

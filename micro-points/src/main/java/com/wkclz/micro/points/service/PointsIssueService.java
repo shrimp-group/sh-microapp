@@ -2,7 +2,7 @@ package com.wkclz.micro.points.service;
 
 import com.alibaba.fastjson2.JSON;
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.iam.sdk.helper.SessionHelper;
+import com.wkclz.iam.contract.context.PrincipalContext;
 import com.wkclz.micro.points.PointsConstants;
 import com.wkclz.micro.points.bean.entity.PointsEarnRecord;
 import com.wkclz.micro.points.bean.entity.PointsWallet;
@@ -191,7 +191,7 @@ public class PointsIssueService {
         if (tenantCode != null && !tenantCode.isBlank()) {
             return tenantCode;
         }
-        return SessionHelper.getTenantCode();
+        return PrincipalContext.getTenantCode();
     }
 
 }

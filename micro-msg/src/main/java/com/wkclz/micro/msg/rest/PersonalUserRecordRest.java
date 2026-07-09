@@ -2,7 +2,7 @@ package com.wkclz.micro.msg.rest;
 
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.base.R;
-import com.wkclz.iam.sdk.helper.SessionHelper;
+import com.wkclz.iam.contract.context.PrincipalContext;
 import com.wkclz.micro.msg.bean.dto.MsgUserRecordDto;
 import com.wkclz.micro.msg.bean.entity.MsgUserRecord;
 import com.wkclz.micro.msg.bean.req.MsgUserRecordListReq;
@@ -41,7 +41,7 @@ public class PersonalUserRecordRest {
     @GetMapping(Route.PERSONAL_MSG_LIST)
     public R<List<MsgUserRecordResp>> personalMsgList(MsgUserRecordListReq req) {
         MsgUserRecordDto dto = BeanUtil.cp(req, MsgUserRecordDto.class);
-        dto.setUserCode(SessionHelper.getUserCode());
+        dto.setUserCode(PrincipalContext.getUserCode());
         if (dto.getSize() == null) {
             dto.setSize(100L);
         }
@@ -54,7 +54,7 @@ public class PersonalUserRecordRest {
     @GetMapping(Route.PERSONAL_MSG_PAGE)
     public R<PageData<MsgUserRecordPageResp>> personalMsgPage(MsgUserRecordPageReq req) {
         MsgUserRecordDto dto = BeanUtil.cp(req, MsgUserRecordDto.class);
-        dto.setUserCode(SessionHelper.getUserCode());
+        dto.setUserCode(PrincipalContext.getUserCode());
         PageData<MsgUserRecordDto> page = msgUserRecordService.getPersonalRecordPage(dto);
         PageData<MsgUserRecordPageResp> newPage = page.convert(MsgUserRecordPageResp.class);
         return R.ok(newPage);

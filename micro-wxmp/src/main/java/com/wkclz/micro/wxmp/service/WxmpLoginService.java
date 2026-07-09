@@ -1,11 +1,9 @@
 package com.wkclz.micro.wxmp.service;
 
-import com.alibaba.fastjson2.JSON;
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.iam.sdk.bean.UserJwt;
-import com.wkclz.iam.sdk.bean.UserSession;
-import com.wkclz.iam.sdk.config.IamSdkConfig;
-import com.wkclz.iam.sdk.util.JwtUtil;
+import com.wkclz.iam.contract.bean.req.SessionCreateReq;
+import com.wkclz.iam.contract.bean.resp.LoginResp;
+import com.wkclz.iam.contract.facade.SsoFacadeContract;
 import com.wkclz.micro.wxmp.config.WxMpConfiguration;
 import com.wkclz.micro.wxmp.bean.entity.WxmpLoginLog;
 import com.wkclz.micro.wxmp.bean.entity.WxmpUser;
@@ -19,7 +17,6 @@ import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.mp.api.WxMpService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -27,15 +24,13 @@ import org.springframework.stereotype.Service;
 public class WxmpLoginService {
 
     @Autowired
-    private IamSdkConfig iamSdkConfig;
+    private SsoFacadeContract ssoFacadeContract;
     @Autowired
     private WxmpUserService wxmpUserService;
     @Autowired
     private WxMpConfiguration wxMpConfiguration;
     @Autowired
     private WxmpLoginLogService wxmpLoginLogService;
-    @Autowired
-    private RedisTemplate<String, String> redisTemplate;
 
     /**
      * 微信公众号OAuth2登录
@@ -76,22 +71,19 @@ public class WxmpLoginService {
         user = wxmpUserService.initUser(user);
         log.info("微信用户登录, userCode: {}, openId: {}", user.getUserCode(), user.getOpenId());
 
-        // 生成JWT令牌
-        UserJwt jwt = new UserJwt();
-        jwt.setUserCode(user.getUserCode());
-        jwt.setUsername(user.getUserCode());
-        jwt.setNickname(user.getNickname());
-        jwt.setAvatar(user.getAvatar());
-        String jwtToken = JwtUtil.generateToken(jwt, iamSdkConfig.getJwtSecretKey());
+        // 通过 SsoFacadeContract 远程创建会话
+        SessionCreateReq sessionCreateReq = new SessionCreateReq();
+        sessionCreateReq.setUserCode(user.getUserCode());
+        sessionCreateReq.setUsername(user.getUserCode());
+        sessionCreateReq.setNickname(user.getNickname());
+        sessionCreateReq.setAvatar(user.getAvatar());
+        sessionCreateReq.setAuthType("WXMP");
+        sessionCreateReq.setAuthIdentifier(user.getOpenId());
+        sessionCreateReq.setClientIp(IpHelper.getOriginIp(req));
+        log.info("微信用户 {} 认证成功，调用 SsoFacadeContract 创建会话", user.getOpenId());
 
-        // 缓存用户会话到Redis
-        UserSession us = new UserSession();
-        us.setUserCode(user.getUserCode());
-        us.setUsername(user.getUserCode());
-        us.setNickname(user.getNickname());
-        us.setAuthType("WXMP");
-        String tokenRedisKey = JwtUtil.getTokenRedisKey(jwtToken, jwt.getUsername());
-        redisTemplate.opsForValue().set(tokenRedisKey, JSON.toJSONString(us));
+        LoginResp loginResp = ssoFacadeContract.login(sessionCreateReq);
+        String jwtToken = loginResp.getToken();
 
         // 记录登录日志
         WxmpLoginLog loginLog = new WxmpLoginLog();

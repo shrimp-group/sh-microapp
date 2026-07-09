@@ -1,7 +1,7 @@
 package com.wkclz.micro.fileos.api.impl;
 
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.core.user.UserContext;
+import com.wkclz.iam.contract.context.PrincipalContext;
 import com.wkclz.micro.fileos.api.FileosSignApi;
 import com.wkclz.micro.fileos.api.FileosUploadApi;
 import com.wkclz.micro.fileos.bean.entity.MdmFileosBucket;
@@ -78,7 +78,7 @@ public class FileosUploadApiImpl extends AbstractFileosApi implements FileosUplo
         String requestFileName = request != null ? request.getFileName() : null;
 
         MdmFileosBucket bucket = getBucket(bucketName);
-        String tenantCode = UserContext.getTenantCode();
+        String tenantCode = PrincipalContext.getTenantCode();
 
         String effectiveFileName = StringUtils.isNotBlank(requestFileName) ? requestFileName : file.getOriginalFilename();
 
@@ -146,7 +146,7 @@ public class FileosUploadApiImpl extends AbstractFileosApi implements FileosUplo
         String category = getCategory(request.getCategory());
         MdmFileosBucket bucket = getBucket(request.getBucketName());
         FileosService service = getApi(bucket);
-        String tenantCode = UserContext.getTenantCode();
+        String tenantCode = PrincipalContext.getTenantCode();
 
         String fileId = pathHelper.getFullName(category, request.getFileName(), request.getIsPublic());
         String contentType = request.getContentType();
@@ -198,7 +198,7 @@ public class FileosUploadApiImpl extends AbstractFileosApi implements FileosUplo
 
         MdmFileosBucket bucket = getBucket(request.getBucketName());
         FileosService service = getApi(bucket);
-        String tenantCode = UserContext.getTenantCode();
+        String tenantCode = PrincipalContext.getTenantCode();
         String category = getCategory(request.getCategory());
 
         log.info("完成分片上传, uploadId={}, fileId={}, bucketName={}", request.getUploadId(), request.getFileId(), bucket.getBucketName());

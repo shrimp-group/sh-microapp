@@ -3,7 +3,7 @@ package com.wkclz.micro.pay.service;
 import com.wkclz.core.base.R;
 import com.wkclz.core.enums.EnvType;
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.iam.sdk.helper.SessionHelper;
+import com.wkclz.iam.contract.context.PrincipalContext;
 import com.wkclz.micro.pay.helper.AlipayHelper;
 import com.wkclz.micro.pay.helper.WxpayHelper;
 import com.wkclz.micro.pay.bean.dto.OrderInfoForPay;
@@ -530,7 +530,7 @@ public class ShopOrderService {
 
 
     private void paramCheck(PayOrder payOrder) {
-        payOrder.setTenantCode(SessionHelper.getTenantCode());
+        payOrder.setTenantCode(PrincipalContext.getTenantCode());
         if (payOrder.getDiscountAmount() == null) {
             payOrder.setDiscountAmount(BigDecimal.ZERO);
         }
@@ -549,7 +549,7 @@ public class ShopOrderService {
             }
         } else {
             // 真实支付需要检测的内容
-            if (!SessionHelper.getUserCode().equals(payOrder.getUserCode())) {
+            if (!PrincipalContext.getUserCode().equals(payOrder.getUserCode())) {
                 throw ValidationException.of("下单人和付款人不一致!");
             }
             // terminalType 检查

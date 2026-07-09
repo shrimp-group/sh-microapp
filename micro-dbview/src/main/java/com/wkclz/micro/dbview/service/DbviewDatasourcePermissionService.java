@@ -4,7 +4,7 @@ import com.wkclz.core.base.PageData;
 import com.wkclz.core.enums.ResultCode;
 import com.wkclz.core.exception.UserException;
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.core.user.UserContext;
+import com.wkclz.iam.contract.context.PrincipalContext;
 import com.wkclz.micro.dbview.bean.entity.DbviewDatasourcePermission;
 import com.wkclz.micro.dbview.bean.enums.PermissionLevel;
 import com.wkclz.micro.dbview.bean.enums.SqlType;
@@ -51,7 +51,7 @@ public class DbviewDatasourcePermissionService extends BaseService<DbviewDatasou
     }
 
     public List<DbviewDatasourcePermission> getMyPermissions() {
-        String userCode = UserContext.getUserCode();
+        String userCode = PrincipalContext.getUserCode();
         if (StringUtils.isBlank(userCode)) {
             return List.of();
         }
@@ -69,7 +69,7 @@ public class DbviewDatasourcePermissionService extends BaseService<DbviewDatasou
     }
 
     public void check(Long datasourceId, String sql, Boolean confirmDangerous) {
-        String userCode = UserContext.getUserCode();
+        String userCode = PrincipalContext.getUserCode();
         if (StringUtils.isBlank(userCode)) {
             throw ValidationException.of("用户未登录，无法执行SQL");
         }

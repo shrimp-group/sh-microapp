@@ -242,7 +242,6 @@ liteflow:
 
 | groupId | artifactId | 版本 | 说明 |
 |---------|-----------|------|------|
-| `com.wkclz.iam` | `iam-sdk` | `${sh-iam.version}` | IAM 认证 SDK |
 | `com.wkclz.framework` | `sh-mybatis` | 父 POM 管理 | ORM 框架（BaseMapper / BaseService） |
 | `com.yomahub` | `liteflow-spring-boot-starter` | `2.12.4.1` | LiteFlow Spring Boot Starter |
 | `com.yomahub` | `liteflow-rule-sql` | `2.12.4.1` | LiteFlow SQL 规则源（从数据库加载规则） |

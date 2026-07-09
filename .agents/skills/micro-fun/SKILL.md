@@ -249,7 +249,8 @@ Object testResult = testEngine.exec(dto.getParam());
 |------|------|
 | `sh-mybatis` | BaseMapper / BaseService / PageQuery 分页 |
 | `sh-redis` | RedisIdGenerator（分类编码自动生成，前缀 `ctg_`） |
-| `iam-sdk` | IAM 认证 SDK |
+
+> 此模块不依赖 IAM 契约层。
 
 ### 脚本引擎依赖
 

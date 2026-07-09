@@ -2,7 +2,7 @@ package com.wkclz.micro.pay.rest.config;
 
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.base.R;
-import com.wkclz.iam.sdk.helper.SessionHelper;
+import com.wkclz.iam.contract.context.PrincipalContext;
 import com.wkclz.micro.pay.cache.WxpayClientCache;
 import com.wkclz.micro.pay.bean.dto.PayWxpayConfigDto;
 import com.wkclz.micro.pay.bean.entity.PayWxpayConfig;
@@ -58,7 +58,7 @@ public class WxpayConfigRest {
     public R<WxpayConfigInfoResp> payWxpayConfigInfo(@Valid WxpayConfigInfoReq req) {
         PayWxpayConfig entity = new PayWxpayConfig();
         entity.setId(req.getId());
-        entity.setTenantCode(SessionHelper.getTenantCode());
+        entity.setTenantCode(PrincipalContext.getTenantCode());
         entity = payWxpayConfigService.getDetail(entity);
         WxpayConfigInfoResp resp = BeanUtil.cp(entity, WxpayConfigInfoResp.class);
         return R.ok(resp);
@@ -69,7 +69,7 @@ public class WxpayConfigRest {
     public R<WxpayConfigCreateResp> payWxpayConfigCreate(@Valid @RequestBody WxpayConfigCreateReq req) {
         PayWxpayConfig entity = BeanUtil.cp(req, PayWxpayConfig.class);
         if (StringUtils.isBlank(entity.getTenantCode())) {
-            entity.setTenantCode(SessionHelper.getTenantCode());
+            entity.setTenantCode(PrincipalContext.getTenantCode());
         }
         entity = payWxpayConfigService.create(entity);
         WxpayConfigCreateResp resp = BeanUtil.cp(entity, WxpayConfigCreateResp.class);
@@ -81,7 +81,7 @@ public class WxpayConfigRest {
     public R<WxpayConfigUpdateResp> payWxpayConfigUpdate(@Valid @RequestBody WxpayConfigUpdateReq req) {
         PayWxpayConfig entity = BeanUtil.cp(req, PayWxpayConfig.class);
         if (StringUtils.isBlank(entity.getTenantCode())) {
-            entity.setTenantCode(SessionHelper.getTenantCode());
+            entity.setTenantCode(PrincipalContext.getTenantCode());
         }
         entity = payWxpayConfigService.update(entity);
         wxpayClientCache.clearCache();

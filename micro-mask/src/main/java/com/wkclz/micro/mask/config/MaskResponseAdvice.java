@@ -5,7 +5,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.JSONPath;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.wkclz.iam.sdk.helper.SessionHelper;
+import com.wkclz.iam.contract.context.PrincipalContext;
 import com.wkclz.micro.mask.cache.MaskCache;
 import com.wkclz.micro.mask.bean.entity.MdmMaskRule;
 import com.wkclz.tool.tools.RegularTool;
@@ -93,7 +93,7 @@ public class MaskResponseAdvice implements ResponseBodyAdvice<Object> {
         }
 
         // URL 判别是否需要继续脱敏，并缓存
-        String userCode = SessionHelper.getUserCode();
+        String userCode = PrincipalContext.getUserCode();
         if (StringUtils.isBlank(userCode)) {
             userCode = "anonymous";
         }

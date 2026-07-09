@@ -522,7 +522,7 @@ public String wxRefundNotify(WxPayRefundNotifyV3Result refundNotifyResult) {
 |------|------|
 | `sh-mybatis` | BaseMapper, BaseService, PageQuery, MyBatis 拦截器（自动填充 / 逻辑删除 / 乐观锁） |
 | `sh-redis` | RedisHelper, RedisLock, RedisIdGenerator（支付流水号生成）, Redis Pub/Sub（缓存刷新） |
-| `iam-sdk` | SessionHelper（获取 tenantCode / userCode） |
+| `iam-contract-api` | PrincipalContext（获取 tenantCode / userCode） |
 | `spring-boot-starter-validation` | 参数校验 |
 
 ### 第三方依赖

@@ -2,7 +2,7 @@ package com.wkclz.micro.msg.service;
 
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.iam.sdk.helper.SessionHelper;
+import com.wkclz.iam.contract.context.PrincipalContext;
 import com.wkclz.micro.msg.mapper.MsgUserRecordMapper;
 import com.wkclz.micro.msg.bean.dto.MsgUserRecordDto;
 import com.wkclz.micro.msg.bean.entity.MsgUserRecord;
@@ -41,7 +41,7 @@ public class MsgUserRecordService extends BaseService<MsgUserRecord, MsgUserReco
         }
         MsgUserRecordDto param = new MsgUserRecordDto();
         param.setNoticeNo(noticeNo);
-        param.setUserCode(SessionHelper.getUserCode());
+        param.setUserCode(PrincipalContext.getUserCode());
         MsgUserRecordDto info = mapper.getNoticeInfo(param);
         if (info == null) {
             throw ValidationException.of("消息不存在！");
@@ -57,7 +57,7 @@ public class MsgUserRecordService extends BaseService<MsgUserRecord, MsgUserReco
         }
         MsgUserRecordDto param = new MsgUserRecordDto();
         param.setId(id);
-        param.setUserCode(SessionHelper.getUserCode());
+        param.setUserCode(PrincipalContext.getUserCode());
         MsgUserRecordDto info = mapper.getNoticeInfoById(param);
         if (info == null) {
             throw ValidationException.of("消息不存在！");
@@ -81,7 +81,7 @@ public class MsgUserRecordService extends BaseService<MsgUserRecord, MsgUserReco
 
         MsgUserRecord param = new MsgUserRecord();
         param.setIds(ids);
-        param.setUserCode(SessionHelper.getUserCode());
+        param.setUserCode(PrincipalContext.getUserCode());
         return mapper.markRecodeAsReaded(param);
     }
 

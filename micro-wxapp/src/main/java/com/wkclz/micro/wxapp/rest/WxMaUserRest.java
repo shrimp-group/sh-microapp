@@ -3,7 +3,8 @@ package com.wkclz.micro.wxapp.rest;
 import cn.binarywang.wx.miniapp.bean.WxMaPhoneNumberInfo;
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.base.R;
-import com.wkclz.iam.sdk.helper.SessionHelper;
+import com.wkclz.iam.contract.bean.resp.LoginResp;
+import com.wkclz.iam.contract.context.PrincipalContext;
 import com.wkclz.micro.wxapp.Route;
 import com.wkclz.micro.wxapp.bean.entity.WxappUser;
 import com.wkclz.micro.wxapp.bean.req.WxMaLoginReq;
@@ -11,7 +12,6 @@ import com.wkclz.micro.wxapp.bean.req.WxMaMobileBindReq;
 import com.wkclz.micro.wxapp.bean.req.WxMaPhoneReq;
 import com.wkclz.micro.wxapp.bean.req.WxMaUserInfoUpdateReq;
 import com.wkclz.micro.wxapp.bean.req.WxappUserPageReq;
-import com.wkclz.micro.wxapp.bean.resp.WxMaLoginResp;
 import com.wkclz.micro.wxapp.bean.resp.WxMaUserInfoResp;
 import com.wkclz.micro.wxapp.bean.resp.WxappUserPageResp;
 import com.wkclz.micro.wxapp.service.WxappUserService;
@@ -41,8 +41,8 @@ public class WxMaUserRest {
 
     @Operation(summary = "1. 小程序登录")
     @PostMapping(Route.MINIAPP_LOGIN)
-    public R<WxMaLoginResp> customerMiniappLogin(@Valid @RequestBody WxMaLoginReq req, HttpServletRequest request) {
-        WxMaLoginResp resp = wxMiniappService.miniappLogin(req, request);
+    public R<LoginResp> customerMiniappLogin(@Valid @RequestBody WxMaLoginReq req, HttpServletRequest request) {
+        LoginResp resp = wxMiniappService.miniappLogin(req, request);
         return R.ok(resp);
     }
 
@@ -79,7 +79,7 @@ public class WxMaUserRest {
     @GetMapping(Route.WXAPP_USER_PAGE)
     public R<PageData<WxappUserPageResp>> wxappUserPage(@Valid WxappUserPageReq req) {
         WxappUser entity = BeanUtil.cp(req, WxappUser.class);
-        entity.setTenantCode(SessionHelper.getTenantCode());
+        entity.setTenantCode(PrincipalContext.getTenantCode());
         PageData<WxappUser> page = wxappUserService.getUserPage(entity);
         PageData<WxappUserPageResp> newPage = page.convert(WxappUserPageResp.class);
         return R.ok(newPage);
