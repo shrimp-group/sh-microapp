@@ -79,7 +79,6 @@ public class WxmpLoginService {
         sessionCreateReq.setAvatar(user.getAvatar());
         sessionCreateReq.setAuthType("WXMP");
         sessionCreateReq.setAuthIdentifier(user.getOpenId());
-        sessionCreateReq.setClientIp(IpHelper.getOriginIp(req));
         log.info("微信用户 {} 认证成功，调用 SsoFacadeContract 创建会话", user.getOpenId());
 
         LoginResp loginResp = ssoFacadeContract.login(sessionCreateReq);
