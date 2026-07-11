@@ -4,7 +4,7 @@ alwaysApply: true
 
 # Superpowers-ZH 中文增强版
 
-你已加载 superpowers-zh 技能框架（20 个 skills）。
+你已加载 superpowers-zh 技能框架（21 个 skills）。
 
 ## 核心规则
 
@@ -39,6 +39,8 @@ Skills 位于 `.trae/skills/` 目录，每个 skill 有独立的 `SKILL.md` 文�
 | workflow-runner | 在 Claude Code / OpenClaw / Cursor 中直接运行 agency-orchestrator YAML 工作流——无需 API key，使用当前会话的 LLM 作为执行引擎。当用户提供 .yaml 工作流文件或要求多角色协作完成任务时触发。 |
 | writing-plans | 当你有规格说明或需求用于多步骤任务时使用，在动手写代码之前 |
 | writing-skills | 当创建新技能、编辑现有技能或在部署前验证技能是否有效时使用 |
+| sh-framework | 框架知识总索引——涉及框架编码、模块选择、依赖管理时调用。包含 13 个子技能。 |
+| micro-apps | 微应用模块知识总索引——涉及微应用编码、模块选择、依赖管理时调用。包含 19 个子技能（数据字典、文件存储、支付、积分、微信、消息、审计等）。 |
 
 ## 如何使用
 
