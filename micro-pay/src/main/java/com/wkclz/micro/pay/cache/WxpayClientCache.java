@@ -5,9 +5,9 @@ import com.github.binarywang.wxpay.constant.WxPayConstants;
 import com.github.binarywang.wxpay.service.WxPayService;
 import com.github.binarywang.wxpay.service.impl.WxPayServiceImpl;
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.iam.contract.context.PrincipalContext;
-import com.wkclz.micro.pay.mapper.PayWxpayConfigMapper;
+import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.micro.pay.bean.entity.PayWxpayConfig;
+import com.wkclz.micro.pay.mapper.PayWxpayConfigMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,7 +71,7 @@ public class WxpayClientCache {
     }
 
     public synchronized PayWxpayConfig getConfig() {
-        String tenantCode = PrincipalContext.getTenantCode();
+        String tenantCode = IdentityContext.getTenantCode();
         return getConfig(tenantCode);
     }
     public synchronized PayWxpayConfig getConfig(String tenantCode) {
@@ -89,7 +89,7 @@ public class WxpayClientCache {
         return config;
     }
     public synchronized WxPayService getClient() {
-        String tenantCode = PrincipalContext.getTenantCode();
+        String tenantCode = IdentityContext.getTenantCode();
         return getClient(tenantCode);
     }
     public synchronized WxPayService getClient(String tenantCode) {

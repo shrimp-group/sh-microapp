@@ -1,11 +1,11 @@
 package com.wkclz.micro.points.bean.enums;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * 积分扣减记录状态
  */
-@FieldDesc("积分扣减状态")
+@Schema(description = "积分扣减状态")
 public enum PointsDeductionStatus {
 
     PENDING("待处理"),

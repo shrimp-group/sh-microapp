@@ -1,6 +1,6 @@
 package com.wkclz.micro.form.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,25 +21,25 @@ public class MdmFormRule extends BaseEntity {
     /**
      * 表单校验规则编码
      */
-    @FieldDesc("表单校验规则编码")
+    @Schema(description = "表单校验规则编码")
     private String formRuleCode;
 
     /**
      * 表单校验规则名称
      */
-    @FieldDesc("表单校验规则名称")
+    @Schema(description = "表单校验规则名称")
     private String formRuleName;
 
     /**
      * API 方法
      */
-    @FieldDesc("API 方法")
+    @Schema(description = "API 方法")
     private String apiMethod;
 
     /**
      * API 路径
      */
-    @FieldDesc("API 路径")
+    @Schema(description = "API 路径")
     private String apiUri;
 
 

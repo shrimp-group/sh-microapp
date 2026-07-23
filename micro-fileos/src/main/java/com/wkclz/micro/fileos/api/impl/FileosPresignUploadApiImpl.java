@@ -1,14 +1,13 @@
 package com.wkclz.micro.fileos.api.impl;
 
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.iam.contract.context.PrincipalContext;
+import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.micro.fileos.api.FileosPresignUploadApi;
 import com.wkclz.micro.fileos.bean.entity.MdmFileosBucket;
 import com.wkclz.micro.fileos.bean.entity.MdmFileosMultipart;
 import com.wkclz.micro.fileos.bean.entity.MdmFileosRecord;
 import com.wkclz.micro.fileos.bean.enums.UploadStatusEnum;
 import com.wkclz.micro.fileos.bean.enums.UploadTypeEnum;
-import com.wkclz.micro.fileos.helper.FileTypeHelper;
 import com.wkclz.micro.fileos.bean.req.MultipartCompleteReq;
 import com.wkclz.micro.fileos.bean.req.MultipartUploadInitReq;
 import com.wkclz.micro.fileos.bean.req.PresignCompleteReq;
@@ -16,6 +15,7 @@ import com.wkclz.micro.fileos.bean.req.PresignUploadReq;
 import com.wkclz.micro.fileos.bean.resp.MultipartUploadInitResp;
 import com.wkclz.micro.fileos.bean.resp.PresignUploadResp;
 import com.wkclz.micro.fileos.bean.resp.RecordResp;
+import com.wkclz.micro.fileos.helper.FileTypeHelper;
 import com.wkclz.micro.fileos.service.FileosService;
 import com.wkclz.micro.fileos.service.MdmFileosMultipartService;
 import com.wkclz.micro.fileos.utils.OssUtil;
@@ -43,7 +43,7 @@ public class FileosPresignUploadApiImpl extends AbstractFileosApi implements Fil
         String category = getCategory(request.getCategory());
         MdmFileosBucket bucket = getBucket(request.getBucketName());
         FileosService service = getApi(bucket);
-        String tenantCode = PrincipalContext.getTenantCode();
+        String tenantCode = IdentityContext.getTenantCode();
 
         String fileId = pathHelper.getFullName(category, request.getFileName(), request.getIsPublic());
         String contentType = request.getContentType();
@@ -101,7 +101,7 @@ public class FileosPresignUploadApiImpl extends AbstractFileosApi implements Fil
         String category = getCategory(request.getCategory());
         MdmFileosBucket bucket = getBucket(request.getBucketName());
         FileosService service = getApi(bucket);
-        String tenantCode = PrincipalContext.getTenantCode();
+        String tenantCode = IdentityContext.getTenantCode();
 
         String fileId = pathHelper.getFullName(category, request.getFileName(), request.getIsPublic());
         String contentType = request.getContentType();
@@ -157,7 +157,7 @@ public class FileosPresignUploadApiImpl extends AbstractFileosApi implements Fil
 
         MdmFileosBucket bucket = getBucket(request.getBucketName());
         FileosService service = getApi(bucket);
-        String tenantCode = PrincipalContext.getTenantCode();
+        String tenantCode = IdentityContext.getTenantCode();
         String category = getCategory(request.getCategory());
 
         log.info("完成预签名分片上传, uploadId={}, fileId={}, bucketName={}", request.getUploadId(), request.getFileId(), bucket.getBucketName());
@@ -218,7 +218,7 @@ public class FileosPresignUploadApiImpl extends AbstractFileosApi implements Fil
             throw ValidationException.of("fileName 不能为空");
         }
 
-        String tenantCode = PrincipalContext.getTenantCode();
+        String tenantCode = IdentityContext.getTenantCode();
         MdmFileosRecord existing = mdmFileosRecordService.getRecordByFileId(request.getFileId(), tenantCode);
         if (existing == null) {
             throw ValidationException.of("预签名上传记录不存在, fileId={}", request.getFileId());

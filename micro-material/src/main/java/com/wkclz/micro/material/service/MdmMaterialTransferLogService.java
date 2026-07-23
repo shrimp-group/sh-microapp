@@ -1,10 +1,10 @@
 package com.wkclz.micro.material.service;
 
-import com.wkclz.iam.contract.context.PrincipalContext;
-import com.wkclz.micro.material.mapper.MdmMaterialTransferLogMapper;
-import com.wkclz.micro.material.mapper.MdmMaterialMapper;
+import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.micro.material.bean.entity.MdmMaterial;
 import com.wkclz.micro.material.bean.entity.MdmMaterialTransferLog;
+import com.wkclz.micro.material.mapper.MdmMaterialMapper;
+import com.wkclz.micro.material.mapper.MdmMaterialTransferLogMapper;
 import com.wkclz.mybatis.service.BaseService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +23,8 @@ public class MdmMaterialTransferLogService extends BaseService<MdmMaterialTransf
 
     @Transactional(rollbackFor = Exception.class)
     public Integer transfer(List<Long> ids, String toUserCode) {
-        String userCode = PrincipalContext.getUserCode();
-        String tenantCode = PrincipalContext.getTenantCode();
+        String userCode = IdentityContext.getUserCode();
+        String tenantCode = IdentityContext.getTenantCode();
 
         List<MdmMaterial> materials = materialMapper.selectByIds(ids);
         if (CollectionUtils.isEmpty(materials)) {
@@ -53,6 +53,6 @@ public class MdmMaterialTransferLogService extends BaseService<MdmMaterialTransf
     }
 
     public List<MdmMaterialTransferLog> listByMaterialCode(String materialCode) {
-        return mapper.getByMaterialCode(materialCode, PrincipalContext.getTenantCode());
+        return mapper.getByMaterialCode(materialCode, IdentityContext.getTenantCode());
     }
 }

@@ -1,7 +1,7 @@
 package com.wkclz.micro.fileos.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
 import com.wkclz.core.base.BaseEntity;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -9,31 +9,31 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class MdmFileosBucket extends BaseEntity {
 
-    @FieldDesc("租户编码")
+    @Schema(description = "租户编码")
     private String tenantCode;
 
-    @FieldDesc("Bucket名称")
+    @Schema(description = "Bucket名称")
     private String bucketName;
 
-    @FieldDesc("OSS服务商")
+    @Schema(description = "OSS服务商")
     private String ossSp;
 
-    @FieldDesc("内网Endpoint")
+    @Schema(description = "内网Endpoint")
     private String endpointInner;
 
-    @FieldDesc("外网Endpoint")
+    @Schema(description = "外网Endpoint")
     private String endpointOuter;
 
-    @FieldDesc("区域")
+    @Schema(description = "区域")
     private String region;
 
-    @FieldDesc("Access Key")
+    @Schema(description = "Access Key")
     private String accessKey;
 
-    @FieldDesc("Secret Key")
+    @Schema(description = "Secret Key")
     private String secretKey;
 
-    @FieldDesc("默认标识")
+    @Schema(description = "默认标识")
     private Integer defaultFlag;
 
     public static MdmFileosBucket copy(MdmFileosBucket source, MdmFileosBucket target) {

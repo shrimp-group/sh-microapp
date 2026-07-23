@@ -3,9 +3,7 @@ package com.wkclz.micro.pay.service;
 import com.wkclz.core.base.R;
 import com.wkclz.core.enums.EnvType;
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.iam.contract.context.PrincipalContext;
-import com.wkclz.micro.pay.helper.AlipayHelper;
-import com.wkclz.micro.pay.helper.WxpayHelper;
+import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.micro.pay.bean.dto.OrderInfoForPay;
 import com.wkclz.micro.pay.bean.dto.OrderPayResult;
 import com.wkclz.micro.pay.bean.dto.PayOrderDto;
@@ -16,6 +14,8 @@ import com.wkclz.micro.pay.bean.enums.TerminalType;
 import com.wkclz.micro.pay.bean.req.PayOrderMockPayReq;
 import com.wkclz.micro.pay.bean.req.PayOrderReq;
 import com.wkclz.micro.pay.config.PayConfig;
+import com.wkclz.micro.pay.helper.AlipayHelper;
+import com.wkclz.micro.pay.helper.WxpayHelper;
 import com.wkclz.micro.pay.spi.PayOrderSpi;
 import com.wkclz.micro.points.bean.req.PointsConsumeReq;
 import com.wkclz.micro.points.bean.req.PointsRefundReq;
@@ -33,7 +33,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -530,7 +529,7 @@ public class ShopOrderService {
 
 
     private void paramCheck(PayOrder payOrder) {
-        payOrder.setTenantCode(PrincipalContext.getTenantCode());
+        payOrder.setTenantCode(IdentityContext.getTenantCode());
         if (payOrder.getDiscountAmount() == null) {
             payOrder.setDiscountAmount(BigDecimal.ZERO);
         }
@@ -549,7 +548,7 @@ public class ShopOrderService {
             }
         } else {
             // 真实支付需要检测的内容
-            if (!PrincipalContext.getUserCode().equals(payOrder.getUserCode())) {
+            if (!IdentityContext.getUserCode().equals(payOrder.getUserCode())) {
                 throw ValidationException.of("下单人和付款人不一致!");
             }
             // terminalType 检查

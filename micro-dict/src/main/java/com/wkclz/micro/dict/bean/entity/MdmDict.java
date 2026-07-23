@@ -1,7 +1,7 @@
 package com.wkclz.micro.dict.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
 import com.wkclz.core.base.BaseEntity;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -21,19 +21,19 @@ public class MdmDict extends BaseEntity {
     /**
      * 字典分类
      */
-    @FieldDesc("字典分类")
+    @Schema(description = "字典分类")
     private String dictCtg;
 
     /**
      * 字典类型
      */
-    @FieldDesc("字典类型")
+    @Schema(description = "字典类型")
     private String dictType;
 
     /**
      * 类型描述信息
      */
-    @FieldDesc("类型描述信息")
+    @Schema(description = "类型描述信息")
     private String description;
 
 

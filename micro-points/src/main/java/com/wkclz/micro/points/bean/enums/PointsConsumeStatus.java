@@ -1,11 +1,11 @@
 package com.wkclz.micro.points.bean.enums;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * 积分消费流水状态
  */
-@FieldDesc("积分消费状态")
+@Schema(description = "积分消费状态")
 public enum PointsConsumeStatus {
 
     FROZEN("冻结"),

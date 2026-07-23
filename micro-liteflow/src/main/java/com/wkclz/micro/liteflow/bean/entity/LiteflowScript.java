@@ -1,6 +1,6 @@
 package com.wkclz.micro.liteflow.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,37 +21,37 @@ public class LiteflowScript extends BaseEntity {
     /**
      * 脚本ID
      */
-    @FieldDesc("脚本ID")
+    @Schema(description = "脚本ID")
     private String scriptId;
 
     /**
      * 脚本名称
      */
-    @FieldDesc("脚本名称")
+    @Schema(description = "脚本名称")
     private String scriptName;
 
     /**
      * 脚本数据
      */
-    @FieldDesc("脚本数据")
+    @Schema(description = "脚本数据")
     private String scriptData;
 
     /**
      * 脚本类型
      */
-    @FieldDesc("脚本类型")
+    @Schema(description = "脚本类型")
     private String scriptType;
 
     /**
      * 脚本语言
      */
-    @FieldDesc("脚本语言")
+    @Schema(description = "脚本语言")
     private String scriptLanguage;
 
     /**
      * 可用状态
      */
-    @FieldDesc("可用状态")
+    @Schema(description = "可用状态")
     private Integer enable;
 
 

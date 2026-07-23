@@ -1,7 +1,7 @@
 package com.wkclz.micro.points.service;
 
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.iam.contract.context.PrincipalContext;
+import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.micro.points.PointsConstants;
 import com.wkclz.micro.points.bean.entity.PointsWallet;
 import com.wkclz.micro.points.bean.req.PointsTrialReq;
@@ -58,7 +58,7 @@ public class PointsTrialService {
         // 解析租户编码：入参优先，为空时从登录态获取
         String tenantCode = req.getTenantCode();
         if (tenantCode == null || tenantCode.isBlank()) {
-            tenantCode = PrincipalContext.getTenantCode();
+            tenantCode = IdentityContext.getTenantCode();
         }
 
         // 获取钱包（只读查询，不修改）

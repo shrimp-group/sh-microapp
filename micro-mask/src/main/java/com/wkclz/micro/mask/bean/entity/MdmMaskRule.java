@@ -1,6 +1,6 @@
 package com.wkclz.micro.mask.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,55 +21,55 @@ public class MdmMaskRule extends BaseEntity {
     /**
      * 脱敏规则编码
      */
-    @FieldDesc("脱敏规则编码")
+    @Schema(description = "脱敏规则编码")
     private String maskRuleCode;
 
     /**
      * 脱敏规则名称
      */
-    @FieldDesc("脱敏规则名称")
+    @Schema(description = "脱敏规则名称")
     private String maskRuleName;
 
     /**
      * 请求方法
      */
-    @FieldDesc("请求方法")
+    @Schema(description = "请求方法")
     private String requestMethod;
 
     /**
      * 请求路径,支持AntPathMatcher
      */
-    @FieldDesc("请求路径,支持AntPathMatcher")
+    @Schema(description = "请求路径,支持AntPathMatcher")
     private String requestUri;
 
     /**
      * 脱敏数据路径
      */
-    @FieldDesc("脱敏数据路径")
+    @Schema(description = "脱敏数据路径")
     private String maskJsonPath;
 
     /**
      * 脱敏正则
      */
-    @FieldDesc("脱敏正则")
+    @Schema(description = "脱敏正则")
     private String maskRuleRegular;
 
     /**
      * 脱敏函数
      */
-    @FieldDesc("脱敏函数")
+    @Schema(description = "脱敏函数")
     private String maskRuleScript;
 
     /**
      * 可用状态
      */
-    @FieldDesc("可用状态")
+    @Schema(description = "可用状态")
     private Integer enableFlag;
 
     /**
      * 示例值
      */
-    @FieldDesc("示例值")
+    @Schema(description = "示例值")
     private String mockValue;
 
 

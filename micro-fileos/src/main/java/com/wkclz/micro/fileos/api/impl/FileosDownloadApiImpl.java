@@ -1,12 +1,11 @@
 package com.wkclz.micro.fileos.api.impl;
 
-import com.wkclz.iam.contract.context.PrincipalContext;
+import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.micro.fileos.api.FileosDownloadApi;
 import com.wkclz.micro.fileos.bean.entity.MdmFileosBucket;
 import com.wkclz.micro.fileos.bean.entity.MdmFileosRecord;
 import com.wkclz.micro.fileos.service.FileosService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
@@ -18,7 +17,7 @@ public class FileosDownloadApiImpl extends AbstractFileosApi implements FileosDo
     @Override
     public InputStream download(String fileId) {
         String tmpFileId = getFileId(fileId);
-        String tenantCode = PrincipalContext.getTenantCode();
+        String tenantCode = IdentityContext.getTenantCode();
         MdmFileosRecord record = mdmFileosRecordService.getRecordByFileId(tmpFileId, tenantCode);
         if (record == null) {
             log.warn("文件: {} 不存在，无法下载", fileId);
@@ -33,7 +32,7 @@ public class FileosDownloadApiImpl extends AbstractFileosApi implements FileosDo
     @Override
     public InputStream download(String fileId, long offset, long length) {
         String tmpFileId = getFileId(fileId);
-        String tenantCode = PrincipalContext.getTenantCode();
+        String tenantCode = IdentityContext.getTenantCode();
         MdmFileosRecord record = mdmFileosRecordService.getRecordByFileId(tmpFileId, tenantCode);
         if (record == null) {
             log.warn("文件: {} 不存在，无法下载", fileId);

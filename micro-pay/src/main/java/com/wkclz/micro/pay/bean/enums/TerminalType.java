@@ -1,9 +1,9 @@
 package com.wkclz.micro.pay.bean.enums;
 
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@FieldDesc("终端类型")
+@Schema(description = "终端类型")
 public enum TerminalType {
 
     PC("PC"),

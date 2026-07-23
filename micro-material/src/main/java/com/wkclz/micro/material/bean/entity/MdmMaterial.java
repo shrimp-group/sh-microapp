@@ -1,6 +1,6 @@
 package com.wkclz.micro.material.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,97 +21,97 @@ public class MdmMaterial extends BaseEntity {
     /**
      * 素材编码
      */
-    @FieldDesc(value = "素材编码", notNull = true)
+    @Schema(description = "素材编码")
     private String materialCode;
 
     /**
      * 素材名称
      */
-    @FieldDesc(value = "素材名称", notNull = true)
+    @Schema(description = "素材名称")
     private String materialName;
 
     /**
      * 素材类型(IMAGE/VIDEO/AUDIO/DOCUMENT/OTHER)
      */
-    @FieldDesc(value = "素材类型(IMAGE/VIDEO/AUDIO/DOCUMENT/OTHER)", notNull = true)
+    @Schema(description = "素材类型(IMAGE/VIDEO/AUDIO/DOCUMENT/OTHER)")
     private String materialType;
 
     /**
      * 来源类型(UPLOAD/LINK)
      */
-    @FieldDesc(value = "来源类型(UPLOAD/LINK)", notNull = true)
+    @Schema(description = "来源类型(UPLOAD/LINK)")
     private String sourceType;
 
     /**
      * 分组编码
      */
-    @FieldDesc(value = "分组编码", notNull = true)
+    @Schema(description = "分组编码")
     private String groupCode;
 
     /**
      * 文件ID(关联micro-fileos)
      */
-    @FieldDesc(value = "文件ID(关联micro-fileos)")
+    @Schema(description = "文件ID(关联micro-fileos)")
     private String fileId;
 
     /**
      * 文件名
      */
-    @FieldDesc(value = "文件名")
+    @Schema(description = "文件名")
     private String fileName;
 
     /**
      * 文件扩展名
      */
-    @FieldDesc(value = "文件扩展名")
+    @Schema(description = "文件扩展名")
     private String fileExt;
 
     /**
      * 文件大小(字节)
      */
-    @FieldDesc(value = "文件大小(字节)")
+    @Schema(description = "文件大小(字节)")
     private Long fileSize;
 
     /**
      * 链接地址(来源为LINK时)
      */
-    @FieldDesc(value = "链接地址(来源为LINK时)")
+    @Schema(description = "链接地址(来源为LINK时)")
     private String linkUrl;
 
     /**
      * 链接状态(VALID/INVALID/UNKNOWN)
      */
-    @FieldDesc(value = "链接状态(VALID/INVALID/UNKNOWN)")
+    @Schema(description = "链接状态(VALID/INVALID/UNKNOWN)")
     private String linkStatus;
 
     /**
      * 可见性(PRIVATE/PUBLIC)
      */
-    @FieldDesc(value = "可见性(PRIVATE/PUBLIC)", notNull = true)
+    @Schema(description = "可见性(PRIVATE/PUBLIC)")
     private String visibility;
 
     /**
      * 封面文件ID
      */
-    @FieldDesc(value = "封面文件ID")
+    @Schema(description = "封面文件ID")
     private String coverFileId;
 
     /**
      * 描述
      */
-    @FieldDesc(value = "描述")
+    @Schema(description = "描述")
     private String description;
 
     /**
      * 所有者用户编码
      */
-    @FieldDesc(value = "所有者用户编码", notNull = true)
+    @Schema(description = "所有者用户编码")
     private String userCode;
 
     /**
      * 租户编码
      */
-    @FieldDesc(value = "租户编码", notNull = true)
+    @Schema(description = "租户编码")
     private String tenantCode;
 
 

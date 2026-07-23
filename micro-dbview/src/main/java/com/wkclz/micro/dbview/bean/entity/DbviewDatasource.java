@@ -1,6 +1,6 @@
 package com.wkclz.micro.dbview.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -9,28 +9,28 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public class DbviewDatasource extends BaseEntity {
 
-    @FieldDesc("数据源名称")
+    @Schema(description = "数据源名称")
     private String datasourceName;
 
-    @FieldDesc("主机地址")
+    @Schema(description = "主机地址")
     private String host;
 
-    @FieldDesc("端口")
+    @Schema(description = "端口")
     private Integer port;
 
-    @FieldDesc("数据库名")
+    @Schema(description = "数据库名")
     private String databaseName;
 
-    @FieldDesc("JDBC URL")
+    @Schema(description = "JDBC URL")
     private String jdbcUrl;
 
-    @FieldDesc("用户名")
+    @Schema(description = "用户名")
     private String username;
 
-    @FieldDesc("密码")
+    @Schema(description = "密码")
     private String password;
 
-    @FieldDesc("状态：0-禁用 1-启用")
+    @Schema(description = "状态：0-禁用 1-启用")
     private Integer status;
 
     public static DbviewDatasource copy(DbviewDatasource source, DbviewDatasource target) {

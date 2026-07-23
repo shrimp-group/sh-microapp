@@ -2,7 +2,7 @@ package com.wkclz.micro.pay.service;
 
 import com.wkclz.core.enums.ResultCode;
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.iam.contract.context.PrincipalContext;
+import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.micro.pay.bean.entity.PayOrder;
 import com.wkclz.micro.pay.mapper.PayOrderMapper;
 import com.wkclz.mybatis.service.BaseService;
@@ -16,7 +16,7 @@ import java.util.List;
  * @author wangkaicun
  * @table pay_order (支付-订单) 单表服务类，代码重新生成不覆盖. 只建议完成单表的逻辑，或主表为 pay_order 的逻辑. 其他逻辑放 custom 中
  */
- 
+
 @Service
 public class PayOrderService extends BaseService<PayOrder, PayOrderMapper> {
 
@@ -26,7 +26,7 @@ public class PayOrderService extends BaseService<PayOrder, PayOrderMapper> {
     }
 
     public PayOrder getPayOrderStatus2Custom(PayOrder entity) {
-        entity.setUserCode(PrincipalContext.getUserCode());
+        entity.setUserCode(IdentityContext.getUserCode());
 
         entity = mapper.getOrderStatus(entity);
         if (entity == null) {
@@ -64,7 +64,7 @@ public class PayOrderService extends BaseService<PayOrder, PayOrderMapper> {
         if (true) {
             return;
         }
-        
+
         // 唯一条件不为空，请设置唯一条件
         PayOrder param = new PayOrder();
         // 唯一条件

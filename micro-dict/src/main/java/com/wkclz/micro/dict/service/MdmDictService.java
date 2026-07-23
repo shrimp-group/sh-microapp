@@ -2,14 +2,14 @@ package com.wkclz.micro.dict.service;
 
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.iam.contract.context.PrincipalContext;
-import com.wkclz.micro.dict.cache.DictCache;
-import com.wkclz.micro.dict.mapper.MdmDictItemMapper;
-import com.wkclz.micro.dict.mapper.MdmDictMapper;
+import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.micro.dict.bean.dto.MdmDictDto;
 import com.wkclz.micro.dict.bean.dto.MdmDictItemDto;
 import com.wkclz.micro.dict.bean.entity.MdmDict;
 import com.wkclz.micro.dict.bean.entity.MdmDictItem;
+import com.wkclz.micro.dict.cache.DictCache;
+import com.wkclz.micro.dict.mapper.MdmDictItemMapper;
+import com.wkclz.micro.dict.mapper.MdmDictMapper;
 import com.wkclz.mybatis.helper.PageQuery;
 import com.wkclz.mybatis.service.BaseService;
 import org.apache.commons.collections4.CollectionUtils;
@@ -18,7 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -163,7 +165,7 @@ public class MdmDictService extends BaseService<MdmDict, MdmDictMapper> {
             }
         }
 
-        String userCode = PrincipalContext.getUserCode();
+        String userCode = IdentityContext.getUserCode();
         if (userCode == null) {
             userCode = "anonymous";
         }

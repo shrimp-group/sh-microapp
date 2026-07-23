@@ -5,9 +5,9 @@ import com.alipay.api.AlipayClient;
 import com.alipay.api.AlipayConfig;
 import com.alipay.api.DefaultAlipayClient;
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.iam.contract.context.PrincipalContext;
-import com.wkclz.micro.pay.mapper.PayAlipayConfigMapper;
+import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.micro.pay.bean.entity.PayAlipayConfig;
+import com.wkclz.micro.pay.mapper.PayAlipayConfigMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,7 +73,7 @@ public class AlipayClientCache {
     }
 
     public synchronized PayAlipayConfig getConfig() {
-        String tenantCode = PrincipalContext.getTenantCode();
+        String tenantCode = IdentityContext.getTenantCode();
         return getConfig(tenantCode);
     }
     public synchronized PayAlipayConfig getConfig(String tenantCode) {
@@ -93,7 +93,7 @@ public class AlipayClientCache {
     }
 
     public synchronized AlipayClient getClient() {
-        String tenantCode = PrincipalContext.getTenantCode();
+        String tenantCode = IdentityContext.getTenantCode();
         return getClient(tenantCode);
     }
     public synchronized AlipayClient getClient(String tenantCode) {

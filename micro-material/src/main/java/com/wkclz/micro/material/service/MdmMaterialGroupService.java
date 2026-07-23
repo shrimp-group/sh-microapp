@@ -1,12 +1,12 @@
 package com.wkclz.micro.material.service;
 
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.iam.contract.context.PrincipalContext;
+import com.wkclz.core.identity.IdentityContext;
+import com.wkclz.micro.material.bean.entity.MdmMaterial;
+import com.wkclz.micro.material.bean.entity.MdmMaterialGroup;
 import com.wkclz.micro.material.cache.MaterialGroupCache;
 import com.wkclz.micro.material.mapper.MdmMaterialGroupMapper;
 import com.wkclz.micro.material.mapper.MdmMaterialMapper;
-import com.wkclz.micro.material.bean.entity.MdmMaterial;
-import com.wkclz.micro.material.bean.entity.MdmMaterialGroup;
 import com.wkclz.mybatis.service.BaseService;
 import com.wkclz.redis.helper.RedisIdGenerator;
 import org.apache.commons.collections4.CollectionUtils;
@@ -32,21 +32,21 @@ public class MdmMaterialGroupService extends BaseService<MdmMaterialGroup, MdmMa
     private RedisIdGenerator redisIdGenerator;
 
     public List<MdmMaterialGroup> getTree() {
-        String tenantCode = PrincipalContext.getTenantCode();
-        String userCode = PrincipalContext.getUserCode();
+        String tenantCode = IdentityContext.getTenantCode();
+        String userCode = IdentityContext.getUserCode();
         return mapper.getGroupTree(tenantCode, userCode);
     }
 
     public List<MdmMaterialGroup> getPickerTree() {
-        String tenantCode = PrincipalContext.getTenantCode();
-        String userCode = PrincipalContext.getUserCode();
+        String tenantCode = IdentityContext.getTenantCode();
+        String userCode = IdentityContext.getUserCode();
         return mapper.getPickerGroupTree(tenantCode, userCode);
     }
 
     @Transactional(rollbackFor = Exception.class)
     public MdmMaterialGroup create(MdmMaterialGroup entity) {
-        String tenantCode = PrincipalContext.getTenantCode();
-        String userCode = PrincipalContext.getUserCode();
+        String tenantCode = IdentityContext.getTenantCode();
+        String userCode = IdentityContext.getUserCode();
 
         if (StringUtils.isBlank(entity.getParentCode()) || "0".equals(entity.getParentCode())) {
             entity.setParentCode("0");
@@ -81,7 +81,7 @@ public class MdmMaterialGroupService extends BaseService<MdmMaterialGroup, MdmMa
             throw ValidationException.of("分组不存在");
         }
 
-        List<MdmMaterialGroup> children = mapper.getChildGroupCodes(existing.getGroupCode(), PrincipalContext.getTenantCode());
+        List<MdmMaterialGroup> children = mapper.getChildGroupCodes(existing.getGroupCode(), IdentityContext.getTenantCode());
         if (CollectionUtils.isNotEmpty(children)) {
             throw ValidationException.of("分组下存在子分组，无法删除");
         }
@@ -149,7 +149,7 @@ public class MdmMaterialGroupService extends BaseService<MdmMaterialGroup, MdmMa
     }
 
     private int getSubtreeDepth(String groupCode) {
-        List<MdmMaterialGroup> children = mapper.getChildGroupCodes(groupCode, PrincipalContext.getTenantCode());
+        List<MdmMaterialGroup> children = mapper.getChildGroupCodes(groupCode, IdentityContext.getTenantCode());
         if (CollectionUtils.isEmpty(children)) {
             return 1;
         }
@@ -161,7 +161,7 @@ public class MdmMaterialGroupService extends BaseService<MdmMaterialGroup, MdmMa
     }
 
     private MdmMaterialGroup findGroupByCode(String groupCode) {
-        String tenantCode = PrincipalContext.getTenantCode();
+        String tenantCode = IdentityContext.getTenantCode();
         MdmMaterialGroup param = new MdmMaterialGroup();
         param.setGroupCode(groupCode);
         param.setTenantCode(tenantCode);

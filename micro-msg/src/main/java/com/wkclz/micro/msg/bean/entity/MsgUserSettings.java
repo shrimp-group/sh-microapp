@@ -1,6 +1,6 @@
 package com.wkclz.micro.msg.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,19 +21,19 @@ public class MsgUserSettings extends BaseEntity {
     /**
      * 用户名
      */
-    @FieldDesc(value = "用户名", notNull = true)
+    @Schema(description = "用户名")
     private String userCode;
 
     /**
      * 事件消息配置(JSON)
      */
-    @FieldDesc(value = "事件消息配置(JSON)")
+    @Schema(description = "事件消息配置(JSON)")
     private String notifyEvent;
 
     /**
      * 系统消息配置(JSON)
      */
-    @FieldDesc(value = "系统消息配置(JSON)")
+    @Schema(description = "系统消息配置(JSON)")
     private String notifySystem;
 
 

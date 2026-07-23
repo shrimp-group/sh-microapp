@@ -1,6 +1,6 @@
 package com.wkclz.micro.form.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,19 +21,19 @@ public class MdmFormRuleField extends BaseEntity {
     /**
      * 表单校验规则编码
      */
-    @FieldDesc("表单校验规则编码")
+    @Schema(description = "表单校验规则编码")
     private String formRuleCode;
 
     /**
      * 字段编码
      */
-    @FieldDesc("字段编码")
+    @Schema(description = "字段编码")
     private String fieldCode;
 
     /**
      * 字段名称
      */
-    @FieldDesc("字段名称")
+    @Schema(description = "字段名称")
     private String fieldName;
 
 

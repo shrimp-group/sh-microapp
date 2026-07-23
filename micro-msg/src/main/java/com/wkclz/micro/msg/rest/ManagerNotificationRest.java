@@ -2,9 +2,8 @@ package com.wkclz.micro.msg.rest;
 
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.base.R;
-import com.wkclz.iam.contract.context.PrincipalContext;
+import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.micro.msg.bean.dto.MsgNotificationDto;
-import com.wkclz.micro.msg.bean.dto.MsgUserRecordDto;
 import com.wkclz.micro.msg.bean.entity.MsgNotification;
 import com.wkclz.micro.msg.bean.entity.MsgUserRecord;
 import com.wkclz.micro.msg.bean.req.MsgNotificationInfoReq;
@@ -56,7 +55,7 @@ public class ManagerNotificationRest {
             return R.error("请指定发送用户，个人或多人");
         }
         MsgNotificationDto dto = BeanUtil.cp(req, MsgNotificationDto.class);
-        dto.setUserCode(PrincipalContext.getUserCode());
+        dto.setUserCode(IdentityContext.getUserCode());
         Integer rt = msgNotificationService.createNotification(dto);
         return R.ok(rt);
     }

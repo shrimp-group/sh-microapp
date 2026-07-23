@@ -2,7 +2,7 @@ package com.wkclz.micro.dbview.service;
 
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.iam.contract.context.PrincipalContext;
+import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.dynamicdb.DynamicDataSourceHolder;
 import com.wkclz.micro.dbview.bean.dto.SqlExecuteRequest;
 import com.wkclz.micro.dbview.bean.dto.SqlResult;
@@ -19,7 +19,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -73,7 +76,7 @@ public class DbviewSqlService {
         info.setPassword(password);
 
         long startTime = System.currentTimeMillis();
-        String userCode = PrincipalContext.getUserCode();
+        String userCode = IdentityContext.getUserCode();
 
         try {
             SqlResult result = CompletableFuture.supplyAsync(() -> {

@@ -1,6 +1,6 @@
 package com.wkclz.micro.fileos.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -9,28 +9,28 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class MdmFileosDirectory extends BaseEntity {
 
-    @FieldDesc("租户编码")
+    @Schema(description = "租户编码")
     private String tenantCode;
 
-    @FieldDesc("所属Bucket")
+    @Schema(description = "所属Bucket")
     private String bucketName;
 
-    @FieldDesc("目录完整路径")
+    @Schema(description = "目录完整路径")
     private String dirPath;
 
-    @FieldDesc("目录名")
+    @Schema(description = "目录名")
     private String dirName;
 
-    @FieldDesc("父目录路径")
+    @Schema(description = "父目录路径")
     private String parentPath;
 
-    @FieldDesc("目录层级")
+    @Schema(description = "目录层级")
     private Integer dirLevel;
 
-    @FieldDesc("文件数量")
+    @Schema(description = "文件数量")
     private Long fileCount;
 
-    @FieldDesc("文件总大小")
+    @Schema(description = "文件总大小")
     private Long totalSize;
 
     public static MdmFileosDirectory copy(MdmFileosDirectory source, MdmFileosDirectory target) {

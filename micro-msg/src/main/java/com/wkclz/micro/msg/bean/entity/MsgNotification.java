@@ -1,6 +1,6 @@
 package com.wkclz.micro.msg.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,31 +21,31 @@ public class MsgNotification extends BaseEntity {
     /**
      * 消息编码
      */
-    @FieldDesc(value = "消息编码")
+    @Schema(description = "消息编码")
     private String noticeNo;
 
     /**
      * 通知发送人
      */
-    @FieldDesc(value = "通知发送人")
+    @Schema(description = "通知发送人")
     private String userCode;
 
     /**
      * 通知标题
      */
-    @FieldDesc(value = "通知标题")
+    @Schema(description = "通知标题")
     private String title;
 
     /**
      * 通知正文
      */
-    @FieldDesc(value = "通知正文")
+    @Schema(description = "通知正文")
     private String content;
 
     /**
      * 扩展URL
      */
-    @FieldDesc(value = "扩展URL")
+    @Schema(description = "扩展URL")
     private String extUrl;
 
 

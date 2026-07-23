@@ -1,6 +1,6 @@
 package com.wkclz.micro.report.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -9,28 +9,28 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public class ReportDefinition extends BaseEntity {
 
-    @FieldDesc("报表编码")
+    @Schema(description = "报表编码")
     private String reportCode;
 
-    @FieldDesc("报表名称")
+    @Schema(description = "报表名称")
     private String reportName;
 
-    @FieldDesc("返回值类型：OBJECT/LIST/PAGE")
+    @Schema(description = "返回值类型：OBJECT/LIST/PAGE")
     private String resultType;
 
-    @FieldDesc("启用状态")
+    @Schema(description = "启用状态")
     private Integer enableFlag;
 
-    @FieldDesc("SQL查询脚本")
+    @Schema(description = "SQL查询脚本")
     private String reportScript;
 
-    @FieldDesc("Count脚本开关")
+    @Schema(description = "Count脚本开关")
     private Integer reportScriptCountSwitch;
 
-    @FieldDesc("自定义COUNT SQL脚本")
+    @Schema(description = "自定义COUNT SQL脚本")
     private String reportScriptCount;
 
-    @FieldDesc("自动驼峰转换")
+    @Schema(description = "自动驼峰转换")
     private Integer reportScriptAutocamel;
 
     public static ReportDefinition copy(ReportDefinition source, ReportDefinition target) {

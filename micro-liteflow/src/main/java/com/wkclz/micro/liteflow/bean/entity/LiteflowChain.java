@@ -1,6 +1,6 @@
 package com.wkclz.micro.liteflow.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,37 +21,37 @@ public class LiteflowChain extends BaseEntity {
     /**
      * 规则名称
      */
-    @FieldDesc("规则名称")
+    @Schema(description = "规则名称")
     private String chainName;
 
     /**
      * 规则描述
      */
-    @FieldDesc("规则描述")
+    @Schema(description = "规则描述")
     private String chainDesc;
 
     /**
      * 规则数据
      */
-    @FieldDesc("规则数据")
+    @Schema(description = "规则数据")
     private String elData;
 
     /**
      * 路由
      */
-    @FieldDesc("路由")
+    @Schema(description = "路由")
     private String route;
 
     /**
      * 命名空间
      */
-    @FieldDesc("命名空间")
+    @Schema(description = "命名空间")
     private String namespace;
 
     /**
      * 状态
      */
-    @FieldDesc("状态")
+    @Schema(description = "状态")
     private Integer enable;
 
 

@@ -1,6 +1,6 @@
 package com.wkclz.micro.pay.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,67 +21,67 @@ public class PayWxpayConfig extends BaseEntity {
     /**
      * 租户编码
      */
-    @FieldDesc("租户编码")
+    @Schema(description = "租户编码")
     private String tenantCode;
 
     /**
      * AppId
      */
-    @FieldDesc("AppId")
+    @Schema(description = "AppId")
     private String appId;
 
     /**
      * 支付商户号
      */
-    @FieldDesc("支付商户号")
+    @Schema(description = "支付商户号")
     private String mchId;
 
     /**
      * 支付商户密钥V3
      */
-    @FieldDesc("支付商户密钥V3")
+    @Schema(description = "支付商户密钥V3")
     private String mchV3Key;
 
     /**
      * 商户API证书Key
      */
-    @FieldDesc("商户API证书Key")
+    @Schema(description = "商户API证书Key")
     private String apiclientKey;
 
     /**
      * 商户API证书Cert
      */
-    @FieldDesc("商户API证书Cert")
+    @Schema(description = "商户API证书Cert")
     private String apiclientCert;
 
     /**
      * 商户API证书序列号
      */
-    @FieldDesc("商户API证书序列号")
+    @Schema(description = "商户API证书序列号")
     private String mchCertSerialNo;
 
     /**
      * 服务器异步通知路径
      */
-    @FieldDesc("服务器异步通知路径")
+    @Schema(description = "服务器异步通知路径")
     private String notifyUrl;
 
     /**
      * 页面跳转同步通知页面路径
      */
-    @FieldDesc("页面跳转同步通知页面路径")
+    @Schema(description = "页面跳转同步通知页面路径")
     private String returnUrl;
 
     /**
      * 退款回调地址
      */
-    @FieldDesc("退款回调地址")
+    @Schema(description = "退款回调地址")
     private String refundNotifyUrl;
 
     /**
      * 微信域名验证签名
      */
-    @FieldDesc("微信域名验证签名")
+    @Schema(description = "微信域名验证签名")
     private String verifySign;
 
 

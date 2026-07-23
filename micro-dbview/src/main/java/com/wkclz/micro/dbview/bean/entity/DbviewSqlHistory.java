@@ -1,6 +1,6 @@
 package com.wkclz.micro.dbview.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -9,27 +9,27 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public class DbviewSqlHistory extends BaseEntity {
 
-    @FieldDesc("数据源ID")
+    @Schema(description = "数据源ID")
     private Long datasourceId;
 
-    @FieldDesc("执行人")
+    @Schema(description = "执行人")
     private String userCode;
 
-    @FieldDesc("SQL文本")
+    @Schema(description = "SQL文本")
     private String sqlText;
 
-    @FieldDesc("SQL类型")
+    @Schema(description = "SQL类型")
     private String sqlType;
 
-    @FieldDesc("执行状态：0-失败 1-成功")
+    @Schema(description = "执行状态：0-失败 1-成功")
     private Integer status;
 
-    @FieldDesc("影响行数")
+    @Schema(description = "影响行数")
     private Long affectedRows;
 
-    @FieldDesc("耗时(ms)")
+    @Schema(description = "耗时(ms)")
     private Long costMs;
 
-    @FieldDesc("错误信息")
+    @Schema(description = "错误信息")
     private String errorMessage;
 }

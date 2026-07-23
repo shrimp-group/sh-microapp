@@ -2,23 +2,14 @@ package com.wkclz.micro.points.rest;
 
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.base.R;
-import com.wkclz.iam.contract.context.PrincipalContext;
+import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.micro.points.bean.entity.PointsConsumeRecord;
 import com.wkclz.micro.points.bean.entity.PointsDeductionRecord;
 import com.wkclz.micro.points.bean.entity.PointsEarnRecord;
 import com.wkclz.micro.points.bean.entity.PointsWallet;
 import com.wkclz.micro.points.bean.enums.PointsSourceType;
-import com.wkclz.micro.points.bean.req.PointsConsumePageReq;
-import com.wkclz.micro.points.bean.req.PointsEarnPageReq;
-import com.wkclz.micro.points.bean.req.PointsIssueReq;
-import com.wkclz.micro.points.bean.req.PointsReconcileReq;
-import com.wkclz.micro.points.bean.req.PointsWalletQueryReq;
-import com.wkclz.micro.points.bean.resp.PointsConsumeDeductionResp;
-import com.wkclz.micro.points.bean.resp.PointsConsumeRecordResp;
-import com.wkclz.micro.points.bean.resp.PointsEarnRecordResp;
-import com.wkclz.micro.points.bean.resp.PointsIssueResp;
-import com.wkclz.micro.points.bean.resp.PointsReconcileResp;
-import com.wkclz.micro.points.bean.resp.PointsWalletResp;
+import com.wkclz.micro.points.bean.req.*;
+import com.wkclz.micro.points.bean.resp.*;
 import com.wkclz.micro.points.mapper.PointsConsumeRecordMapper;
 import com.wkclz.micro.points.mapper.PointsDeductionRecordMapper;
 import com.wkclz.micro.points.mapper.PointsEarnRecordMapper;
@@ -32,11 +23,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -87,7 +74,7 @@ public class PointsAdminRest {
         // 强制来源类型为 ADMIN_ISSUE，由 REST 层控制，忽略入参传入值
         req.setPointSourceType(PointsSourceType.ADMIN_ISSUE.name());
         // 租户编码以管理员登录态为准
-        req.setTenantCode(PrincipalContext.getTenantCode());
+        req.setTenantCode(IdentityContext.getTenantCode());
         log.info("管理员手动发放积分, tenantCode={}, userCode={}, points={}, sourceNo={}",
                 req.getTenantCode(), req.getUserCode(), req.getPoints(), req.getSourceNo());
 
@@ -101,7 +88,7 @@ public class PointsAdminRest {
     @Operation(summary = "2.用户钱包查询", description = "按 userCode 查询用户钱包")
     @GetMapping(Route.ADMIN_WALLET)
     public R<PointsWalletResp> adminWallet(@Valid PointsWalletQueryReq req) {
-        String tenantCode = PrincipalContext.getTenantCode();
+        String tenantCode = IdentityContext.getTenantCode();
         log.info("运营端钱包查询, tenantCode={}, userCode={}", tenantCode, req.getUserCode());
 
         PointsWallet wallet = walletService.getOrCreateWallet(tenantCode, req.getUserCode());
@@ -119,7 +106,7 @@ public class PointsAdminRest {
     @Operation(summary = "3.获取流水分页", description = "按 userCode 分页查询获取流水")
     @GetMapping(Route.ADMIN_EARN_PAGE)
     public R<PageData<PointsEarnRecordResp>> adminEarnPage(PointsEarnPageReq req) {
-        String tenantCode = PrincipalContext.getTenantCode();
+        String tenantCode = IdentityContext.getTenantCode();
         log.info("运营端获取流水分页, tenantCode={}, userCode={}, current={}, size={}",
                 tenantCode, req.getUserCode(), req.getCurrent(), req.getSize());
 
@@ -138,7 +125,7 @@ public class PointsAdminRest {
     @Operation(summary = "4.消费流水分页", description = "按 userCode 分页查询消费流水")
     @GetMapping(Route.ADMIN_CONSUME_PAGE)
     public R<PageData<PointsConsumeRecordResp>> adminConsumePage(PointsConsumePageReq req) {
-        String tenantCode = PrincipalContext.getTenantCode();
+        String tenantCode = IdentityContext.getTenantCode();
         log.info("运营端消费流水分页, tenantCode={}, userCode={}, current={}, size={}",
                 tenantCode, req.getUserCode(), req.getCurrent(), req.getSize());
 
@@ -159,7 +146,7 @@ public class PointsAdminRest {
     @Operation(summary = "5.消费扣减明细", description = "按 userCode 查询消费流水及其关联扣减动作记录（对账）")
     @GetMapping(Route.ADMIN_CONSUME_DEDUCTION_PAGE)
     public R<List<PointsConsumeDeductionResp>> adminConsumeDeductionPage(PointsConsumePageReq req) {
-        String tenantCode = PrincipalContext.getTenantCode();
+        String tenantCode = IdentityContext.getTenantCode();
         log.info("运营端消费扣减明细查询, tenantCode={}, userCode={}, current={}, size={}",
                 tenantCode, req.getUserCode(), req.getCurrent(), req.getSize());
 
@@ -214,7 +201,7 @@ public class PointsAdminRest {
     @GetMapping(Route.ADMIN_RECONCILE)
     public R<List<PointsReconcileResp>> adminReconcile(PointsReconcileReq req) {
         // 租户编码以管理员登录态为准
-        req.setTenantCode(PrincipalContext.getTenantCode());
+        req.setTenantCode(IdentityContext.getTenantCode());
         log.info("运营端对账查询, tenantCode={}, userCode={}, startTime={}, endTime={}",
                 req.getTenantCode(), req.getUserCode(), req.getStartTime(), req.getEndTime());
 

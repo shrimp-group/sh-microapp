@@ -2,14 +2,14 @@ package com.wkclz.micro.material.service;
 
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.iam.contract.context.PrincipalContext;
+import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.micro.fileos.api.FileosDeleteApi;
-import com.wkclz.micro.material.mapper.MdmMaterialMapper;
-import com.wkclz.micro.material.mapper.MdmMaterialRefMapper;
-import com.wkclz.micro.material.mapper.MdmMaterialVersionMapper;
 import com.wkclz.micro.material.bean.entity.MdmMaterial;
 import com.wkclz.micro.material.bean.entity.MdmMaterialVersion;
 import com.wkclz.micro.material.bean.req.MaterialBatchCreateReq;
+import com.wkclz.micro.material.mapper.MdmMaterialMapper;
+import com.wkclz.micro.material.mapper.MdmMaterialRefMapper;
+import com.wkclz.micro.material.mapper.MdmMaterialVersionMapper;
 import com.wkclz.mybatis.helper.PageQuery;
 import com.wkclz.mybatis.service.BaseService;
 import com.wkclz.redis.helper.RedisIdGenerator;
@@ -39,8 +39,8 @@ public class MdmMaterialService extends BaseService<MdmMaterial, MdmMaterialMapp
     private RedisIdGenerator redisIdGenerator;
 
     public PageData<MdmMaterial> getPage(MdmMaterial entity) {
-        entity.setTenantCode(PrincipalContext.getTenantCode());
-        entity.setUserCode(PrincipalContext.getUserCode());
+        entity.setTenantCode(IdentityContext.getTenantCode());
+        entity.setUserCode(IdentityContext.getUserCode());
         return PageQuery.page(entity, mapper::getMaterialList4Page);
     }
 
@@ -55,8 +55,8 @@ public class MdmMaterialService extends BaseService<MdmMaterial, MdmMaterialMapp
 
     @Transactional(rollbackFor = Exception.class)
     public MdmMaterial create(String fileId, String fileName, Long fileSize, String materialName, String materialType, String groupCode, String visibility, String description) {
-        String tenantCode = PrincipalContext.getTenantCode();
-        String userCode = PrincipalContext.getUserCode();
+        String tenantCode = IdentityContext.getTenantCode();
+        String userCode = IdentityContext.getUserCode();
 
         MdmMaterial material = new MdmMaterial();
         material.setMaterialCode(String.valueOf(redisIdGenerator.generateIdWithPrefix("m_")));
@@ -105,8 +105,8 @@ public class MdmMaterialService extends BaseService<MdmMaterial, MdmMaterialMapp
 
     @Transactional(rollbackFor = Exception.class)
     public MdmMaterial linkCreate(String materialName, String materialType, String linkUrl, String groupCode, String visibility, String description) {
-        String tenantCode = PrincipalContext.getTenantCode();
-        String userCode = PrincipalContext.getUserCode();
+        String tenantCode = IdentityContext.getTenantCode();
+        String userCode = IdentityContext.getUserCode();
 
         String linkStatus = checkLinkStatus(linkUrl);
 
@@ -134,7 +134,7 @@ public class MdmMaterialService extends BaseService<MdmMaterial, MdmMaterialMapp
             throw ValidationException.of("素材不存在或无权操作");
         }
         checkEditPermission(existing);
-        entity.setTenantCode(PrincipalContext.getTenantCode());
+        entity.setTenantCode(IdentityContext.getTenantCode());
         return updateByIdSelective(entity);
     }
 
@@ -196,8 +196,8 @@ public class MdmMaterialService extends BaseService<MdmMaterial, MdmMaterialMapp
         versionRecord.setFileId(existing.getFileId());
         versionRecord.setFileName(existing.getFileName());
         versionRecord.setFileSize(existing.getFileSize());
-        versionRecord.setTenantCode(PrincipalContext.getTenantCode());
-        versionRecord.setUserCode(PrincipalContext.getUserCode());
+        versionRecord.setTenantCode(IdentityContext.getTenantCode());
+        versionRecord.setUserCode(IdentityContext.getUserCode());
         versionMapper.insert(versionRecord);
 
         log.info("素材替换文件, materialCode={}, newFileId={}", existing.getMaterialCode(), fileId);
@@ -235,19 +235,19 @@ public class MdmMaterialService extends BaseService<MdmMaterial, MdmMaterialMapp
     }
 
     public PageData<MdmMaterial> getHotPage(MdmMaterial entity) {
-        entity.setTenantCode(PrincipalContext.getTenantCode());
+        entity.setTenantCode(IdentityContext.getTenantCode());
         return PageQuery.page(entity, mapper::getHotMaterialList);
     }
 
     public PageData<MdmMaterial> getPickerPage(MdmMaterial entity) {
-        entity.setTenantCode(PrincipalContext.getTenantCode());
-        entity.setUserCode(PrincipalContext.getUserCode());
+        entity.setTenantCode(IdentityContext.getTenantCode());
+        entity.setUserCode(IdentityContext.getUserCode());
         return PageQuery.page(entity, mapper::getPickerMaterialList);
     }
 
     private void checkViewPermission(MdmMaterial material) {
         if ("PRIVATE".equals(material.getVisibility())) {
-            String currentUser = PrincipalContext.getUserCode();
+            String currentUser = IdentityContext.getUserCode();
             if (!material.getUserCode().equals(currentUser)) {
                 throw ValidationException.of("素材不存在或无权操作");
             }
@@ -255,7 +255,7 @@ public class MdmMaterialService extends BaseService<MdmMaterial, MdmMaterialMapp
     }
 
     private void checkEditPermission(MdmMaterial material) {
-        String currentUser = PrincipalContext.getUserCode();
+        String currentUser = IdentityContext.getUserCode();
         if (!material.getUserCode().equals(currentUser)) {
             throw ValidationException.of("无权操作该素材");
         }
@@ -275,7 +275,7 @@ public class MdmMaterialService extends BaseService<MdmMaterial, MdmMaterialMapp
     }
 
     private Integer getNextVersionNo(String materialCode) {
-        List<MdmMaterialVersion> versions = versionMapper.getByMaterialCode(materialCode, PrincipalContext.getTenantCode());
+        List<MdmMaterialVersion> versions = versionMapper.getByMaterialCode(materialCode, IdentityContext.getTenantCode());
         if (CollectionUtils.isEmpty(versions)) {
             return 1;
         }
@@ -284,6 +284,6 @@ public class MdmMaterialService extends BaseService<MdmMaterial, MdmMaterialMapp
 
     private void cleanupOldVersions(String materialCode) {
         int keepCount = 10;
-        versionMapper.deleteOldestVersions(materialCode, PrincipalContext.getTenantCode(), keepCount);
+        versionMapper.deleteOldestVersions(materialCode, IdentityContext.getTenantCode(), keepCount);
     }
 }

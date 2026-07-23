@@ -1,6 +1,6 @@
 package com.wkclz.micro.material.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,37 +21,37 @@ public class MdmMaterialTransferLog extends BaseEntity {
     /**
      * 素材编码
      */
-    @FieldDesc(value = "素材编码", notNull = true)
+    @Schema(description = "素材编码")
     private String materialCode;
 
     /**
      * 原所有者用户编码
      */
-    @FieldDesc(value = "原所有者用户编码", notNull = true)
+    @Schema(description = "原所有者用户编码")
     private String fromUserCode;
 
     /**
      * 新所有者用户编码
      */
-    @FieldDesc(value = "新所有者用户编码", notNull = true)
+    @Schema(description = "新所有者用户编码")
     private String toUserCode;
 
     /**
      * 操作人用户编码
      */
-    @FieldDesc(value = "操作人用户编码", notNull = true)
+    @Schema(description = "操作人用户编码")
     private String operatorCode;
 
     /**
      * 操作人用户编码
      */
-    @FieldDesc(value = "操作人用户编码", notNull = true)
+    @Schema(description = "操作人用户编码")
     private String userCode;
 
     /**
      * 租户编码
      */
-    @FieldDesc(value = "租户编码", notNull = true)
+    @Schema(description = "租户编码")
     private String tenantCode;
 
 

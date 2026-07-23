@@ -1,6 +1,6 @@
 package com.wkclz.micro.report.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -9,22 +9,22 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public class ReportDefinitionResult extends BaseEntity {
 
-    @FieldDesc("报表编码")
+    @Schema(description = "报表编码")
     private String reportCode;
 
-    @FieldDesc("字段编码")
+    @Schema(description = "字段编码")
     private String fieldCode;
 
-    @FieldDesc("字段名称")
+    @Schema(description = "字段名称")
     private String fieldName;
 
-    @FieldDesc("字段类型")
+    @Schema(description = "字段类型")
     private String fieldType;
 
-    @FieldDesc("展示类型")
+    @Schema(description = "展示类型")
     private String fieldFormType;
 
-    @FieldDesc("列宽")
+    @Schema(description = "列宽")
     private Integer width;
 
     public static ReportDefinitionResult copy(ReportDefinitionResult source, ReportDefinitionResult target) {

@@ -2,7 +2,7 @@ package com.wkclz.micro.points.rest;
 
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.base.R;
-import com.wkclz.iam.contract.context.PrincipalContext;
+import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.micro.points.bean.entity.PointsConsumeRecord;
 import com.wkclz.micro.points.bean.entity.PointsEarnRecord;
 import com.wkclz.micro.points.bean.entity.PointsWallet;
@@ -58,8 +58,8 @@ public class PointsRest {
     @Operation(summary = "1.钱包查询", description = "基于登录态查询当前用户钱包余额")
     @GetMapping(Route.CUSTOM_WALLET)
     public R<PointsWalletResp> wallet() {
-        String tenantCode = PrincipalContext.getTenantCode();
-        String userCode = PrincipalContext.getUserCode();
+        String tenantCode = IdentityContext.getTenantCode();
+        String userCode = IdentityContext.getUserCode();
         log.info("C端钱包查询, tenantCode={}, userCode={}", tenantCode, userCode);
 
         PointsWallet wallet = walletService.getOrCreateWallet(tenantCode, userCode);
@@ -79,8 +79,8 @@ public class PointsRest {
     @Operation(summary = "2.获取流水分页", description = "基于登录态分页查询当前用户积分获取流水")
     @GetMapping(Route.CUSTOM_EARN_PAGE)
     public R<PageData<PointsEarnRecordResp>> earnPage(PointsEarnPageReq req) {
-        String tenantCode = PrincipalContext.getTenantCode();
-        String userCode = PrincipalContext.getUserCode();
+        String tenantCode = IdentityContext.getTenantCode();
+        String userCode = IdentityContext.getUserCode();
         log.info("C端获取流水分页, tenantCode={}, userCode={}, current={}, size={}",
                 tenantCode, userCode, req.getCurrent(), req.getSize());
 
@@ -101,8 +101,8 @@ public class PointsRest {
     @Operation(summary = "3.消费流水分页", description = "基于登录态分页查询当前用户积分消费流水")
     @GetMapping(Route.CUSTOM_CONSUME_PAGE)
     public R<PageData<PointsConsumeRecordResp>> consumePage(PointsConsumePageReq req) {
-        String tenantCode = PrincipalContext.getTenantCode();
-        String userCode = PrincipalContext.getUserCode();
+        String tenantCode = IdentityContext.getTenantCode();
+        String userCode = IdentityContext.getUserCode();
         log.info("C端消费流水分页, tenantCode={}, userCode={}, current={}, size={}",
                 tenantCode, userCode, req.getCurrent(), req.getSize());
 
@@ -124,8 +124,8 @@ public class PointsRest {
     @Operation(summary = "4.积分试算", description = "基于登录态试算积分可抵扣金额（只读）")
     @GetMapping(Route.CUSTOM_TRIAL)
     public R<PointsTrialResp> trial(PointsTrialReq req) {
-        String tenantCode = PrincipalContext.getTenantCode();
-        String userCode = PrincipalContext.getUserCode();
+        String tenantCode = IdentityContext.getTenantCode();
+        String userCode = IdentityContext.getUserCode();
         log.info("C端积分试算, tenantCode={}, userCode={}, paymentAmount={}",
                 tenantCode, userCode, req.getPaymentAmount());
 

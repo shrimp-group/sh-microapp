@@ -1,6 +1,6 @@
 package com.wkclz.micro.pay.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,61 +21,61 @@ public class PayAlipayConfig extends BaseEntity {
     /**
      * 租户编码
      */
-    @FieldDesc("租户编码")
+    @Schema(description = "租户编码")
     private String tenantCode;
 
     /**
      * 应用ID
      */
-    @FieldDesc("应用ID")
+    @Schema(description = "应用ID")
     private String appId;
 
     /**
      * 商户私钥
      */
-    @FieldDesc("商户私钥")
+    @Schema(description = "商户私钥")
     private String merchantPrivateKey;
 
     /**
      * 支付宝公钥
      */
-    @FieldDesc("支付宝公钥")
+    @Schema(description = "支付宝公钥")
     private String alipayPublicKey;
 
     /**
      * 应用公钥
      */
-    @FieldDesc("应用公钥")
+    @Schema(description = "应用公钥")
     private String appPublicKey;
 
     /**
      * 服务器异步通知路径
      */
-    @FieldDesc("服务器异步通知路径")
+    @Schema(description = "服务器异步通知路径")
     private String notifyUrl;
 
     /**
      * 页面跳转同步通知页面路径
      */
-    @FieldDesc("页面跳转同步通知页面路径")
+    @Schema(description = "页面跳转同步通知页面路径")
     private String returnUrl;
 
     /**
      * 签名方式
      */
-    @FieldDesc("签名方式")
+    @Schema(description = "签名方式")
     private String signType;
 
     /**
      * 字符编码格式
      */
-    @FieldDesc("字符编码格式")
+    @Schema(description = "字符编码格式")
     private String charset;
 
     /**
      * 是否为生产环境
      */
-    @FieldDesc("是否为生产环境")
+    @Schema(description = "是否为生产环境")
     private Integer isProd;
 
 

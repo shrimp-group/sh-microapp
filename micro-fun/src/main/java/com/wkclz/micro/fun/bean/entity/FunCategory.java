@@ -1,6 +1,6 @@
 package com.wkclz.micro.fun.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,31 +21,31 @@ public class FunCategory extends BaseEntity {
     /**
      * 父类Code,0为顶级
      */
-    @FieldDesc("父类Code,0为顶级")
+    @Schema(description = "父类Code,0为顶级")
     private String pcode;
 
     /**
      * 分类编码
      */
-    @FieldDesc("分类编码")
+    @Schema(description = "分类编码")
     private String categoryCode;
 
     /**
      * 分类名称
      */
-    @FieldDesc("分类名称")
+    @Schema(description = "分类名称")
     private String categoryName;
 
     /**
      * 描述
      */
-    @FieldDesc("描述")
+    @Schema(description = "描述")
     private String description;
 
     /**
      * 可见1/0
      */
-    @FieldDesc("可见1/0")
+    @Schema(description = "可见1/0")
     private Integer visible;
 
 

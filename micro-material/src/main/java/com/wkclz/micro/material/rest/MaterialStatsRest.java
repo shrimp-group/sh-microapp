@@ -2,7 +2,7 @@ package com.wkclz.micro.material.rest;
 
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.base.R;
-import com.wkclz.iam.contract.context.PrincipalContext;
+import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.micro.material.bean.entity.MdmMaterial;
 import com.wkclz.micro.material.bean.req.MaterialPageReq;
 import com.wkclz.micro.material.bean.resp.MaterialDistributionResp;
@@ -15,9 +15,12 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Tag(name = "6.素材统计", description = "素材统计接口")
@@ -42,7 +45,7 @@ public class MaterialStatsRest {
     @GetMapping(Route.STATS_DISTRIBUTION)
     public R<List<MaterialDistributionResp>> distribution() {
         MdmMaterial param = new MdmMaterial();
-        param.setTenantCode(PrincipalContext.getTenantCode());
+        param.setTenantCode(IdentityContext.getTenantCode());
         List<MdmMaterial> all = mdmMaterialService.selectByEntity(param);
         Map<String, Long> typeCount = all.stream()
                 .filter(m -> m.getMaterialType() != null)

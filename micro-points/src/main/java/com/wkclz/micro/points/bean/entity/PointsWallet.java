@@ -1,6 +1,6 @@
 package com.wkclz.micro.points.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -16,31 +16,31 @@ public class PointsWallet extends BaseEntity {
     /**
      * 租户编码
      */
-    @FieldDesc("租户编码")
+    @Schema(description = "租户编码")
     private String tenantCode;
 
     /**
      * 用户编码
      */
-    @FieldDesc("用户编码")
+    @Schema(description = "用户编码")
     private String userCode;
 
     /**
      * 可用积分
      */
-    @FieldDesc("可用积分")
+    @Schema(description = "可用积分")
     private Integer availablePoints;
 
     /**
      * 冻结积分
      */
-    @FieldDesc("冻结积分")
+    @Schema(description = "冻结积分")
     private Integer frozenPoints;
 
     /**
      * 历史总获得积分
      */
-    @FieldDesc("历史总获得积分")
+    @Schema(description = "历史总获得积分")
     private Integer totalEarnedPoints;
 
 

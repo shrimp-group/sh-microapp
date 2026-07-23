@@ -1,6 +1,6 @@
 package com.wkclz.micro.material.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,43 +21,43 @@ public class MdmMaterialVersion extends BaseEntity {
     /**
      * 素材编码
      */
-    @FieldDesc(value = "素材编码", notNull = true)
+    @Schema(description = "素材编码")
     private String materialCode;
 
     /**
      * 版本号
      */
-    @FieldDesc(value = "版本号", notNull = true)
+    @Schema(description = "版本号")
     private Integer versionNo;
 
     /**
      * 文件ID
      */
-    @FieldDesc(value = "文件ID")
+    @Schema(description = "文件ID")
     private String fileId;
 
     /**
      * 文件名
      */
-    @FieldDesc(value = "文件名")
+    @Schema(description = "文件名")
     private String fileName;
 
     /**
      * 文件大小(字节)
      */
-    @FieldDesc(value = "文件大小(字节)")
+    @Schema(description = "文件大小(字节)")
     private Long fileSize;
 
     /**
      * 操作人用户编码
      */
-    @FieldDesc(value = "操作人用户编码", notNull = true)
+    @Schema(description = "操作人用户编码")
     private String userCode;
 
     /**
      * 租户编码
      */
-    @FieldDesc(value = "租户编码", notNull = true)
+    @Schema(description = "租户编码")
     private String tenantCode;
 
 

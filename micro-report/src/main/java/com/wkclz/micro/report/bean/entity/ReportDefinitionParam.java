@@ -1,6 +1,6 @@
 package com.wkclz.micro.report.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -9,34 +9,34 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public class ReportDefinitionParam extends BaseEntity {
 
-    @FieldDesc("报表编码")
+    @Schema(description = "报表编码")
     private String reportCode;
 
-    @FieldDesc("字段编码")
+    @Schema(description = "字段编码")
     private String fieldCode;
 
-    @FieldDesc("字段名称")
+    @Schema(description = "字段名称")
     private String fieldName;
 
-    @FieldDesc("字段类型")
+    @Schema(description = "字段类型")
     private String fieldType;
 
-    @FieldDesc("表单类型")
+    @Schema(description = "表单类型")
     private String fieldFormType;
 
-    @FieldDesc("输入提示")
+    @Schema(description = "输入提示")
     private String placeholder;
 
-    @FieldDesc("是否必填")
+    @Schema(description = "是否必填")
     private Integer required;
 
-    @FieldDesc("校验JS脚本")
+    @Schema(description = "校验JS脚本")
     private String validateScript;
 
-    @FieldDesc("字典类型")
+    @Schema(description = "字典类型")
     private String dictType;
 
-    @FieldDesc("列表宽度")
+    @Schema(description = "列表宽度")
     private Integer width;
 
     public static ReportDefinitionParam copy(ReportDefinitionParam source, ReportDefinitionParam target) {

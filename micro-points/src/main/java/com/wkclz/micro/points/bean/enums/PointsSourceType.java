@@ -1,11 +1,11 @@
 package com.wkclz.micro.points.bean.enums;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * 积分来源类型
  */
-@FieldDesc("积分来源类型")
+@Schema(description = "积分来源类型")
 public enum PointsSourceType {
 
     ISSUANCE("发放"),

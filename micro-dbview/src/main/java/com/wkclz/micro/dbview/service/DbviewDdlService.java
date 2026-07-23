@@ -1,7 +1,7 @@
 package com.wkclz.micro.dbview.service;
 
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.iam.contract.context.PrincipalContext;
+import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.dynamicdb.DynamicDataSourceHolder;
 import com.wkclz.micro.dbview.bean.dto.*;
 import com.wkclz.micro.dbview.bean.entity.DbviewDatasource;
@@ -51,7 +51,7 @@ public class DbviewDdlService {
     }
 
     public void execute(DdlRequest request) {
-        String userCode = PrincipalContext.getUserCode();
+        String userCode = IdentityContext.getUserCode();
         permissionService.check(request.getDatasourceId(), "ALTER TABLE", true);
 
         String ddl = generateDdl(request);
@@ -59,7 +59,7 @@ public class DbviewDdlService {
     }
 
     public void executeDdl(Long datasourceId, String schemaName, String ddl, Boolean confirmDangerous) {
-        String userCode = PrincipalContext.getUserCode();
+        String userCode = IdentityContext.getUserCode();
         permissionService.check(datasourceId, ddl, confirmDangerous);
         executeDdlInternal(datasourceId, ddl, userCode);
     }

@@ -2,15 +2,15 @@ package com.wkclz.micro.pay.rest.config;
 
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.base.R;
-import com.wkclz.iam.contract.context.PrincipalContext;
-import com.wkclz.micro.pay.bean.req.*;
-import com.wkclz.micro.pay.cache.AlipayClientCache;
+import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.micro.pay.bean.dto.PayAlipayConfigDto;
 import com.wkclz.micro.pay.bean.entity.PayAlipayConfig;
+import com.wkclz.micro.pay.bean.req.*;
 import com.wkclz.micro.pay.bean.resp.AlipayConfigCreateResp;
 import com.wkclz.micro.pay.bean.resp.AlipayConfigInfoResp;
 import com.wkclz.micro.pay.bean.resp.AlipayConfigPageResp;
 import com.wkclz.micro.pay.bean.resp.AlipayConfigUpdateResp;
+import com.wkclz.micro.pay.cache.AlipayClientCache;
 import com.wkclz.micro.pay.rest.Route;
 import com.wkclz.micro.pay.service.PayAlipayConfigService;
 import com.wkclz.tool.utils.BeanUtil;
@@ -42,7 +42,7 @@ public class AlipayConfigRest {
     @GetMapping(Route.ALIPAY_CONFIG_PAGE)
     public R<PageData<AlipayConfigPageResp>> payAlipayConfigPage(@Valid AlipayConfigPageReq req) {
         PayAlipayConfigDto dto = BeanUtil.cp(req, PayAlipayConfigDto.class);
-        dto.setTenantCode(PrincipalContext.getTenantCode());
+        dto.setTenantCode(IdentityContext.getTenantCode());
         PageData<PayAlipayConfigDto> page = payAlipayConfigService.getAlipayConfigPage(dto);
         PageData<AlipayConfigPageResp> newPage = page.convert(AlipayConfigPageResp.class);
         return R.ok(newPage);
@@ -53,7 +53,7 @@ public class AlipayConfigRest {
     public R<AlipayConfigInfoResp> payAlipayConfigInfo(@Valid AlipayConfigInfoReq req) {
         PayAlipayConfig entity = new PayAlipayConfig();
         entity.setId(req.getId());
-        entity.setTenantCode(PrincipalContext.getTenantCode());
+        entity.setTenantCode(IdentityContext.getTenantCode());
         entity = payAlipayConfigService.getDetail(entity);
         AlipayConfigInfoResp resp = BeanUtil.cp(entity, AlipayConfigInfoResp.class);
         return R.ok(resp);
@@ -67,7 +67,7 @@ public class AlipayConfigRest {
         }
         PayAlipayConfig entity = BeanUtil.cp(req, PayAlipayConfig.class);
         if (StringUtils.isBlank(entity.getTenantCode())) {
-            entity.setTenantCode(PrincipalContext.getTenantCode());
+            entity.setTenantCode(IdentityContext.getTenantCode());
         }
         entity = payAlipayConfigService.create(entity);
         AlipayConfigCreateResp resp = BeanUtil.cp(entity, AlipayConfigCreateResp.class);
@@ -82,7 +82,7 @@ public class AlipayConfigRest {
         }
         PayAlipayConfig entity = BeanUtil.cp(req, PayAlipayConfig.class);
         if (StringUtils.isBlank(entity.getTenantCode())) {
-            entity.setTenantCode(PrincipalContext.getTenantCode());
+            entity.setTenantCode(IdentityContext.getTenantCode());
         }
         entity = payAlipayConfigService.update(entity);
         alipayClientCache.clearCache();

@@ -1,6 +1,6 @@
 package com.wkclz.micro.fileos.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -11,46 +11,46 @@ import java.util.Date;
 @EqualsAndHashCode(callSuper = true)
 public class MdmFileosMultipart extends BaseEntity {
 
-    @FieldDesc("租户编码")
+    @Schema(description = "租户编码")
     private String tenantCode;
 
-    @FieldDesc("分片上传ID")
+    @Schema(description = "分片上传ID")
     private String uploadId;
 
-    @FieldDesc("文件存储路径")
+    @Schema(description = "文件存储路径")
     private String fileId;
 
-    @FieldDesc("原始文件名")
+    @Schema(description = "原始文件名")
     private String fileName;
 
-    @FieldDesc("文件大小")
+    @Schema(description = "文件大小")
     private Long fileSize;
 
-    @FieldDesc("MIME类型")
+    @Schema(description = "MIME类型")
     private String contentType;
 
-    @FieldDesc("业务分类")
+    @Schema(description = "业务分类")
     private String category;
 
-    @FieldDesc("是否公共读")
+    @Schema(description = "是否公共读")
     private Integer isPublic;
 
-    @FieldDesc("OSS服务商")
+    @Schema(description = "OSS服务商")
     private String ossSp;
 
-    @FieldDesc("所属Bucket")
+    @Schema(description = "所属Bucket")
     private String bucketName;
 
-    @FieldDesc("分片总数")
+    @Schema(description = "分片总数")
     private Integer partCount;
 
-    @FieldDesc("已完成分片信息")
+    @Schema(description = "已完成分片信息")
     private String completedParts;
 
-    @FieldDesc("状态")
+    @Schema(description = "状态")
     private String status;
 
-    @FieldDesc("过期时间")
+    @Schema(description = "过期时间")
     private Date expireTime;
 
     public static MdmFileosMultipart copy(MdmFileosMultipart source, MdmFileosMultipart target) {

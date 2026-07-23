@@ -1,6 +1,6 @@
 package com.wkclz.micro.fun.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,67 +21,67 @@ public class FunFunction extends BaseEntity {
     /**
      * 分类编码
      */
-    @FieldDesc("分类编码")
+    @Schema(description = "分类编码")
     private String categoryCode;
 
     /**
      * 函数编码
      */
-    @FieldDesc("函数编码")
+    @Schema(description = "函数编码")
     private String funCode;
 
     /**
      * 函数名称
      */
-    @FieldDesc("函数名称")
+    @Schema(description = "函数名称")
     private String funName;
 
     /**
      * 参数列表
      */
-    @FieldDesc("参数列表")
+    @Schema(description = "参数列表")
     private String funParams;
 
     /**
      * 函数语言
      */
-    @FieldDesc("函数语言")
+    @Schema(description = "函数语言")
     private String funLanguage;
 
     /**
      * 函数体
      */
-    @FieldDesc("函数体")
+    @Schema(description = "函数体")
     private String funBody;
 
     /**
      * 返回类型
      */
-    @FieldDesc("返回类型")
+    @Schema(description = "返回类型")
     private String funReturn;
 
     /**
      * 函数说明
      */
-    @FieldDesc("函数说明")
+    @Schema(description = "函数说明")
     private String funDesc;
 
     /**
      * 模拟数据
      */
-    @FieldDesc("模拟数据")
+    @Schema(description = "模拟数据")
     private String funMockData;
 
     /**
      * 可见1/0
      */
-    @FieldDesc("可见1/0")
+    @Schema(description = "可见1/0")
     private Integer visible;
 
     /**
      * 内置
      */
-    @FieldDesc("内置")
+    @Schema(description = "内置")
     private Integer defaultFlag;
 
 

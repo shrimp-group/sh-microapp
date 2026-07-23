@@ -1,6 +1,6 @@
 package com.wkclz.micro.form.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,103 +21,103 @@ public class MdmFormItem extends BaseEntity {
     /**
      * 表单编码
      */
-    @FieldDesc("表单编码")
+    @Schema(description = "表单编码")
     private String formCode;
 
     /**
      * 分组
      */
-    @FieldDesc("分组")
+    @Schema(description = "分组")
     private String itemGroup;
 
     /**
      * 表单输入项编码
      */
-    @FieldDesc("表单输入项编码")
+    @Schema(description = "表单输入项编码")
     private String itemCode;
 
     /**
      * 绑定字段名称
      */
-    @FieldDesc("绑定字段名称")
+    @Schema(description = "绑定字段名称")
     private String itemName;
 
     /**
      * 输入项类型
      */
-    @FieldDesc("输入项类型")
+    @Schema(description = "输入项类型")
     private String inputType;
 
     /**
      * 字段类型
      */
-    @FieldDesc("字段类型")
+    @Schema(description = "字段类型")
     private String fieldType;
 
     /**
      * 字典类型
      */
-    @FieldDesc("字典类型")
+    @Schema(description = "字典类型")
     private String dictType;
 
     /**
      * 输入项标签
      */
-    @FieldDesc("输入项标签")
+    @Schema(description = "输入项标签")
     private String label;
 
     /**
      * 最小值
      */
-    @FieldDesc("最小值")
+    @Schema(description = "最小值")
     private Integer min;
 
     /**
      * 最大值
      */
-    @FieldDesc("最大值")
+    @Schema(description = "最大值")
     private Integer max;
 
     /**
      * 最小长度
      */
-    @FieldDesc("最小长度")
+    @Schema(description = "最小长度")
     private Integer minLength;
 
     /**
      * 最大长度
      */
-    @FieldDesc("最大长度")
+    @Schema(description = "最大长度")
     private Integer maxLength;
 
     /**
      * 输入提示
      */
-    @FieldDesc("输入提示")
+    @Schema(description = "输入提示")
     private String placeholder;
 
     /**
      * 必填
      */
-    @FieldDesc("必填")
+    @Schema(description = "必填")
     private Integer required;
 
     /**
      * 默认值
      */
-    @FieldDesc("默认值")
+    @Schema(description = "默认值")
     private String defaultValue;
 
     /**
      * 校验规则(rules)
      */
-    @FieldDesc("校验规则(rules)")
+    @Schema(description = "校验规则(rules)")
     private String rules;
 
     /**
      * 是否可清除
      */
-    @FieldDesc("是否可清除")
+    @Schema(description = "是否可清除")
     private Integer clearable;
 
 

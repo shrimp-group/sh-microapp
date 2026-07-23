@@ -1,6 +1,6 @@
 package com.wkclz.micro.dbview.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -9,13 +9,13 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = false)
 public class DbviewDatasourcePermission extends BaseEntity {
 
-    @FieldDesc("数据源ID")
+    @Schema(description = "数据源ID")
     private Long datasourceId;
 
-    @FieldDesc("用户编码")
+    @Schema(description = "用户编码")
     private String userCode;
 
-    @FieldDesc("权限等级：READ_ONLY / READ_WRITE / DDL")
+    @Schema(description = "权限等级：READ_ONLY / READ_WRITE / DDL")
     private String permissionLevel;
 
     public static DbviewDatasourcePermission copy(DbviewDatasourcePermission source, DbviewDatasourcePermission target) {

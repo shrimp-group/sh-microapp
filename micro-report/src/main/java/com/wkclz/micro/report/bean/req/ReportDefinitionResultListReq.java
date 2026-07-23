@@ -1,6 +1,6 @@
 package com.wkclz.micro.report.bean.req;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -15,9 +15,9 @@ public class ReportDefinitionResultListReq implements Serializable {
     @Schema(description = "报表编码", requiredMode = Schema.RequiredMode.REQUIRED)
     private String reportCode;
 
-    @FieldDesc("字段编码")
+    @Schema(description = "字段编码")
     private String fieldCode;
 
-    @FieldDesc("字段名称")
+    @Schema(description = "字段名称")
     private String fieldName;
 }

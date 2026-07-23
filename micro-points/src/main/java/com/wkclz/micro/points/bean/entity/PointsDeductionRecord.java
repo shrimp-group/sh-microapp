@@ -1,6 +1,6 @@
 package com.wkclz.micro.points.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -19,43 +19,43 @@ public class PointsDeductionRecord extends BaseEntity {
     /**
      * 租户编码
      */
-    @FieldDesc("租户编码")
+    @Schema(description = "租户编码")
     private String tenantCode;
 
     /**
      * 用户编码
      */
-    @FieldDesc("用户编码")
+    @Schema(description = "用户编码")
     private String userCode;
 
     /**
      * 扣减流水号（系统生成，唯一标识）
      */
-    @FieldDesc("扣减流水号")
+    @Schema(description = "扣减流水号")
     private String flowNo;
 
     /**
      * 关联消费单据号（= 消费流水的 order_no，用于溯源）
      */
-    @FieldDesc("关联消费单据号")
+    @Schema(description = "关联消费单据号")
     private String orderNo;
 
     /**
      * 积分获取流水号（任务记录为 NULL，动作记录指向 earn_record.flow_no）
      */
-    @FieldDesc("积分获取流水号")
+    @Schema(description = "积分获取流水号")
     private String earnFlowNo;
 
     /**
      * 扣减金额
      */
-    @FieldDesc("扣减金额")
+    @Schema(description = "扣减金额")
     private Integer deductionPoints;
 
     /**
      * 状态（PENDING 待处理 / PROCESSED 已处理 / COMPLETED 已完成 / PARTIAL 部分完成）
      */
-    @FieldDesc("状态")
+    @Schema(description = "状态")
     private String status;
 
 

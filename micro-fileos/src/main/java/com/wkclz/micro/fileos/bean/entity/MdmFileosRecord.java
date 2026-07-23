@@ -1,7 +1,7 @@
 package com.wkclz.micro.fileos.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
 import com.wkclz.core.base.BaseEntity;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -9,52 +9,52 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class MdmFileosRecord extends BaseEntity {
 
-    @FieldDesc("租户编码")
+    @Schema(description = "租户编码")
     private String tenantCode;
 
-    @FieldDesc("文件存储路径")
+    @Schema(description = "文件存储路径")
     private String fileId;
 
-    @FieldDesc("原始文件名")
+    @Schema(description = "原始文件名")
     private String fileName;
 
-    @FieldDesc("文件扩展名")
+    @Schema(description = "文件扩展名")
     private String fileType;
 
-    @FieldDesc("文件大小")
+    @Schema(description = "文件大小")
     private Long fileSize;
 
-    @FieldDesc("文件Hash")
+    @Schema(description = "文件Hash")
     private String fileHash;
 
-    @FieldDesc("MIME类型")
+    @Schema(description = "MIME类型")
     private String contentType;
 
-    @FieldDesc("业务分类")
+    @Schema(description = "业务分类")
     private String category;
 
-    @FieldDesc("所属目录路径")
+    @Schema(description = "所属目录路径")
     private String dirPath;
 
-    @FieldDesc("是否公共读")
+    @Schema(description = "是否公共读")
     private Integer isPublic;
 
-    @FieldDesc("OSS服务商")
+    @Schema(description = "OSS服务商")
     private String ossSp;
 
-    @FieldDesc("所属Bucket")
+    @Schema(description = "所属Bucket")
     private String bucketName;
 
-    @FieldDesc("上传方式")
+    @Schema(description = "上传方式")
     private String uploadType;
 
-    @FieldDesc("分片上传ID")
+    @Schema(description = "分片上传ID")
     private String uploadId;
 
-    @FieldDesc("上传状态")
+    @Schema(description = "上传状态")
     private String uploadStatus;
 
-    @FieldDesc("图片处理参数")
+    @Schema(description = "图片处理参数")
     private String imageProcess;
 
     public static MdmFileosRecord copy(MdmFileosRecord source, MdmFileosRecord target) {

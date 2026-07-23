@@ -2,7 +2,7 @@ package com.wkclz.micro.points.service;
 
 import com.alibaba.fastjson2.JSON;
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.iam.contract.context.PrincipalContext;
+import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.micro.points.bean.entity.PointsConsumeRecord;
 import com.wkclz.micro.points.bean.entity.PointsEarnRecord;
 import com.wkclz.micro.points.bean.enums.PointsConsumeStatus;
@@ -239,7 +239,7 @@ public class PointsRefundService {
         if (tenantCode != null && !tenantCode.isBlank()) {
             return tenantCode;
         }
-        return PrincipalContext.getTenantCode();
+        return IdentityContext.getTenantCode();
     }
 
 }

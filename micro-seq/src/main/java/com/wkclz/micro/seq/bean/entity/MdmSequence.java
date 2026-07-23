@@ -1,6 +1,6 @@
 package com.wkclz.micro.seq.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,25 +21,25 @@ public class MdmSequence extends BaseEntity {
     /**
      * 名称
      */
-    @FieldDesc("名称")
+    @Schema(description = "名称")
     private String seqName;
 
     /**
      * 前缀
      */
-    @FieldDesc("前缀")
+    @Schema(description = "前缀")
     private String prefix;
 
     /**
      * 当前序列
      */
-    @FieldDesc("当前序列")
+    @Schema(description = "当前序列")
     private Integer sequence;
 
     /**
      * 序列长度(不计前缀长度)
      */
-    @FieldDesc("序列长度(不计前缀长度)")
+    @Schema(description = "序列长度(不计前缀长度)")
     private Integer codeLength;
 
 

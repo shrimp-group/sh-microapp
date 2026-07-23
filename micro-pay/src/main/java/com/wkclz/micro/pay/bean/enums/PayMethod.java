@@ -1,9 +1,9 @@
 package com.wkclz.micro.pay.bean.enums;
 
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@FieldDesc("支付方式")
+@Schema(description = "支付方式")
 public enum PayMethod {
 
     ALI_PAY("支付宝"),

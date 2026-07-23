@@ -2,15 +2,14 @@ package com.wkclz.micro.msg.service;
 
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.iam.contract.context.PrincipalContext;
-import com.wkclz.micro.msg.mapper.MsgUserRecordMapper;
+import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.micro.msg.bean.dto.MsgUserRecordDto;
 import com.wkclz.micro.msg.bean.entity.MsgUserRecord;
+import com.wkclz.micro.msg.mapper.MsgUserRecordMapper;
 import com.wkclz.mybatis.helper.PageQuery;
 import com.wkclz.mybatis.service.BaseService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -21,7 +20,7 @@ import java.util.List;
  * @author wangkaicun
  * @table msg_user_record (用户消息记录) 单表服务类，代码重新生成不覆盖. 只建议完成单表的逻辑，或主表为 msg_user_record 的逻辑. 其他逻辑放 custom 中
  */
- 
+
 @Service
 public class MsgUserRecordService extends BaseService<MsgUserRecord, MsgUserRecordMapper> {
 
@@ -41,7 +40,7 @@ public class MsgUserRecordService extends BaseService<MsgUserRecord, MsgUserReco
         }
         MsgUserRecordDto param = new MsgUserRecordDto();
         param.setNoticeNo(noticeNo);
-        param.setUserCode(PrincipalContext.getUserCode());
+        param.setUserCode(IdentityContext.getUserCode());
         MsgUserRecordDto info = mapper.getNoticeInfo(param);
         if (info == null) {
             throw ValidationException.of("消息不存在！");
@@ -57,7 +56,7 @@ public class MsgUserRecordService extends BaseService<MsgUserRecord, MsgUserReco
         }
         MsgUserRecordDto param = new MsgUserRecordDto();
         param.setId(id);
-        param.setUserCode(PrincipalContext.getUserCode());
+        param.setUserCode(IdentityContext.getUserCode());
         MsgUserRecordDto info = mapper.getNoticeInfoById(param);
         if (info == null) {
             throw ValidationException.of("消息不存在！");
@@ -81,7 +80,7 @@ public class MsgUserRecordService extends BaseService<MsgUserRecord, MsgUserReco
 
         MsgUserRecord param = new MsgUserRecord();
         param.setIds(ids);
-        param.setUserCode(PrincipalContext.getUserCode());
+        param.setUserCode(IdentityContext.getUserCode());
         return mapper.markRecodeAsReaded(param);
     }
 

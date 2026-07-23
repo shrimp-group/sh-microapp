@@ -1,6 +1,6 @@
 package com.wkclz.micro.points.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -18,73 +18,73 @@ public class PointsEarnRecord extends BaseEntity {
     /**
      * 租户编码
      */
-    @FieldDesc("租户编码")
+    @Schema(description = "租户编码")
     private String tenantCode;
 
     /**
      * 用户编码
      */
-    @FieldDesc("用户编码")
+    @Schema(description = "用户编码")
     private String userCode;
 
     /**
      * 流水号（系统生成，唯一标识）
      */
-    @FieldDesc("流水号")
+    @Schema(description = "流水号")
     private String flowNo;
 
     /**
      * 获取时间
      */
-    @FieldDesc("获取时间")
+    @Schema(description = "获取时间")
     private LocalDateTime earnTime;
 
     /**
      * 获取积分数
      */
-    @FieldDesc("获取积分数")
+    @Schema(description = "获取积分数")
     private Integer points;
 
     /**
      * 获取原因
      */
-    @FieldDesc("获取原因")
+    @Schema(description = "获取原因")
     private String reason;
 
     /**
      * 到期时间（DB 默认 2099-12-31 23:59:59）
      */
-    @FieldDesc("到期时间")
+    @Schema(description = "到期时间")
     private LocalDateTime expireTime;
 
     /**
      * 已使用积分数
      */
-    @FieldDesc("已使用积分数")
+    @Schema(description = "已使用积分数")
     private Integer usedPoints;
 
     /**
      * 可用积分数
      */
-    @FieldDesc("可用积分数")
+    @Schema(description = "可用积分数")
     private Integer availablePoints;
 
     /**
      * 是否已使用完(0/1)
      */
-    @FieldDesc("是否已使用完(0/1)")
+    @Schema(description = "是否已使用完(0/1)")
     private Integer isUsedUp;
 
     /**
      * 来源类型（枚举 PointsSourceType：ISSUANCE 发放 / REFUND 回退 / ADMIN_ISSUE 管理员手动发放）
      */
-    @FieldDesc("积分来源类型")
+    @Schema(description = "积分来源类型")
     private String pointSourceType;
 
     /**
      * 来源单据号（发放时为业务单据号；回退时为原消费单据号 order_no）
      */
-    @FieldDesc("来源单据号")
+    @Schema(description = "来源单据号")
     private String sourceNo;
 
 

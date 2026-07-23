@@ -1,6 +1,6 @@
 package com.wkclz.micro.material.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,37 +21,37 @@ public class MdmMaterialRef extends BaseEntity {
     /**
      * 素材编码
      */
-    @FieldDesc(value = "素材编码", notNull = true)
+    @Schema(description = "素材编码")
     private String materialCode;
 
     /**
      * 业务类型
      */
-    @FieldDesc(value = "业务类型", notNull = true)
+    @Schema(description = "业务类型")
     private String bizType;
 
     /**
      * 业务编码
      */
-    @FieldDesc(value = "业务编码", notNull = true)
+    @Schema(description = "业务编码")
     private String bizCode;
 
     /**
      * 引用描述
      */
-    @FieldDesc(value = "引用描述")
+    @Schema(description = "引用描述")
     private String refDesc;
 
     /**
      * 操作人用户编码
      */
-    @FieldDesc(value = "操作人用户编码", notNull = true)
+    @Schema(description = "操作人用户编码")
     private String userCode;
 
     /**
      * 租户编码
      */
-    @FieldDesc(value = "租户编码", notNull = true)
+    @Schema(description = "租户编码")
     private String tenantCode;
 
 

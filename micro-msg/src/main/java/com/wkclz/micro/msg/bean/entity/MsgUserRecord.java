@@ -1,6 +1,6 @@
 package com.wkclz.micro.msg.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,31 +21,31 @@ public class MsgUserRecord extends BaseEntity {
     /**
      * 用户名
      */
-    @FieldDesc(value = "用户名", notNull = true)
+    @Schema(description = "用户名")
     private String userCode;
 
     /**
      * 消息编码
      */
-    @FieldDesc(value = "消息编码", notNull = true)
+    @Schema(description = "消息编码")
     private String noticeNo;
 
     /**
      * 阅读状态
      */
-    @FieldDesc(value = "阅读状态", notNull = true)
+    @Schema(description = "阅读状态")
     private Integer readStatus;
 
     /**
      * 阅读时间
      */
-    @FieldDesc(value = "阅读时间")
+    @Schema(description = "阅读时间")
     private LocalDateTime readTime;
 
     /**
      * 消息展示次数
      */
-    @FieldDesc(value = "消息展示次数", notNull = true)
+    @Schema(description = "消息展示次数")
     private Integer showTimes;
 
 

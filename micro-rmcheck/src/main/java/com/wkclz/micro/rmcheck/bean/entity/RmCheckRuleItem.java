@@ -1,6 +1,6 @@
 package com.wkclz.micro.rmcheck.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,31 +21,31 @@ public class RmCheckRuleItem extends BaseEntity {
     /**
      * 规则编码
      */
-    @FieldDesc("规则编码")
+    @Schema(description = "规则编码")
     private String ruleCode;
 
     /**
      * 被检查表名
      */
-    @FieldDesc("被检查表名")
+    @Schema(description = "被检查表名")
     private String checkTableName;
 
     /**
      * 被检查字段名
      */
-    @FieldDesc("被检查字段名")
+    @Schema(description = "被检查字段名")
     private String checkColumnName;
 
     /**
      * 提示信息
      */
-    @FieldDesc("提示信息")
+    @Schema(description = "提示信息")
     private String noticeMessage;
 
     /**
      * 状态
      */
-    @FieldDesc("状态")
+    @Schema(description = "状态")
     private Integer enableFlag;
 
 

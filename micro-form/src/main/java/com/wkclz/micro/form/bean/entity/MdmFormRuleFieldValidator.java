@@ -1,6 +1,6 @@
 package com.wkclz.micro.form.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,43 +21,43 @@ public class MdmFormRuleFieldValidator extends BaseEntity {
     /**
      * 表单校验规则编码
      */
-    @FieldDesc("表单校验规则编码")
+    @Schema(description = "表单校验规则编码")
     private String formRuleCode;
 
     /**
      * 字段编码
      */
-    @FieldDesc("字段编码")
+    @Schema(description = "字段编码")
     private String fieldCode;
 
     /**
      * 验证器类型
      */
-    @FieldDesc("验证器类型")
+    @Schema(description = "验证器类型")
     private String validatorType;
 
     /**
      * 验证匹配器
      */
-    @FieldDesc("验证匹配器")
+    @Schema(description = "验证匹配器")
     private String validatorPattern;
 
     /**
      * 验证函数
      */
-    @FieldDesc("验证函数")
+    @Schema(description = "验证函数")
     private String validatorFunction;
 
     /**
      * 模板编码
      */
-    @FieldDesc("模板编码")
+    @Schema(description = "模板编码")
     private String templateCode;
 
     /**
      * 验证消息模板
      */
-    @FieldDesc("验证消息模板")
+    @Schema(description = "验证消息模板")
     private String msgTemplate;
 
 

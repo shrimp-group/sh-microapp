@@ -1,6 +1,6 @@
 package com.wkclz.micro.msg.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,25 +21,25 @@ public class MsgTemplate extends BaseEntity {
     /**
      * 模板编码
      */
-    @FieldDesc(value = "模板编码", notNull = true)
+    @Schema(description = "模板编码")
     private String templateCode;
 
     /**
      * 模板名称
      */
-    @FieldDesc(value = "模板名称", notNull = true)
+    @Schema(description = "模板名称")
     private String templateName;
 
     /**
      * 消息标题
      */
-    @FieldDesc(value = "消息标题", notNull = true)
+    @Schema(description = "消息标题")
     private String title;
 
     /**
      * 消息内容
      */
-    @FieldDesc(value = "消息内容")
+    @Schema(description = "消息内容")
     private String content;
 
 

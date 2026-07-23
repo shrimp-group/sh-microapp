@@ -2,11 +2,10 @@ package com.wkclz.auto.scanner;
 
 import com.wkclz.auto.bean.ApiInfo;
 import com.wkclz.auto.bean.ApiParamInfo;
-import com.wkclz.core.annotation.ApiDesc;
-import com.wkclz.core.annotation.Desc;
 import com.wkclz.core.annotation.Router;
 import com.wkclz.tool.utils.ClassUtil;
 import com.wkclz.tool.utils.StringUtil;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -22,7 +21,10 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -141,13 +143,9 @@ public class ApiScanner {
                 uri = values.length == 0 ? null : values[0];
                 continue;
             }
-            if (Desc.class == annotation.annotationType()) {
-                Desc descAnno = (Desc) annotation;
-                desc = descAnno.value();
-            }
-            if (ApiDesc.class == annotation.annotationType()) {
-                ApiDesc descAnno = (ApiDesc) annotation;
-                desc = descAnno.value();
+            if (Schema.class == annotation.annotationType()) {
+                Schema descAnno = (Schema) annotation;
+                desc = descAnno.description();
             }
         }
 
@@ -239,15 +237,11 @@ public class ApiScanner {
                     if (o == null) {
                         continue;
                     }
-                    Desc desc = field.getAnnotation(Desc.class);
-                    ApiDesc apiDesc = field.getAnnotation(ApiDesc.class);
+                    Schema desc = field.getAnnotation(Schema.class);
 
                     String value = null;
                     if (desc != null) {
-                        value = desc.value();
-                    }
-                    if (apiDesc != null) {
-                        value = apiDesc.value();
+                        value = desc.description();
                     }
                     if (StringUtils.isBlank(value)) {
                         continue;

@@ -1,6 +1,6 @@
 package com.wkclz.micro.points.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -18,49 +18,49 @@ public class PointsConsumeRecord extends BaseEntity {
     /**
      * 租户编码
      */
-    @FieldDesc("租户编码")
+    @Schema(description = "租户编码")
     private String tenantCode;
 
     /**
      * 用户编码
      */
-    @FieldDesc("用户编码")
+    @Schema(description = "用户编码")
     private String userCode;
 
     /**
      * 流水号（系统生成，唯一标识）
      */
-    @FieldDesc("流水号")
+    @Schema(description = "流水号")
     private String flowNo;
 
     /**
      * 使用时间
      */
-    @FieldDesc("使用时间")
+    @Schema(description = "使用时间")
     private LocalDateTime consumeTime;
 
     /**
      * 使用积分数
      */
-    @FieldDesc("使用积分数")
+    @Schema(description = "使用积分数")
     private Integer points;
 
     /**
      * 使用原因
      */
-    @FieldDesc("使用原因")
+    @Schema(description = "使用原因")
     private String reason;
 
     /**
      * 关联单据号（业务单据，唯一）
      */
-    @FieldDesc("关联单据号")
+    @Schema(description = "关联单据号")
     private String orderNo;
 
     /**
      * 状态（FROZEN 冻结 / DEDUCTED 已扣减）
      */
-    @FieldDesc("状态")
+    @Schema(description = "状态")
     private String status;
 
 

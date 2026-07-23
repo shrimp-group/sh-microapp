@@ -1,6 +1,6 @@
 package com.wkclz.micro.material.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,37 +21,37 @@ public class MdmMaterialGroup extends BaseEntity {
     /**
      * 分组编码
      */
-    @FieldDesc(value = "分组编码", notNull = true)
+    @Schema(description = "分组编码")
     private String groupCode;
 
     /**
      * 父级分组编码(顶级为0)
      */
-    @FieldDesc(value = "父级分组编码(顶级为0)", notNull = true)
+    @Schema(description = "父级分组编码(顶级为0)")
     private String parentCode;
 
     /**
      * 分组名称
      */
-    @FieldDesc(value = "分组名称", notNull = true)
+    @Schema(description = "分组名称")
     private String groupName;
 
     /**
      * 分组类型(SYSTEM/PERSONAL)
      */
-    @FieldDesc(value = "分组类型(SYSTEM/PERSONAL)", notNull = true)
+    @Schema(description = "分组类型(SYSTEM/PERSONAL)")
     private String groupType;
 
     /**
      * 所有者用户编码
      */
-    @FieldDesc(value = "所有者用户编码", notNull = true)
+    @Schema(description = "所有者用户编码")
     private String userCode;
 
     /**
      * 租户编码
      */
-    @FieldDesc(value = "租户编码", notNull = true)
+    @Schema(description = "租户编码")
     private String tenantCode;
 
 

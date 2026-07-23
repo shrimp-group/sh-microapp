@@ -1,7 +1,7 @@
 package com.wkclz.micro.audit.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
 import com.wkclz.core.base.BaseEntity;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -21,43 +21,43 @@ public class MdmChangeLog extends BaseEntity {
     /**
      * 批次
      */
-    @FieldDesc("批次")
+    @Schema(description = "批次")
     private String batchNo;
 
     /**
      * 表名
      */
-    @FieldDesc("表名")
+    @Schema(description = "表名")
     private String tableName;
 
     /**
      * 数据ID
      */
-    @FieldDesc("数据ID")
+    @Schema(description = "数据ID")
     private Long dataId;
 
     /**
      * 数据版本
      */
-    @FieldDesc("数据版本")
+    @Schema(description = "数据版本")
     private Integer dataVersion;
 
     /**
      * 操作类型
      */
-    @FieldDesc("操作类型")
+    @Schema(description = "操作类型")
     private String operateType;
 
     /**
      * 原数据
      */
-    @FieldDesc("原数据")
+    @Schema(description = "原数据")
     private String dataFrom;
 
     /**
      * 目标数据
      */
-    @FieldDesc("目标数据")
+    @Schema(description = "目标数据")
     private String dataTo;
 
 
