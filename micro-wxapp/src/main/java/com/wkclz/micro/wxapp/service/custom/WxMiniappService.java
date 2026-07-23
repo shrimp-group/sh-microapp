@@ -5,9 +5,8 @@ import cn.binarywang.wx.miniapp.bean.WxMaJscode2SessionResult;
 import cn.binarywang.wx.miniapp.bean.WxMaPhoneNumberInfo;
 import cn.binarywang.wx.miniapp.bean.WxMaUserInfo;
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.iam.contract.bean.resp.LoginResp;
-import com.wkclz.iam.contract.facade.SsoFacadeContract;
-import com.wkclz.iam.contract.context.PrincipalContext;
+import com.wkclz.core.identity.IdentityContext;
+import com.wkclz.iam.session.bean.resp.LoginResp;
 import com.wkclz.micro.fileos.api.FileosSignApi;
 import com.wkclz.micro.wxapp.bean.entity.WxappLoginLog;
 import com.wkclz.micro.wxapp.bean.entity.WxappUser;
@@ -38,7 +37,6 @@ import java.util.List;
 @AllArgsConstructor
 public class WxMiniappService {
 
-    private final SsoFacadeContract ssoFacadeContract;
     private final FileosSignApi fileosSignApi;
     private final WxMaConfiguration configuration;
     private final WxappUserMapper wxappUserMapper;
@@ -155,7 +153,6 @@ public class WxMiniappService {
         wxappLoginLogMapper.insert(loginLog);
 
         // 基础信息验证完了后，进入统一的创建session的过程
-        ssoFacadeContract.logout();
         return wxappLoginService.login(user);
     }
 
@@ -175,13 +172,13 @@ public class WxMiniappService {
     }
 
     public WxappUser miniappUserInfo() {
-        String userCode = PrincipalContext.getUserCode();
+        String userCode = IdentityContext.getUserCode();
         return wxappUserMapper.getWxappUserByUserCode(userCode);
     }
 
     @Transactional(rollbackFor = Exception.class)
     public boolean miniappUserinfoUpdate(WxappUser wu) {
-        String userCode = PrincipalContext.getUserCode();
+        String userCode = IdentityContext.getUserCode();
 
         WxappUser user = wxappUserMapper.getWxappUserByUserCode(userCode);
         if (user == null) {
@@ -219,7 +216,7 @@ public class WxMiniappService {
     }
 
     public void miniappMobileBind(WxMaMobileBindReq req) {
-        String userCode = PrincipalContext.getUserCode();
+        String userCode = IdentityContext.getUserCode();
 
         WxMaService wxMaService = configuration.getMaService(req.getAppId());
         WxMaPhoneNumberInfo phoneNumberInfo;
