@@ -8,7 +8,7 @@ import cn.binarywang.wx.miniapp.message.WxMaMessageHandler;
 import cn.binarywang.wx.miniapp.message.WxMaMessageRouter;
 import com.google.common.collect.Maps;
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.iam.contract.context.PrincipalContext;
+import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.micro.wxapp.bean.vo.WxMaAppInfo;
 import com.wkclz.micro.wxapp.service.WxappConfigService;
 import me.chanjar.weixin.common.bean.result.WxMediaUploadResult;
@@ -45,7 +45,7 @@ public class WxMaConfiguration {
     }
 
     public WxMaService getMaService() {
-        String tenantCode = PrincipalContext.getTenantCode();
+        String tenantCode = IdentityContext.getTenantCode();
         if (StringUtils.isBlank(tenantCode)) {
             throw new IllegalArgumentException("找不到域名信息，请核实！");
         }
@@ -68,7 +68,7 @@ public class WxMaConfiguration {
     }
 
     public WxMaMessageRouter getRouter() {
-        String tenantCode = PrincipalContext.getTenantCode();
+        String tenantCode = IdentityContext.getTenantCode();
         if (StringUtils.isBlank(tenantCode)) {
             throw new IllegalArgumentException("找不到域名信息，请核实！");
         }
@@ -85,7 +85,7 @@ public class WxMaConfiguration {
 
         WxMaAppInfo wxApp = new WxMaAppInfo();
         wxApp.setAppId(appid);
-        String tenantCode = PrincipalContext.getTenantCode();
+        String tenantCode = IdentityContext.getTenantCode();
         if (StringUtils.isNotBlank(tenantCode)) {
             wxApp.setTenantCode(tenantCode);
         }

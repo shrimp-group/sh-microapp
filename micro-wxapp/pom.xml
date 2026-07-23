@@ -23,12 +23,15 @@
             <artifactId>weixin-java-miniapp</artifactId>
         </dependency>
 
-
         <dependency>
             <groupId>com.wkclz.framework</groupId>
             <artifactId>sh-redis</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.wkclz.iam</groupId>
+            <artifactId>iam-session</artifactId>
+        </dependency>
 
     </dependencies>
 </project>

@@ -1,6 +1,6 @@
 package com.wkclz.micro.wxmp.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,49 +21,49 @@ public class WxmpKfMsg extends BaseEntity {
     /**
      * 租户编码
      */
-    @FieldDesc("租户编码")
+    @Schema(description = "租户编码")
     private String tenantCode;
 
     /**
      * 公众号appid
      */
-    @FieldDesc("公众号appid")
+    @Schema(description = "公众号appid")
     private String appId;
 
     /**
      * 消息类型
      */
-    @FieldDesc("消息类型")
+    @Schema(description = "消息类型")
     private String msgType;
 
     /**
      * 发送方
      */
-    @FieldDesc("发送方")
+    @Schema(description = "发送方")
     private String fromUser;
 
     /**
      * 接收方
      */
-    @FieldDesc("接收方")
+    @Schema(description = "接收方")
     private String toUser;
 
     /**
      * 消息内容
      */
-    @FieldDesc("消息内容")
+    @Schema(description = "消息内容")
     private String content;
 
     /**
      * 消息ID
      */
-    @FieldDesc("消息ID")
+    @Schema(description = "消息ID")
     private Long msgId;
 
     /**
      * 消息时间
      */
-    @FieldDesc("消息时间")
+    @Schema(description = "消息时间")
     private Date msgTime;
 
 

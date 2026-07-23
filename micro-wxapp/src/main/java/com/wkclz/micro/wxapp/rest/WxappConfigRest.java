@@ -2,17 +2,17 @@ package com.wkclz.micro.wxapp.rest;
 
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.base.R;
-import com.wkclz.iam.contract.context.PrincipalContext;
+import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.micro.wxapp.Route;
 import com.wkclz.micro.wxapp.bean.entity.WxappConfig;
 import com.wkclz.micro.wxapp.bean.req.*;
 import com.wkclz.micro.wxapp.bean.resp.WxappConfigPageResp;
 import com.wkclz.micro.wxapp.bean.resp.WxappConfigResp;
 import com.wkclz.micro.wxapp.service.WxappConfigService;
-import jakarta.validation.Valid;
 import com.wkclz.tool.utils.BeanUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -35,7 +35,7 @@ public class WxappConfigRest {
     @GetMapping(Route.WXAPP_CONFIG_PAGE)
     public R<PageData<WxappConfigPageResp>> wxappConfigPage(@Valid WxappConfigPageReq req) {
         WxappConfig entity = BeanUtil.cp(req, WxappConfig.class);
-        entity.setTenantCode(PrincipalContext.getTenantCode());
+        entity.setTenantCode(IdentityContext.getTenantCode());
         PageData<WxappConfig> page = wxappConfigService.getConfigPage(entity);
         PageData<WxappConfigPageResp> newPage = page.convert(WxappConfigPageResp.class);
         return R.ok(newPage);
@@ -46,7 +46,7 @@ public class WxappConfigRest {
     public R<WxappConfigResp> wxappConfigInfo(@Valid WxappConfigInfoReq req) {
         WxappConfig entity = new WxappConfig();
         entity.setId(req.getId());
-        entity.setTenantCode(PrincipalContext.getTenantCode());
+        entity.setTenantCode(IdentityContext.getTenantCode());
         entity = wxappConfigService.getConfigInfo(entity);
         WxappConfigResp resp = BeanUtil.cp(entity, WxappConfigResp.class);
         return R.ok(resp);
@@ -56,7 +56,7 @@ public class WxappConfigRest {
     @PostMapping(Route.WXAPP_CONFIG_CREATE)
     public R<WxappConfigResp> wxappConfigCreate(@Valid @RequestBody WxappConfigCreateReq req) {
         WxappConfig entity = BeanUtil.cp(req, WxappConfig.class);
-        entity.setTenantCode(PrincipalContext.getTenantCode());
+        entity.setTenantCode(IdentityContext.getTenantCode());
         entity = wxappConfigService.create(entity);
         WxappConfigResp resp = BeanUtil.cp(entity, WxappConfigResp.class);
         return R.ok(resp);

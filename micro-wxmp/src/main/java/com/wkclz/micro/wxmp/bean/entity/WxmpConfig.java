@@ -1,6 +1,6 @@
 package com.wkclz.micro.wxmp.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,61 +21,61 @@ public class WxmpConfig extends BaseEntity {
     /**
      * 租户编码
      */
-    @FieldDesc("租户编码")
+    @Schema(description = "租户编码")
     private String tenantCode;
 
     /**
      * 公众号appid
      */
-    @FieldDesc("公众号appid")
+    @Schema(description = "公众号appid")
     private String appId;
 
     /**
      * 公众号Secret
      */
-    @FieldDesc("公众号Secret")
+    @Schema(description = "公众号Secret")
     private String appSecret;
 
     /**
      * 证书文件cert
      */
-    @FieldDesc("证书文件cert")
+    @Schema(description = "证书文件cert")
     private String certPem;
 
     /**
      * 证书文件key
      */
-    @FieldDesc("证书文件key")
+    @Schema(description = "证书文件key")
     private String keyPem;
 
     /**
      * 公众号回调服务端的token
      */
-    @FieldDesc("公众号回调服务端的token")
+    @Schema(description = "公众号回调服务端的token")
     private String mpToken;
 
     /**
      * 公众号回调服务端的AESKey
      */
-    @FieldDesc("公众号回调服务端的AESKey")
+    @Schema(description = "公众号回调服务端的AESKey")
     private String aesKey;
 
     /**
      * 公众号菜单数据
      */
-    @FieldDesc("公众号菜单数据")
+    @Schema(description = "公众号菜单数据")
     private String mpMenuJson;
 
     /**
      * 公众号-对话-回复映射 (default为默认回复)
      */
-    @FieldDesc("公众号-对话-回复映射 (default为默认回复)")
+    @Schema(description = "公众号-对话-回复映射 (default为默认回复)")
     private String mpTalkReplyMap;
 
     /**
      * 欢迎信息
      */
-    @FieldDesc("欢迎信息")
+    @Schema(description = "欢迎信息")
     private String welcomeMsg;
 
 

@@ -2,7 +2,7 @@ package com.wkclz.micro.wxmp.rest.mamager;
 
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.base.R;
-import com.wkclz.iam.contract.context.PrincipalContext;
+import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.micro.wxmp.bean.entity.WxmpConfig;
 import com.wkclz.micro.wxmp.bean.req.WxmpConfigCreateReq;
 import com.wkclz.micro.wxmp.bean.req.WxmpConfigInfoReq;
@@ -39,7 +39,7 @@ public class WxmpConfigRest {
     @GetMapping(Route.WXMP_CONFIG_PAGE)
     public R<PageData<WxmpConfigPageResp>> wxmpConfigPage(@Valid WxmpConfigPageReq req) {
         WxmpConfig entity = BeanUtil.cp(req, WxmpConfig.class);
-        entity.setTenantCode(PrincipalContext.getTenantCode());
+        entity.setTenantCode(IdentityContext.getTenantCode());
         PageData<WxmpConfig> page = wxmpConfigService.getConfigPage(entity);
         return R.ok(page.convert(WxmpConfigPageResp.class));
     }
@@ -49,7 +49,7 @@ public class WxmpConfigRest {
     public R<WxmpConfigResp> wxmpConfigInfo(@Valid WxmpConfigInfoReq req) {
         WxmpConfig entity = new WxmpConfig();
         entity.setId(req.getId());
-        entity.setTenantCode(PrincipalContext.getTenantCode());
+        entity.setTenantCode(IdentityContext.getTenantCode());
         entity = wxmpConfigService.getConfigInfo(entity);
         WxmpConfigResp resp = BeanUtil.cp(entity, WxmpConfigResp.class);
         return R.ok(resp);
@@ -59,7 +59,7 @@ public class WxmpConfigRest {
     @PostMapping(Route.WXMP_CONFIG_CREATE)
     public R<WxmpConfigResp> wxmpConfigCreate(@Valid @RequestBody WxmpConfigCreateReq req) {
         WxmpConfig entity = BeanUtil.cp(req, WxmpConfig.class);
-        entity.setTenantCode(PrincipalContext.getTenantCode());
+        entity.setTenantCode(IdentityContext.getTenantCode());
         entity = wxmpConfigService.create(entity);
         WxmpConfigResp resp = BeanUtil.cp(entity, WxmpConfigResp.class);
         return R.ok(resp);

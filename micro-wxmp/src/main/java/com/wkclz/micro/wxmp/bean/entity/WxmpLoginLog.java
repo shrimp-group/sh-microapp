@@ -1,6 +1,6 @@
 package com.wkclz.micro.wxmp.bean.entity;
 
-import com.wkclz.core.annotation.FieldDesc;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,19 +21,19 @@ public class WxmpLoginLog extends BaseEntity {
     /**
      * 用户编码
      */
-    @FieldDesc("用户编码")
+    @Schema(description = "用户编码")
     private String userCode;
 
     /**
      * 微信openId
      */
-    @FieldDesc("微信openId")
+    @Schema(description = "微信openId")
     private String openId;
 
     /**
      * 登录IP
      */
-    @FieldDesc("登录IP")
+    @Schema(description = "登录IP")
     private String loginIp;
 
 

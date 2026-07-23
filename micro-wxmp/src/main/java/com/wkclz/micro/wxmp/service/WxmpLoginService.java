@@ -1,9 +1,12 @@
 package com.wkclz.micro.wxmp.service;
 
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.iam.contract.bean.req.SessionCreateReq;
-import com.wkclz.iam.contract.bean.resp.LoginResp;
-import com.wkclz.iam.contract.facade.SsoFacadeContract;
+import com.wkclz.core.identity.UserIdentity;
+import com.wkclz.iam.session.bean.SessionCreateResult;
+import com.wkclz.iam.session.bean.resp.LoginResp;
+import com.wkclz.iam.session.enums.AuthType;
+import com.wkclz.iam.session.enums.LoginStatus;
+import com.wkclz.iam.session.service.SessionManager;
 import com.wkclz.micro.wxmp.config.WxMpConfiguration;
 import com.wkclz.micro.wxmp.bean.entity.WxmpLoginLog;
 import com.wkclz.micro.wxmp.bean.entity.WxmpUser;
@@ -24,7 +27,7 @@ import org.springframework.stereotype.Service;
 public class WxmpLoginService {
 
     @Autowired
-    private SsoFacadeContract ssoFacadeContract;
+    private SessionManager sessionManager;
     @Autowired
     private WxmpUserService wxmpUserService;
     @Autowired
@@ -71,18 +74,25 @@ public class WxmpLoginService {
         user = wxmpUserService.initUser(user);
         log.info("微信用户登录, userCode: {}, openId: {}", user.getUserCode(), user.getOpenId());
 
-        // 通过 SsoFacadeContract 远程创建会话
-        SessionCreateReq sessionCreateReq = new SessionCreateReq();
-        sessionCreateReq.setUserCode(user.getUserCode());
-        sessionCreateReq.setUsername(user.getUserCode());
-        sessionCreateReq.setNickname(user.getNickname());
-        sessionCreateReq.setAvatar(user.getAvatar());
-        sessionCreateReq.setAuthType("WXMP");
-        sessionCreateReq.setAuthIdentifier(user.getOpenId());
-        log.info("微信用户 {} 认证成功，调用 SsoFacadeContract 创建会话", user.getOpenId());
+        // 通过 SessionManager 创建会话
+        UserIdentity identity = new UserIdentity();
+        identity.setUserCode(user.getUserCode());
+        identity.setUsername(user.getOpenId());
+        identity.setNickname(user.getNickname());
+        identity.setAvatar(user.getAvatar());
+        identity.addAttribute("open-id", user.getOpenId());
+        log.info("微信用户 {} 认证成功，通过 SessionManager 创建会话", user.getOpenId());
 
-        LoginResp loginResp = ssoFacadeContract.login(sessionCreateReq);
-        String jwtToken = loginResp.getToken();
+        SessionCreateResult result = sessionManager.createSession(identity, AuthType.WECHAT_MP);
+
+        LoginResp loginResp = new LoginResp();
+        loginResp.setToken(result.getToken());
+        loginResp.setUserCode(user.getUserCode());
+        loginResp.setUsername(user.getOpenId());
+        loginResp.setNickname(user.getNickname());
+        loginResp.setAvatar(user.getAvatar());
+        loginResp.setLoginStatus(LoginStatus.SUCCESS.getCode());
+        loginResp.setLoginMessage(LoginStatus.SUCCESS.getMessage());
 
         // 记录登录日志
         WxmpLoginLog loginLog = new WxmpLoginLog();
@@ -93,7 +103,7 @@ public class WxmpLoginService {
 
         // 构建响应
         WxmpLoginResp resp = new WxmpLoginResp();
-        resp.setToken(jwtToken);
+        resp.setToken(loginResp.getToken());
         resp.setUserCode(user.getUserCode());
         resp.setOpenId(user.getOpenId());
         resp.setNickname(user.getNickname());
