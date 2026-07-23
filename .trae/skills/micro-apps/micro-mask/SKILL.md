@@ -202,7 +202,7 @@ dto.setMaskRuleRegular("(\\d{3})\\d{4}(\\d{4})");
 | `sh-mybatis` | BaseMapper、BaseService、PageQuery |
 | `sh-redis` | RedisIdGenerator（生成 maskRuleCode）、StringRedisTemplate |
 | `sh-web` | RequestHelper.match（AntPathMatcher）、RequestHelper |
-| `iam-contract-api` | PrincipalContext.getUserCode（获取当前用户标识） |
+| `iam-contract-api` | IdentityContext.getUserCode（获取当前用户标识） |
 | `spring-boot-starter-jackson` | ObjectMapper 序列化响应 |
 
 ### 模块间依赖
