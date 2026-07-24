@@ -104,8 +104,8 @@ public class WxMaConfiguration {
 
         WxMaService service = new WxMaServiceImpl();
         service.setWxMaConfig(config);
-        ROUTERS.put(tenantCode, this.newRouter(service));
-        MA_TENANT_SERVICES.put(tenantCode, service);
+        ROUTERS.put(wxApp.getTenantCode(), this.newRouter(service));
+        MA_TENANT_SERVICES.put(wxApp.getTenantCode(), service);
         MA_APPID_TENANT.put(wxApp.getAppId(), wxApp.getTenantCode());
     }
 
