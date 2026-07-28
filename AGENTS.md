@@ -106,6 +106,7 @@
 | `micro-k8s` | K8s 管理 | `/micro-k8s` | Kubernetes 集群配置/资源查询/自定义 API |
 | `micro-autotest` | 自动化测试 | `/micro-autotest` | REST 接口扫描/自动 Mock/测试执行/报告生成(MD+HTML) |
 | `micro-report` | 报表管理 | `/micro-report` | SQL 报表定义/参数与结果字段管理/动态查询执行/Excel 导出 |
+| `micro-flowable` | 流程引擎 | `/micro-flowable` | 对接 sh-flowable-server（依赖 sh-flowable-client SDK），封装流程定义/流程实例/任务/历史等能力 |
 
 ---
 
@@ -247,6 +248,7 @@ micro-dict ← micro-report (报表参数字典选项，仅字段引用，无硬
 micro-file ← micro-pdf  (PDF 文件存储)
 micro-file ← micro-wxapp(小程序媒体上传)
 micro-points ← micro-pay (积分支付/退款积分回退)
+sh-flowable-client ← micro-flowable (流程引擎对接，外部工程 com.wkclz.flowable:sh-flowable-client:1.0.0-SNAPSHOT)
 ```
 
 ---

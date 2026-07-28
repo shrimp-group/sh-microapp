@@ -39,6 +39,7 @@
         <module>micro-pay</module>
         <module>micro-rmcheck</module>
         <module>micro-seq</module>
+        <module>micro-flowable</module>
         <module>micro-wxapp</module>
         <module>micro-wxmp</module>
         <module>micro-report</module>
