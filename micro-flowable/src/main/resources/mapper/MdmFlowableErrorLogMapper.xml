@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.flowable.mapper.MdmFlowableErrorLogMapper">
+
+    <select id="getErrorLogPage"
+            parameterType="com.wkclz.micro.flowable.bean.entity.MdmFlowableErrorLog"
+            resultType="com.wkclz.micro.flowable.bean.entity.MdmFlowableErrorLog">
+        SELECT * FROM mdm_flowable_error_log
+        WHERE deleted = 0
+        <if test="errorType != null and errorType != ''">
+            AND error_type = #{errorType}
+        </if>
+        <if test="handleStatus != null and handleStatus != ''">
+            AND handle_status = #{handleStatus}
+        </if>
+        <if test="procInsId != null and procInsId != ''">
+            AND proc_ins_id = #{procInsId}
+        </if>
+        <if test="tenantCode != null and tenantCode != ''">
+            AND tenant_code = #{tenantCode}
+        </if>
+        ORDER BY occur_time DESC
+    </select>
+
+</mapper>

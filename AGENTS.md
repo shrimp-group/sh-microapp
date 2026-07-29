@@ -387,5 +387,16 @@ sh-flowable-client ← micro-flowable (流程引擎对接，外部工程 com.wkc
 - `writing-plans/SKILL.md` 保留 sh-microapp 已有版本，仅新增 `plan-document-reviewer-prompt.md`
 - 共复制 55 个文件、新建 23 个目录（20 个技能目录 + 3 个子目录）
 
+### 2026-07-29 micro-flowable 流程引擎模块
+- 新增 micro-flowable 模块完整实现（5 张本地表 + 36 个端点，57 个源文件）
+- 管理端：流程设计 CRUD/部署/节点配置/透传查询（14 个端点）
+- 业务端：申请/待办已办/6 种审批动作/实例历史/审批意见（19 个端点）
+- 异常监控：FlowableClientWrapper 拦截 client 调用 + 落库 + 查询/标记（3 个端点）
+- sh-flowable-server 增补 reject/transfer/delegate/withdraw 4 个扩展端点
+- sh-flowable-client 同步增补 4 个客户端方法及 Req Bean
+- 新增 `micro-flowable/AGENTS.md` 模块开发指南
+- 新增实施方案 `docs/superpowers/plans/2026-07-29-micro-flowable.md`
+- 新增 sh-flowable 扩展提示词 `docs/superpowers/plans/2026-07-29-sh-flowable-extension-prompt.md`
+
 ## 项目上下文
 见 [CONTEXT.md](CONTEXT.md)

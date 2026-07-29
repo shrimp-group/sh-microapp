@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.flowable.mapper.MdmFlowableProcessDesignMapper">
+
+    <select id="getDesignPage"
+            parameterType="com.wkclz.micro.flowable.bean.entity.MdmFlowableProcessDesign"
+            resultType="com.wkclz.micro.flowable.bean.entity.MdmFlowableProcessDesign">
+        SELECT * FROM mdm_flowable_process_design
+        WHERE deleted = 0
+        <if test="designName != null and designName != ''">
+            AND design_name LIKE CONCAT('%', #{designName}, '%')
+        </if>
+        <if test="category != null and category != ''">
+            AND category = #{category}
+        </if>
+        <if test="status != null and status != ''">
+            AND status = #{status}
+        </if>
+        <if test="tenantCode != null and tenantCode != ''">
+            AND tenant_code = #{tenantCode}
+        </if>
+        ORDER BY sort, id DESC
+    </select>
+
+</mapper>
