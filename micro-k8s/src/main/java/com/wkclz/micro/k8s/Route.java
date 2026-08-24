@@ -37,4 +37,6 @@ public interface Route {
     String CLUSTER_KIND_UPDATE = "/cluster/kind/update";
     String CLUSTER_KIND_DELETE = "/cluster/kind/delete";
 
+    String POD_LOG = "/pod/log";
+
 }
