@@ -28,6 +28,7 @@ public enum Kind {
     ClusterRoleBinding("定义一个集群角色绑定对象，将集群角色与用户或ServiceAccount关联"),
     RoleBinding("定义一个角色绑定对象，将角色与用户或ServiceAccount关联"),
     Endpoints("定义一个Endpoint对象，用于指定Service的后端IP地址和端口"),
+    EndpointSlice("定义一个EndpointSlice对象，用于指定Service的后端地址与端口集合"),
     Volume("定义一个Volume对象，用于将存储挂载到Pod中"),
     PodSecurityPolicy("定义一个PodSecurityPolicy对象，用于定义Pod的安全策略"),
     Event("定义一个Event对象，用于记录集群中发生的事件"),

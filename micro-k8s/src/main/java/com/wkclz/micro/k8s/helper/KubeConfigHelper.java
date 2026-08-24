@@ -73,6 +73,11 @@ public class KubeConfigHelper {
         return new NetworkingV1Api(apiClient);
     }
 
+    public DiscoveryV1Api getDiscoveryV1Api(String clusterName) {
+        ApiClient apiClient = getApiClient(clusterName);
+        return new DiscoveryV1Api(apiClient);
+    }
+
     public ApiClient getApiClient(String clusterName) {
         if (StringUtils.isBlank(clusterName)) {
             throw ValidationException.of("clusterName 不能为空");
