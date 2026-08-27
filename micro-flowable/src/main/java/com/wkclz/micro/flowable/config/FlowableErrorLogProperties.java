@@ -1,13 +1,17 @@
 package com.wkclz.micro.flowable.config;
 
 import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
 
 @Data
-@Component
-@ConfigurationProperties(prefix = "sh.flowable.error-log")
+@Configuration
 public class FlowableErrorLogProperties {
-    private boolean enabled = true;
-    private boolean includeStack = true;
+
+    @Value("${sh.flowable.error-log.enabled:1}")
+    private int enabled;
+
+    @Value("${sh.flowable.error-log.include-stack:1}")
+    private int includeStack;
+
 }

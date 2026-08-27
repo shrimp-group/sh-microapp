@@ -62,7 +62,7 @@ public class FlowableClientWrapper {
     }
 
     private void saveErrorLog(ErrorType errorType, String clientMethod, Object requestData, String errorMessage, Exception e) {
-        if (!errorLogProperties.isEnabled()) {
+        if (errorLogProperties.getIncludeStack() != 1) {
             return;
         }
         try {
@@ -75,7 +75,7 @@ public class FlowableClientWrapper {
             if (requestData != null) {
                 errorLog.setRequestData(OBJECT_MAPPER.writeValueAsString(requestData));
             }
-            if (e != null && errorLogProperties.isIncludeStack()) {
+            if (e != null && errorLogProperties.getIncludeStack() == 1) {
                 StringWriter sw = new StringWriter();
                 e.printStackTrace(new PrintWriter(sw));
                 errorLog.setErrorStack(sw.toString());
