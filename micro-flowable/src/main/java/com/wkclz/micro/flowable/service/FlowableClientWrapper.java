@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wkclz.core.base.R;
 import com.wkclz.core.exception.ValidationException;
 import com.wkclz.flowable.client.config.FlowableClient;
-import com.wkclz.micro.flowable.bean.entity.MdmFlowableErrorLog;
+import com.wkclz.micro.flowable.bean.entity.FlowableErrorLog;
 import com.wkclz.micro.flowable.bean.enums.ErrorType;
 import com.wkclz.micro.flowable.config.FlowableErrorLogProperties;
 import org.slf4j.Logger;
@@ -30,7 +30,7 @@ public class FlowableClientWrapper {
     @Autowired
     private FlowableClient flowableClient;
     @Autowired
-    private MdmFlowableErrorLogService errorLogService;
+    private FlowableErrorLogService errorLogService;
     @Autowired
     private FlowableErrorLogProperties errorLogProperties;
 
@@ -66,7 +66,7 @@ public class FlowableClientWrapper {
             return;
         }
         try {
-            MdmFlowableErrorLog errorLog = new MdmFlowableErrorLog();
+            FlowableErrorLog errorLog = new FlowableErrorLog();
             errorLog.setErrorType(errorType.name());
             errorLog.setClientMethod(clientMethod);
             errorLog.setErrorMessage(errorMessage != null && errorMessage.length() > 1023 ? errorMessage.substring(0, 1023) : errorMessage);

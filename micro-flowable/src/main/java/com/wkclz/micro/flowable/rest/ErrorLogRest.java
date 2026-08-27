@@ -3,11 +3,11 @@ package com.wkclz.micro.flowable.rest;
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.base.R;
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.micro.flowable.bean.entity.MdmFlowableErrorLog;
+import com.wkclz.micro.flowable.bean.entity.FlowableErrorLog;
 import com.wkclz.micro.flowable.bean.req.ErrorHandleReq;
 import com.wkclz.micro.flowable.bean.req.ErrorPageReq;
 import com.wkclz.micro.flowable.bean.resp.ErrorLogResp;
-import com.wkclz.micro.flowable.service.MdmFlowableErrorLogService;
+import com.wkclz.micro.flowable.service.FlowableErrorLogService;
 import com.wkclz.tool.utils.BeanUtil;
 import com.wkclz.web.bean.IdReq;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,20 +28,20 @@ public class ErrorLogRest {
     private static final Logger log = LoggerFactory.getLogger(ErrorLogRest.class);
 
     @Autowired
-    private MdmFlowableErrorLogService errorLogService;
+    private FlowableErrorLogService errorLogService;
 
     @Operation(summary = "异常日志分页")
     @GetMapping(Route.ERROR_PAGE)
     public R<PageData<ErrorLogResp>> page(@Valid ErrorPageReq req) {
-        MdmFlowableErrorLog entity = BeanUtil.cp(req, MdmFlowableErrorLog.class);
-        PageData<MdmFlowableErrorLog> page = errorLogService.getErrorLogPage(entity);
+        FlowableErrorLog entity = BeanUtil.cp(req, FlowableErrorLog.class);
+        PageData<FlowableErrorLog> page = errorLogService.getErrorLogPage(entity);
         return R.ok(page.convert(ErrorLogResp.class));
     }
 
     @Operation(summary = "异常日志详情")
     @GetMapping(Route.ERROR_INFO)
     public R<ErrorLogResp> info(@Valid IdReq req) {
-        MdmFlowableErrorLog errorLog = errorLogService.selectById(req.getId());
+        FlowableErrorLog errorLog = errorLogService.selectById(req.getId());
         if (errorLog == null) {
             throw ValidationException.of("异常日志不存在");
         }
@@ -52,11 +52,11 @@ public class ErrorLogRest {
     @PostMapping(Route.ERROR_HANDLE)
     public R<Integer> handle(@Valid @RequestBody ErrorHandleReq req) {
         log.info("处理异常日志: id={}, handleStatus={}", req.getId(), req.getHandleStatus());
-        MdmFlowableErrorLog errorLog = errorLogService.selectById(req.getId());
+        FlowableErrorLog errorLog = errorLogService.selectById(req.getId());
         if (errorLog == null) {
             throw ValidationException.of("异常日志不存在");
         }
-        MdmFlowableErrorLog update = new MdmFlowableErrorLog();
+        FlowableErrorLog update = new FlowableErrorLog();
         update.setId(req.getId());
         update.setHandleStatus(req.getHandleStatus());
         update.setRemark(req.getRemark());

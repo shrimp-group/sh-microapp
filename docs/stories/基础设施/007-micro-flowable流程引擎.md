@@ -68,14 +68,14 @@
 
 | 数据类别 | server 扩展表（运行态快照） | micro-flowable 本地表（设计态/业务态） | 是否重复 |
 |----------|----------------------------|----------------------------------------|----------|
-| 流程定义 | `ProcessDefinitionExt`（部署后：procDefId/xmlContent/formKey） | `mdm_flowable_process_design`（设计态：草稿/版本/可编辑） | 否，设计态 vs 运行态 |
-| 节点 | `Node`（部署后节点快照） | `mdm_flowable_node_config`（设计态节点配置：审批人/表单权限） | 否，配置态 vs 快照态 |
+| 流程定义 | `ProcessDefinitionExt`（部署后：procDefId/xmlContent/formKey） | `flowable_process_design`（设计态：草稿/版本/可编辑） | 否，设计态 vs 运行态 |
+| 节点 | `Node`（部署后节点快照） | `flowable_node_config`（设计态节点配置：审批人/表单权限） | 否，配置态 vs 快照态 |
 | 流程实例 | `ProcessInstanceExt`（运行实例） | 不本地存，实时透传 `instance/page/info` | 不重复 |
 | 任务 | `TaskExt`（运行任务） | 不本地存，实时透传 `task/todo/done` | 不重复 |
 | 部署记录 | `ProcessDeploy`（部署记录） | 不本地存，透传 `deploy/page` | 不重复 |
-| 申请单 | server 无 | `mdm_flowable_apply`（业务单据内容） | 不重复 |
-| 审批意见 | server 无（Flowable history 不强制存意见文本） | `mdm_flowable_approval`（动作/意见/审批人） | 不重复 |
-| 异常日志 | server 无（依赖 JobExecutor） | `mdm_flowable_error_log` | 不重复 |
+| 申请单 | server 无 | `flowable_apply`（业务单据内容） | 不重复 |
+| 审批意见 | server 无（Flowable history 不强制存意见文本） | `flowable_approval`（动作/意见/审批人） | 不重复 |
+| 异常日志 | server 无（依赖 JobExecutor） | `flowable_error_log` | 不重复 |
 
 **结论**：micro-flowable 本地表与 server 扩展表无重叠，各自承担设计态/业务态与运行态职责。
 
@@ -124,11 +124,11 @@ flowchart TD
 
 | 本地表 | 行业必要性 | 依据 |
 |--------|-----------|------|
-| `mdm_flowable_process_design` | 必要 | 流程平台需分离"设计态"与"运行态"。设计态支持草稿、版本管理、编辑后重新部署，Flowable 引擎的 `ACT_RE_PROCDEF` 是部署后只读快照，无法承载设计态编辑 |
-| `mdm_flowable_node_config` | 必要 | 审批人配置、表单字段权限需在 UI 编辑并独立存储，BPMN XML 内嵌配置难以支撑动态 UI；部署后解析 XML 自动生成节点配置基线 |
-| `mdm_flowable_apply` | 必要 | 业务单据（请假单/报销单内容）是业务数据，不属于流程引擎；申请单与流程实例通过 `proc_ins_id` 关联 |
-| `mdm_flowable_approval` | 必要 | Flowable `ACT_HI_TASKINST` 记录任务历史但不强制存"审批意见文本/审批动作语义"；审计与展示需独立审批意见表 |
-| `mdm_flowable_error_log` | 必要 | Flowable 异常依赖 JobExecutor 日志，难以业务化查询；独立异常表支持按实例/任务/类型检索追溯 |
+| `flowable_process_design` | 必要 | 流程平台需分离"设计态"与"运行态"。设计态支持草稿、版本管理、编辑后重新部署，Flowable 引擎的 `ACT_RE_PROCDEF` 是部署后只读快照，无法承载设计态编辑 |
+| `flowable_node_config` | 必要 | 审批人配置、表单字段权限需在 UI 编辑并独立存储，BPMN XML 内嵌配置难以支撑动态 UI；部署后解析 XML 自动生成节点配置基线 |
+| `flowable_apply` | 必要 | 业务单据（请假单/报销单内容）是业务数据，不属于流程引擎；申请单与流程实例通过 `proc_ins_id` 关联 |
+| `flowable_approval` | 必要 | Flowable `ACT_HI_TASKINST` 记录任务历史但不强制存"审批意见文本/审批动作语义"；审计与展示需独立审批意见表 |
+| `flowable_error_log` | 必要 | Flowable 异常依赖 JobExecutor 日志，难以业务化查询；独立异常表支持按实例/任务/类型检索追溯 |
 
 > 运行态数据（流程实例/任务/历史）行业惯例是实时从引擎查询，不本地镜像，避免一致性维护成本。本模块遵循此惯例。
 
@@ -152,7 +152,7 @@ flowchart TD
 
 ### 3.3 表设计
 
-#### 3.3.1 mdm_flowable_process_design（流程设计）
+#### 3.3.1 flowable_process_design（流程设计）
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
@@ -170,7 +170,7 @@ flowchart TD
 - **唯一索引**：`uk_design_code_tenant (design_code, tenant_code, deleted)`
 - **普通索引**：`idx_category (category, deleted)`、`idx_status (status, deleted)`
 
-#### 3.3.2 mdm_flowable_node_config（节点配置）
+#### 3.3.2 flowable_node_config（节点配置）
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
@@ -187,7 +187,7 @@ flowchart TD
 - **唯一索引**：`uk_design_node (design_id, node_key, deleted)`
 - **普通索引**：`idx_design_id (design_id, deleted)`
 
-#### 3.3.3 mdm_flowable_apply（流程申请单）
+#### 3.3.3 flowable_apply（流程申请单）
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
@@ -205,7 +205,7 @@ flowchart TD
 - **唯一索引**：`uk_apply_code_tenant (apply_code, tenant_code, deleted)`
 - **普通索引**：`idx_proc_ins_id (proc_ins_id)`、`idx_start_user (start_user_id, deleted)`、`idx_status (status, deleted)`
 
-#### 3.3.4 mdm_flowable_approval（审批意见）
+#### 3.3.4 flowable_approval（审批意见）
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
@@ -223,7 +223,7 @@ flowchart TD
 - **唯一索引**：无
 - **普通索引**：`idx_apply_id (apply_id, deleted)`、`idx_proc_ins_id (proc_ins_id, deleted)`、`idx_approver (approver_id, deleted)`
 
-#### 3.3.5 mdm_flowable_error_log（异常日志）
+#### 3.3.5 flowable_error_log（异常日志）
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
@@ -406,7 +406,7 @@ flowchart TD
     B -->|否| D[捕获异常]
     D --> E[组装 error_log 记录]
     E --> F[error_type/client_method/request_data/error_message/stack]
-    F --> G[落库 mdm_flowable_error_log]
+    F --> G[落库 flowable_error_log]
     G --> H{是否可降级?}
     H -->|是| I[返回降级结果/空值]
     H -->|否| J[抛出业务异常 ValidationException]

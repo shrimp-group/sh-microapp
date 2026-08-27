@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.wkclz.micro.flowable.mapper.MdmFlowableApplyMapper">
+<mapper namespace="com.wkclz.micro.flowable.mapper.FlowableApplyMapper">
 
     <select id="getApplyPage"
-            parameterType="com.wkclz.micro.flowable.bean.entity.MdmFlowableApply"
-            resultType="com.wkclz.micro.flowable.bean.entity.MdmFlowableApply">
-        SELECT * FROM mdm_flowable_apply
+            parameterType="com.wkclz.micro.flowable.bean.entity.FlowableApply"
+            resultType="com.wkclz.micro.flowable.bean.entity.FlowableApply">
+        SELECT * FROM flowable_apply
         WHERE deleted = 0
         <if test="designCode != null and designCode != ''">
             AND design_code = #{designCode}

@@ -8,7 +8,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Schema(description = "审批意见")
-public class MdmFlowableApproval extends BaseEntity {
+public class FlowableApproval extends BaseEntity {
 
     @Schema(description = "关联 apply.id")
     private Long applyId;

@@ -8,7 +8,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Schema(description = "节点配置")
-public class MdmFlowableNodeConfig extends BaseEntity {
+public class FlowableNodeConfig extends BaseEntity {
 
     @Schema(description = "关联 process_design.id")
     private Long designId;

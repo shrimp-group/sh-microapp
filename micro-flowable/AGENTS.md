@@ -45,11 +45,11 @@ src/main/java/com/wkclz/micro/flowable/
 │   ├── InstanceHistoryRest.java         # 业务端-实例历史（6 端点）
 │   └── ErrorLogRest.java               # 异常监控（3 端点）
 └── service/
-    ├── MdmFlowableProcessDesignService.java
-    ├── MdmFlowableNodeConfigService.java
-    ├── MdmFlowableApplyService.java
-    ├── MdmFlowableApprovalService.java
-    ├── MdmFlowableErrorLogService.java
+    ├── FlowableProcessDesignService.java
+    ├── FlowableNodeConfigService.java
+    ├── FlowableApplyService.java
+    ├── FlowableApprovalService.java
+    ├── FlowableErrorLogService.java
     └── FlowableClientWrapper.java       # client 调用包装（异常拦截落库）
 
 src/main/resources/
@@ -150,11 +150,11 @@ sh:
 
 | 表名 | 说明 |
 |------|------|
-| `mdm_flowable_process_design` | 流程设计（设计态） |
-| `mdm_flowable_node_config` | 节点配置（设计态） |
-| `mdm_flowable_apply` | 流程申请单（业务态） |
-| `mdm_flowable_approval` | 审批意见（业务态） |
-| `mdm_flowable_error_log` | 异常日志 |
+| `flowable_process_design` | 流程设计（设计态） |
+| `flowable_node_config` | 节点配置（设计态） |
+| `flowable_apply` | 流程申请单（业务态） |
+| `flowable_approval` | 审批意见（业务态） |
+| `flowable_error_log` | 异常日志 |
 
 建表脚本：`src/main/resources/sql/micro-flowable-ddl.sql`
 
@@ -167,8 +167,8 @@ sh:
 ## 开发注意事项
 
 1. **透传端点**：运行态数据（定义/实例/任务/历史）全部实时透传 sh-flowable-server，不在本地缓存
-2. **审批意见**：所有审批动作（通过/驳回/转办/委派/认领/撤回）均记录到本地 `mdm_flowable_approval` 表
-3. **异常拦截**：`FlowableClientWrapper.call()` 统一包装 client 调用，异常时落库 `mdm_flowable_error_log` 并抛出业务异常
+2. **审批意见**：所有审批动作（通过/驳回/转办/委派/认领/撤回）均记录到本地 `flowable_approval` 表
+3. **异常拦截**：`FlowableClientWrapper.call()` 统一包装 client 调用，异常时落库 `flowable_error_log` 并抛出业务异常
 4. **BPMN 解析**：设计上传/更新时解析 XML 自动生成节点配置，解析失败不阻塞保存
 5. **乐观锁**：更新操作必须传 `version` 字段
 6. **design_version vs version**：`design_version` 是设计版本号，`version` 是乐观锁字段，注意区分

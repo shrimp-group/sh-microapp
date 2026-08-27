@@ -2,11 +2,11 @@ package com.wkclz.micro.flowable.rest;
 
 import com.wkclz.core.base.R;
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.micro.flowable.bean.entity.MdmFlowableNodeConfig;
+import com.wkclz.micro.flowable.bean.entity.FlowableNodeConfig;
 import com.wkclz.micro.flowable.bean.req.NodeListReq;
 import com.wkclz.micro.flowable.bean.req.NodeUpdateReq;
 import com.wkclz.micro.flowable.bean.resp.NodeConfigResp;
-import com.wkclz.micro.flowable.service.MdmFlowableNodeConfigService;
+import com.wkclz.micro.flowable.service.FlowableNodeConfigService;
 import com.wkclz.tool.utils.BeanUtil;
 import com.wkclz.web.bean.IdReq;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,21 +29,21 @@ public class NodeConfigRest {
     private static final Logger log = LoggerFactory.getLogger(NodeConfigRest.class);
 
     @Autowired
-    private MdmFlowableNodeConfigService nodeConfigService;
+    private FlowableNodeConfigService nodeConfigService;
 
     @Operation(summary = "节点配置列表")
     @GetMapping(Route.ADMIN_NODE_LIST)
     public R<List<NodeConfigResp>> list(@Valid NodeListReq req) {
-        MdmFlowableNodeConfig param = new MdmFlowableNodeConfig();
+        FlowableNodeConfig param = new FlowableNodeConfig();
         param.setDesignId(req.getDesignId());
-        List<MdmFlowableNodeConfig> nodes = nodeConfigService.selectByEntity(param);
+        List<FlowableNodeConfig> nodes = nodeConfigService.selectByEntity(param);
         return R.ok(BeanUtil.cp(nodes, NodeConfigResp.class));
     }
 
     @Operation(summary = "节点配置详情")
     @GetMapping(Route.ADMIN_NODE_INFO)
     public R<NodeConfigResp> info(@Valid IdReq req) {
-        MdmFlowableNodeConfig node = nodeConfigService.selectById(req.getId());
+        FlowableNodeConfig node = nodeConfigService.selectById(req.getId());
         if (node == null) {
             throw ValidationException.of("节点配置不存在");
         }
@@ -54,11 +54,11 @@ public class NodeConfigRest {
     @PostMapping(Route.ADMIN_NODE_UPDATE)
     public R<Integer> update(@Valid @RequestBody NodeUpdateReq req) {
         log.info("更新节点配置: id={}", req.getId());
-        MdmFlowableNodeConfig node = nodeConfigService.selectById(req.getId());
+        FlowableNodeConfig node = nodeConfigService.selectById(req.getId());
         if (node == null) {
             throw ValidationException.of("节点配置不存在");
         }
-        MdmFlowableNodeConfig update = new MdmFlowableNodeConfig();
+        FlowableNodeConfig update = new FlowableNodeConfig();
         update.setId(req.getId());
         update.setVersion(req.getVersion());
         if (req.getAssigneeType() != null) { update.setAssigneeType(req.getAssigneeType()); }

@@ -7,15 +7,15 @@ import com.wkclz.flowable.client.bean.req.TaskCompleteReq;
 import com.wkclz.flowable.client.bean.req.TaskPageReq;
 import com.wkclz.flowable.client.bean.resp.TaskPageResp;
 import com.wkclz.flowable.client.bean.resp.TaskResp;
-import com.wkclz.micro.flowable.bean.entity.MdmFlowableApply;
-import com.wkclz.micro.flowable.bean.entity.MdmFlowableApproval;
+import com.wkclz.micro.flowable.bean.entity.FlowableApply;
+import com.wkclz.micro.flowable.bean.entity.FlowableApproval;
 import com.wkclz.micro.flowable.bean.enums.ApprovalAction;
 import com.wkclz.micro.flowable.bean.enums.ErrorType;
 import com.wkclz.micro.flowable.bean.req.ApprovalListReq;
 import com.wkclz.micro.flowable.bean.resp.ApprovalResp;
+import com.wkclz.micro.flowable.service.FlowableApplyService;
+import com.wkclz.micro.flowable.service.FlowableApprovalService;
 import com.wkclz.micro.flowable.service.FlowableClientWrapper;
-import com.wkclz.micro.flowable.service.MdmFlowableApplyService;
-import com.wkclz.micro.flowable.service.MdmFlowableApprovalService;
 import com.wkclz.tool.utils.BeanUtil;
 import com.wkclz.web.bean.IdReq;
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,9 +41,9 @@ public class FlowableTaskRest {
     @Autowired
     private FlowableClientWrapper clientWrapper;
     @Autowired
-    private MdmFlowableApprovalService approvalService;
+    private FlowableApprovalService approvalService;
     @Autowired
-    private MdmFlowableApplyService applyService;
+    private FlowableApplyService applyService;
 
     @Operation(summary = "待办任务分页")
     @GetMapping(Route.TASK_TODO_PAGE)
@@ -99,10 +99,10 @@ public class FlowableTaskRest {
     @Operation(summary = "审批意见时间线")
     @GetMapping(Route.APPROVAL_LIST)
     public R<List<ApprovalResp>> approvalList(@Valid ApprovalListReq req) {
-        MdmFlowableApproval param = new MdmFlowableApproval();
+        FlowableApproval param = new FlowableApproval();
         if (req.getProcInsId() != null) { param.setProcInsId(req.getProcInsId()); }
         if (req.getApplyId() != null) { param.setApplyId(req.getApplyId()); }
-        List<MdmFlowableApproval> list = approvalService.selectByEntity(param);
+        List<FlowableApproval> list = approvalService.selectByEntity(param);
         return R.ok(BeanUtil.cp(list, ApprovalResp.class));
     }
 
@@ -156,7 +156,7 @@ public class FlowableTaskRest {
      */
     private void recordApproval(String taskId, String procInsId, ApprovalAction action, String comment, String targetUserId) {
         try {
-            MdmFlowableApproval approval = new MdmFlowableApproval();
+            FlowableApproval approval = new FlowableApproval();
             approval.setTaskId(taskId);
             approval.setProcInsId(procInsId != null ? procInsId : "");
             approval.setApproverId(IdentityContext.getUserCode());
@@ -165,9 +165,9 @@ public class FlowableTaskRest {
             approval.setTargetUserId(targetUserId);
             // 通过 taskId 查找关联的 apply
             if (procInsId != null) {
-                MdmFlowableApply applyParam = new MdmFlowableApply();
+                FlowableApply applyParam = new FlowableApply();
                 applyParam.setProcInsId(procInsId);
-                MdmFlowableApply apply = applyService.selectOneByEntity(applyParam);
+                FlowableApply apply = applyService.selectOneByEntity(applyParam);
                 if (apply != null) {
                     approval.setApplyId(apply.getId());
                 }

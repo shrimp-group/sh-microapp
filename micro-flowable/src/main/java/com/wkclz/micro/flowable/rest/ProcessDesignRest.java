@@ -5,16 +5,16 @@ import com.wkclz.core.base.R;
 import com.wkclz.core.exception.ValidationException;
 import com.wkclz.flowable.client.bean.req.ProcessDeployReq;
 import com.wkclz.flowable.client.bean.resp.ProcessDeployResp;
-import com.wkclz.micro.flowable.bean.entity.MdmFlowableNodeConfig;
-import com.wkclz.micro.flowable.bean.entity.MdmFlowableProcessDesign;
+import com.wkclz.micro.flowable.bean.entity.FlowableNodeConfig;
+import com.wkclz.micro.flowable.bean.entity.FlowableProcessDesign;
 import com.wkclz.micro.flowable.bean.enums.DesignStatus;
 import com.wkclz.micro.flowable.bean.enums.ErrorType;
 import com.wkclz.micro.flowable.bean.enums.NodeType;
 import com.wkclz.micro.flowable.bean.req.*;
 import com.wkclz.micro.flowable.bean.resp.*;
 import com.wkclz.micro.flowable.service.FlowableClientWrapper;
-import com.wkclz.micro.flowable.service.MdmFlowableNodeConfigService;
-import com.wkclz.micro.flowable.service.MdmFlowableProcessDesignService;
+import com.wkclz.micro.flowable.service.FlowableNodeConfigService;
+import com.wkclz.micro.flowable.service.FlowableProcessDesignService;
 import com.wkclz.tool.utils.BeanUtil;
 import com.wkclz.web.bean.IdReq;
 import com.wkclz.web.bean.RemoveReq;
@@ -40,9 +40,9 @@ public class ProcessDesignRest {
     private static final Logger log = LoggerFactory.getLogger(ProcessDesignRest.class);
 
     @Autowired
-    private MdmFlowableProcessDesignService designService;
+    private FlowableProcessDesignService designService;
     @Autowired
-    private MdmFlowableNodeConfigService nodeConfigService;
+    private FlowableNodeConfigService nodeConfigService;
     @Autowired
     private FlowableClientWrapper clientWrapper;
 
@@ -51,7 +51,7 @@ public class ProcessDesignRest {
     @Transactional(rollbackFor = Exception.class)
     public R<DesignUploadResp> upload(@Valid @RequestBody DesignUploadReq req) {
         log.info("上传流程设计: designName={}", req.getDesignName());
-        MdmFlowableProcessDesign design = new MdmFlowableProcessDesign();
+        FlowableProcessDesign design = new FlowableProcessDesign();
         design.setDesignCode("FD" + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase());
         design.setDesignName(req.getDesignName());
         design.setCategory(req.getCategory());
@@ -74,8 +74,8 @@ public class ProcessDesignRest {
     @Operation(summary = "设计列表分页")
     @GetMapping(Route.ADMIN_DESIGN_PAGE)
     public R<PageData<DesignPageResp>> page(@Valid DesignPageReq req) {
-        MdmFlowableProcessDesign entity = BeanUtil.cp(req, MdmFlowableProcessDesign.class);
-        PageData<MdmFlowableProcessDesign> page = designService.getDesignPage(entity);
+        FlowableProcessDesign entity = BeanUtil.cp(req, FlowableProcessDesign.class);
+        PageData<FlowableProcessDesign> page = designService.getDesignPage(entity);
         PageData<DesignPageResp> respPage = page.convert(DesignPageResp.class);
         return R.ok(respPage);
     }
@@ -83,15 +83,15 @@ public class ProcessDesignRest {
     @Operation(summary = "设计详情")
     @GetMapping(Route.ADMIN_DESIGN_INFO)
     public R<DesignInfoResp> info(@Valid IdReq req) {
-        MdmFlowableProcessDesign design = designService.selectById(req.getId());
+        FlowableProcessDesign design = designService.selectById(req.getId());
         if (design == null) {
             throw ValidationException.of("设计不存在");
         }
         DesignInfoResp resp = BeanUtil.cp(design, DesignInfoResp.class);
         // 查询节点配置
-        MdmFlowableNodeConfig nodeParam = new MdmFlowableNodeConfig();
+        FlowableNodeConfig nodeParam = new FlowableNodeConfig();
         nodeParam.setDesignId(design.getId());
-        List<MdmFlowableNodeConfig> nodes = nodeConfigService.selectByEntity(nodeParam);
+        List<FlowableNodeConfig> nodes = nodeConfigService.selectByEntity(nodeParam);
         resp.setNodes(BeanUtil.cp(nodes, NodeConfigResp.class));
         return R.ok(resp);
     }
@@ -101,11 +101,11 @@ public class ProcessDesignRest {
     @Transactional(rollbackFor = Exception.class)
     public R<Integer> update(@Valid @RequestBody DesignUpdateReq req) {
         log.info("更新流程设计: id={}", req.getId());
-        MdmFlowableProcessDesign design = designService.selectById(req.getId());
+        FlowableProcessDesign design = designService.selectById(req.getId());
         if (design == null) {
             throw ValidationException.of("设计不存在");
         }
-        MdmFlowableProcessDesign update = new MdmFlowableProcessDesign();
+        FlowableProcessDesign update = new FlowableProcessDesign();
         update.setId(req.getId());
         update.setVersion(req.getVersion());
         if (req.getDesignName() != null) { update.setDesignName(req.getDesignName()); }
@@ -118,7 +118,7 @@ public class ProcessDesignRest {
         }
         designService.updateByIdSelective(update);
         if (req.getXmlContent() != null) {
-            MdmFlowableProcessDesign saved = designService.selectById(req.getId());
+            FlowableProcessDesign saved = designService.selectById(req.getId());
             parseAndCreateNodes(saved);
         }
         return R.ok(1);
@@ -129,12 +129,12 @@ public class ProcessDesignRest {
     @Transactional(rollbackFor = Exception.class)
     public R<Integer> remove(@Valid @RequestBody RemoveReq req) {
         log.info("删除流程设计: id={}", req.getId());
-        MdmFlowableProcessDesign design = designService.selectById(req.getId());
+        FlowableProcessDesign design = designService.selectById(req.getId());
         if (design == null) {
             throw ValidationException.of("设计不存在");
         }
         deleteOldNodes(req.getId());
-        MdmFlowableProcessDesign del = new MdmFlowableProcessDesign();
+        FlowableProcessDesign del = new FlowableProcessDesign();
         del.setId(req.getId());
         return R.ok(designService.deleteById(del));
     }
@@ -144,7 +144,7 @@ public class ProcessDesignRest {
     @Transactional(rollbackFor = Exception.class)
     public R<DesignDeployResp> deploy(@Valid @RequestBody DesignDeployReq req) {
         log.info("部署流程设计: id={}", req.getId());
-        MdmFlowableProcessDesign design = designService.selectById(req.getId());
+        FlowableProcessDesign design = designService.selectById(req.getId());
         if (design == null) {
             throw ValidationException.of("设计不存在");
         }
@@ -159,7 +159,7 @@ public class ProcessDesignRest {
 
         ProcessDeployResp deployResp = result.getData();
         // 回写部署信息
-        MdmFlowableProcessDesign update = new MdmFlowableProcessDesign();
+        FlowableProcessDesign update = new FlowableProcessDesign();
         update.setId(design.getId());
         update.setDeployId(deployResp.getDeployId());
         update.setStatus(DesignStatus.DEPLOYED.name());
@@ -177,7 +177,7 @@ public class ProcessDesignRest {
      * 使用 Flowable BPMN Model API（flowable-bpmn-model 由 sh-flowable-client 传递依赖引入）。
      * 若解析失败仅记录日志，不阻塞设计保存。
      */
-    private void parseAndCreateNodes(MdmFlowableProcessDesign design) {
+    private void parseAndCreateNodes(FlowableProcessDesign design) {
         try {
             org.flowable.bpmn.model.BpmnModel model = new org.flowable.bpmn.converter.BpmnXMLConverter()
                     .convertToBpmnModel(
@@ -186,7 +186,7 @@ public class ProcessDesignRest {
             int order = 0;
             for (org.flowable.bpmn.model.Process process : model.getProcesses()) {
                 for (org.flowable.bpmn.model.FlowElement element : process.getFlowElements()) {
-                    MdmFlowableNodeConfig node = new MdmFlowableNodeConfig();
+                    FlowableNodeConfig node = new FlowableNodeConfig();
                     node.setDesignId(design.getId());
                     node.setNodeKey(element.getId());
                     node.setNodeName(element.getName() != null ? element.getName() : element.getId());
@@ -212,11 +212,11 @@ public class ProcessDesignRest {
     }
 
     private void deleteOldNodes(Long designId) {
-        MdmFlowableNodeConfig param = new MdmFlowableNodeConfig();
+        FlowableNodeConfig param = new FlowableNodeConfig();
         param.setDesignId(designId);
-        List<MdmFlowableNodeConfig> oldNodes = nodeConfigService.selectByEntity(param);
-        for (MdmFlowableNodeConfig old : oldNodes) {
-            MdmFlowableNodeConfig del = new MdmFlowableNodeConfig();
+        List<FlowableNodeConfig> oldNodes = nodeConfigService.selectByEntity(param);
+        for (FlowableNodeConfig old : oldNodes) {
+            FlowableNodeConfig del = new FlowableNodeConfig();
             del.setId(old.getId());
             nodeConfigService.deleteById(del);
         }

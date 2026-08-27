@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Schema(description = "异常日志")
-public class MdmFlowableErrorLog extends BaseEntity {
+public class FlowableErrorLog extends BaseEntity {
 
     @Schema(description = "异常类型")
     private String errorType;

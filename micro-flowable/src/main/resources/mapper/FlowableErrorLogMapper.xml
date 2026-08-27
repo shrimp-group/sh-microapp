@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.wkclz.micro.flowable.mapper.MdmFlowableErrorLogMapper">
+<mapper namespace="com.wkclz.micro.flowable.mapper.FlowableErrorLogMapper">
 
     <select id="getErrorLogPage"
-            parameterType="com.wkclz.micro.flowable.bean.entity.MdmFlowableErrorLog"
-            resultType="com.wkclz.micro.flowable.bean.entity.MdmFlowableErrorLog">
-        SELECT * FROM mdm_flowable_error_log
+            parameterType="com.wkclz.micro.flowable.bean.entity.FlowableErrorLog"
+            resultType="com.wkclz.micro.flowable.bean.entity.FlowableErrorLog">
+        SELECT * FROM flowable_error_log
         WHERE deleted = 0
         <if test="errorType != null and errorType != ''">
             AND error_type = #{errorType}

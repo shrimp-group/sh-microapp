@@ -5,10 +5,10 @@ import com.wkclz.core.base.R;
 import com.wkclz.flowable.client.bean.req.HistoryPageReq;
 import com.wkclz.flowable.client.bean.req.ProcessInstancePageReq;
 import com.wkclz.flowable.client.bean.resp.*;
-import com.wkclz.micro.flowable.bean.entity.MdmFlowableApply;
+import com.wkclz.micro.flowable.bean.entity.FlowableApply;
 import com.wkclz.micro.flowable.bean.enums.ErrorType;
+import com.wkclz.micro.flowable.service.FlowableApplyService;
 import com.wkclz.micro.flowable.service.FlowableClientWrapper;
-import com.wkclz.micro.flowable.service.MdmFlowableApplyService;
 import com.wkclz.web.bean.IdReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,7 +33,7 @@ public class InstanceHistoryRest {
     @Autowired
     private FlowableClientWrapper clientWrapper;
     @Autowired
-    private MdmFlowableApplyService applyService;
+    private FlowableApplyService applyService;
 
     @Operation(summary = "流程实例分页")
     @GetMapping(Route.INSTANCE_PAGE)
@@ -81,11 +81,11 @@ public class InstanceHistoryRest {
         R<Integer> result = clientWrapper.call(ErrorType.APPROVE_ERROR, "ProcessInstanceClient#withdraw", clientReq,
                 () -> clientWrapper.getClient().getInstance().withdraw(clientReq));
         // 更新申请单状态
-        MdmFlowableApply applyParam = new MdmFlowableApply();
+        FlowableApply applyParam = new FlowableApply();
         applyParam.setProcInsId(req.getProcInsId());
-        MdmFlowableApply apply = applyService.selectOneByEntity(applyParam);
+        FlowableApply apply = applyService.selectOneByEntity(applyParam);
         if (apply != null) {
-            MdmFlowableApply updateApply = new MdmFlowableApply();
+            FlowableApply updateApply = new FlowableApply();
             updateApply.setId(apply.getId());
             updateApply.setStatus("WITHDRAWN");
             updateApply.setVersion(apply.getVersion());
