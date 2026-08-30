@@ -90,7 +90,10 @@ src/main/java/com/wkclz/micro/k8s/
 2. 正常日志以 SSE `data:` 帧逐行下发；异常通过 SSE `event: error` 帧下发后结束
 3. `SseEmitter(0L)` 不超时；onCompletion/onTimeout/onError 均关闭底层 InputStream，避免连接泄漏
 4. 流式读取在独立线程池 `LOG_STREAM_EXECUTOR` 中执行，控制器立即返回 emitter
-5. 前端配套：`streamPodLog()`（原生 fetch + ReadableStream 解析 SSE，规避 axios 超时）与 `PodLogDialog` 组件
+5. **流式客户端**：日志读取必须使用 `KubeConfigHelper.getStreamLogApiClient(clusterName)`，该客户端基于缓存客户端克隆并关闭读超时（`readTimeout=0`），且**强制 HTTP/1.1**（`protocols(HTTP_1_1)`）。缓存客户端默认 10s 读超时，follow 流在无新日志时静默超过 10s 会触发 OkHttp HTTP/2 StreamTimeout（`SocketTimeoutException`）导致流中断；HTTP/2 长连接下 apiserver 的 follow 数据推送不稳定，强制 HTTP/1.1（chunked）可保证新日志实时下发
+6. **响应缓存过滤器**：宿主应用若引入 iam-session，其 `RequestRecordFilter` 的 `ContentCachingResponseWrapper` 有两个与 SSE 不兼容的问题——写入先进缓存（异步线程在 `copyBodyToResponse()` 之后写入的数据滞留，前端收不到新日志）；且 `flushBuffer()` 为 no-op（SseEmitter 每次 send 后调用的 `flushBuffer()` 无法到达容器，数据攒满 8KB 才发送，页面日志不及时）。现已按 `Accept: text/event-stream` 识别流式请求并**跳过 response 包装**（SSE 直连原始 response，flush 实时生效），普通请求仍缓存记录；前端 `streamPodLog()` 需携带 `Accept: text/event-stream` 头。需宿主重新 install iam-session 生效
+7. **客户端断开处理**：前端停止/关闭页面时 SSE 连接断开属预期行为——`emitter.send` 抛 `IllegalStateException/IOException`（记 info 并 break 释放流）；同时 sh-web 的 `ErrorHandler` 需对 `AsyncRequestNotUsableException`/`ClientAbortException`/`Broken pipe` 等"客户端断开"类异常降级为 warn，避免误报 ERROR 与告警邮件
+8. 前端配套：`streamPodLog()`（原生 fetch + ReadableStream 解析 SSE，规避 axios 超时）与 `PodLogDialog` 组件
 
 ## 依赖关系
 
@@ -99,7 +102,7 @@ src/main/java/com/wkclz/micro/k8s/
 
 ## 开发注意事项
 
-1. **集群配置**：kubeConfig 以字符串落库，`KubeConfigHelper` 解析并构建 ApiClient，按 clusterName 缓存 10 分钟
+1. **集群配置**：kubeConfig 以字符串落库，`KubeConfigHelper` 解析并构建 ApiClient，按 clusterName 缓存 10 分钟；支持客户端证书、CA 单向认证与 Bearer Token（`setApiKey` + `setApiKeyPrefix("Bearer")`，client-java v26 的 `setAccessToken` 已废弃抛异常，不可用）
 2. **Kind 分发**：新增 Kind 需在 `Kind` 枚举登记，并实现 `K8sApi` 接口，Bean 名约定 `k8s{Kind}Impl`
 3. **命名空间**：ClusterRole/ClusterRoleBinding/Namespace/CustomResourceDefinition 等集群级资源无需 namespace，其余 Kind 必传
 4. **SSE 端点**：不经过 `R<T>` 包装，返回体为 `text/event-stream`；错误事件用 `event: error` 下发

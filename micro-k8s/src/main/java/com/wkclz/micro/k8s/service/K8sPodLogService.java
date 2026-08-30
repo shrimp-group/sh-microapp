@@ -49,10 +49,10 @@ public class K8sPodLogService {
     }
 
     private void streamLog(K8sPodLogReq req, SseEmitter emitter, AtomicReference<InputStream> streamRef) {
+        String containerName = req.getContainerName();
         try {
-            ApiClient apiClient = kubeConfigHelper.getApiClient(req.getClusterName());
+            ApiClient apiClient = kubeConfigHelper.getStreamLogApiClient(req.getClusterName());
 
-            String containerName = req.getContainerName();
             if (containerName == null || containerName.isBlank()) {
                 V1Pod pod = new CoreV1Api(apiClient).readNamespacedPod(req.getName(), req.getNamespace()).execute();
                 List<V1Container> containers = pod.getSpec().getContainers();
@@ -60,32 +60,54 @@ public class K8sPodLogService {
                     throw ValidationException.of("Pod {} 没有可用的容器", req.getName());
                 }
                 containerName = containers.get(0).getName();
+                log.info("Pod日志未指定容器, 自动取第一个容器, namespace: {}, name: {}, container: {}",
+                    req.getNamespace(), req.getName(), containerName);
             }
+
+            log.info("Pod日志流请求发起, clusterName: {}, namespace: {}, name: {}, container: {}, sinceSeconds: {}, tailLines: {}, timestamps: {}",
+                req.getClusterName(), req.getNamespace(), req.getName(), containerName,
+                req.getSinceSeconds(), req.getTailLines(), req.getTimestamps());
 
             InputStream inputStream = new PodLogs(apiClient).streamNamespacedPodLog(
                 req.getNamespace(), req.getName(), containerName,
                 req.getSinceSeconds(), req.getTailLines(), Boolean.TRUE.equals(req.getTimestamps()));
             streamRef.set(inputStream);
+            log.info("Pod日志流已建立, namespace: {}, name: {}, container: {}",
+                req.getNamespace(), req.getName(), containerName);
 
+            long lineCount = 0;
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
+                    lineCount++;
+                    if (lineCount == 1) {
+                        log.info("Pod日志流开始输出, namespace: {}, name: {}, container: {}",
+                            req.getNamespace(), req.getName(), containerName);
+                    } else if (lineCount % 10 == 0) {
+                        log.info("Pod日志流已输出 {} 行, namespace: {}, name: {}, container: {}",
+                            lineCount, req.getNamespace(), req.getName(), containerName);
+                    }
                     try {
                         emitter.send(line);
                     } catch (IllegalStateException | IOException e) {
-                        log.info("Pod日志SSE连接已断开, namespace: {}, name: {}, container: {}",
-                            req.getNamespace(), req.getName(), containerName);
+                        log.info("Pod日志SSE连接已断开, 已输出 {} 行, namespace: {}, name: {}, container: {}, error: {}",
+                            lineCount, req.getNamespace(), req.getName(), containerName, e.getMessage());
                         break;
                     }
                 }
             }
+            log.info("Pod日志流已结束, 共输出 {} 行, namespace: {}, name: {}, container: {}",
+                lineCount, req.getNamespace(), req.getName(), containerName);
+            if (lineCount == 0) {
+                sendInfo(emitter, "未获取到任何日志，请确认 Pod 处于 Running 状态且容器有 stdout 日志输出");
+            }
         } catch (ApiException e) {
-            log.error("Pod日志查询失败, clusterName: {}, namespace: {}, name: {}, code: {}, body: {}",
-                req.getClusterName(), req.getNamespace(), req.getName(), e.getCode(), e.getResponseBody(), e);
+            log.error("Pod日志查询失败, clusterName: {}, namespace: {}, name: {}, container: {}, code: {}, body: {}",
+                req.getClusterName(), req.getNamespace(), req.getName(), containerName, e.getCode(), e.getResponseBody(), e);
             sendError(emitter, "Pod日志查询失败: " + e.getResponseBody());
         } catch (Exception e) {
-            log.error("Pod日志查询失败, clusterName: {}, namespace: {}, name: {}",
-                req.getClusterName(), req.getNamespace(), req.getName(), e);
+            log.error("Pod日志查询失败, clusterName: {}, namespace: {}, name: {}, container: {}",
+                req.getClusterName(), req.getNamespace(), req.getName(), containerName, e);
             sendError(emitter, "Pod日志查询失败: " + e.getMessage());
         } finally {
             closeStream(streamRef);
@@ -102,6 +124,14 @@ public class K8sPodLogService {
             emitter.send(SseEmitter.event().name("error").data(message));
         } catch (Exception e) {
             log.warn("Pod日志SSE 发送错误事件失败: {}", e.getMessage());
+        }
+    }
+
+    private void sendInfo(SseEmitter emitter, String message) {
+        try {
+            emitter.send(SseEmitter.event().name("info").data(message));
+        } catch (Exception e) {
+            log.warn("Pod日志SSE 发送提示事件失败: {}", e.getMessage());
         }
     }
 

@@ -5,8 +5,11 @@ import com.wkclz.micro.k8s.bean.entity.K8sConfig;
 import com.wkclz.micro.k8s.mapper.K8sConfigMapper;
 import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.apis.*;
+import io.kubernetes.client.openapi.auth.ApiKeyAuth;
+import io.kubernetes.client.openapi.auth.Authentication;
 import io.kubernetes.client.util.KubeConfig;
 import okhttp3.OkHttpClient;
+import okhttp3.Protocol;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +23,7 @@ import java.security.*;
 import java.security.cert.*;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class KubeConfigHelper {
@@ -126,6 +130,49 @@ public class KubeConfigHelper {
         return apiClient;
     }
 
+    /**
+     * 获取用于长连接流式读取的 ApiClient（无读超时 + HTTP/1.1）
+     * <p>Pod 日志 follow 流在无新日志时可能长时间静默，OkHttp 默认 10s 读超时会中断流式读取
+     * （HTTP/2 StreamTimeout）；且 HTTP/2 长连接下 apiserver 的 follow 数据推送存在不稳定情况，
+     * 此处基于缓存客户端克隆一个 readTimeout=0 且强制 HTTP/1.1（chunked 流式最成熟）的客户端，
+     * 仅用于日志滚动等长连接场景，不影响缓存客户端默认超时</p>
+     */
+    public ApiClient getStreamLogApiClient(String clusterName) {
+        log.info("获取流式日志 ApiClient, clusterName: {}", clusterName);
+        ApiClient apiClient = getApiClient(clusterName);
+
+        OkHttpClient streamHttpClient = apiClient.getHttpClient().newBuilder()
+            .readTimeout(0, TimeUnit.SECONDS)
+            .protocols(Collections.singletonList(Protocol.HTTP_1_1))
+            .addInterceptor(chain -> {
+                okhttp3.Request request = chain.request();
+                log.info("流式日志 HTTP 请求: {} {}", request.method(), request.url());
+                okhttp3.Response response = chain.proceed(request);
+                log.info("流式日志 HTTP 响应: code={}, url={}", response.code(), request.url());
+                return response;
+            })
+            .build();
+
+        ApiClient streamClient = new ApiClient(streamHttpClient);
+        streamClient.setBasePath(apiClient.getBasePath());
+
+        boolean hasToken = false;
+        Authentication authentication = apiClient.getAuthentications().get("BearerToken");
+        if (authentication instanceof ApiKeyAuth) {
+            ApiKeyAuth source = (ApiKeyAuth) authentication;
+            hasToken = StringUtils.isNotBlank(source.getApiKey());
+            Authentication targetAuthentication = streamClient.getAuthentications().get("BearerToken");
+            if (targetAuthentication instanceof ApiKeyAuth) {
+                ApiKeyAuth target = (ApiKeyAuth) targetAuthentication;
+                target.setApiKey(source.getApiKey());
+                target.setApiKeyPrefix(source.getApiKeyPrefix());
+            }
+        }
+        log.info("流式日志 ApiClient 构建完成, clusterName: {}, basePath: {}, hasToken: {}, readTimeout: {}ms",
+            clusterName, apiClient.getBasePath(), hasToken, streamClient.getReadTimeout());
+        return streamClient;
+    }
+
     private static ApiClient buildApiClient(KubeConfig kubeConfig) throws Exception {
         ApiClient apiClient = new ApiClient();
         apiClient.setBasePath(kubeConfig.getServer());
@@ -134,7 +181,10 @@ public class KubeConfigHelper {
         if (credentials != null) {
             String accessToken = credentials.get(KubeConfig.CRED_TOKEN_KEY);
             if (StringUtils.isNotBlank(accessToken)) {
-                apiClient.setAccessToken(accessToken);
+                // client-java v26 的 setAccessToken 已废弃（无条件抛异常），改为设置 ApiKeyAuth：
+                // Authorization: Bearer <token>
+                apiClient.setApiKey(accessToken);
+                apiClient.setApiKeyPrefix("Bearer");
             }
         }
 
