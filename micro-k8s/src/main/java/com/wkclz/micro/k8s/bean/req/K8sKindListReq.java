@@ -18,4 +18,7 @@ public class K8sKindListReq {
     @NotBlank(message = "资源类型不能为空")
     @Schema(description = "资源类型(Kind)", requiredMode = Schema.RequiredMode.REQUIRED)
     private String kind;
+
+    @Schema(description = "名称")
+    private String name;
 }

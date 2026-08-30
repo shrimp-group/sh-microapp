@@ -93,7 +93,7 @@ src/main/java/com/wkclz/micro/k8s/
 5. **流式客户端**：日志读取必须使用 `KubeConfigHelper.getStreamLogApiClient(clusterName)`，该客户端基于缓存客户端克隆并关闭读超时（`readTimeout=0`），且**强制 HTTP/1.1**（`protocols(HTTP_1_1)`）。缓存客户端默认 10s 读超时，follow 流在无新日志时静默超过 10s 会触发 OkHttp HTTP/2 StreamTimeout（`SocketTimeoutException`）导致流中断；HTTP/2 长连接下 apiserver 的 follow 数据推送不稳定，强制 HTTP/1.1（chunked）可保证新日志实时下发
 6. **响应缓存过滤器**：宿主应用若引入 iam-session，其 `RequestRecordFilter` 的 `ContentCachingResponseWrapper` 有两个与 SSE 不兼容的问题——写入先进缓存（异步线程在 `copyBodyToResponse()` 之后写入的数据滞留，前端收不到新日志）；且 `flushBuffer()` 为 no-op（SseEmitter 每次 send 后调用的 `flushBuffer()` 无法到达容器，数据攒满 8KB 才发送，页面日志不及时）。现已按 `Accept: text/event-stream` 识别流式请求并**跳过 response 包装**（SSE 直连原始 response，flush 实时生效），普通请求仍缓存记录；前端 `streamPodLog()` 需携带 `Accept: text/event-stream` 头。需宿主重新 install iam-session 生效
 7. **客户端断开处理**：前端停止/关闭页面时 SSE 连接断开属预期行为——`emitter.send` 抛 `IllegalStateException/IOException`（记 info 并 break 释放流）；同时 sh-web 的 `ErrorHandler` 需对 `AsyncRequestNotUsableException`/`ClientAbortException`/`Broken pipe` 等"客户端断开"类异常降级为 warn，避免误报 ERROR 与告警邮件
-8. 前端配套：`streamPodLog()`（原生 fetch + ReadableStream 解析 SSE，规避 axios 超时）与 `PodLogDialog` 组件
+8. 前端配套：`streamPodLog()`（原生 fetch + ReadableStream 解析 SSE，规避 axios 超时，需携带 `Accept: text/event-stream` 头）与 `PodLogDialog` 组件（支持全屏、自动换行开关/横向滚动、按日志级别关键词着色、最多渲染 5000 行）
 
 ## 依赖关系
 
