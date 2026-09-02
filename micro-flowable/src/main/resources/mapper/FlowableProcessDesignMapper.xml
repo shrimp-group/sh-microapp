@@ -7,16 +7,19 @@
             resultType="com.wkclz.micro.flowable.bean.entity.FlowableProcessDesign">
         SELECT * FROM flowable_process_design
         WHERE deleted = 0
-        <if test="designName != null and designName != ''">
+        <if test="designCode != null">
+            AND design_code LIKE CONCAT('%', #{designCode}, '%')
+        </if>
+        <if test="designName != null ">
             AND design_name LIKE CONCAT('%', #{designName}, '%')
         </if>
-        <if test="category != null and category != ''">
+        <if test="category != null">
             AND category = #{category}
         </if>
-        <if test="status != null and status != ''">
+        <if test="status != null">
             AND status = #{status}
         </if>
-        <if test="tenantCode != null and tenantCode != ''">
+        <if test="tenantCode != null ">
             AND tenant_code = #{tenantCode}
         </if>
         ORDER BY sort, id DESC

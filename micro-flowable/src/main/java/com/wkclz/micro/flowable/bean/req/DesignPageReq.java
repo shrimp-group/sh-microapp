@@ -11,6 +11,8 @@ import lombok.EqualsAndHashCode;
 public class DesignPageReq extends PageReq {
     @Schema(description = "流程名称（模糊）")
     private String designName;
+    @Schema(description = "流程编码（模糊）")
+    private String designCode;
     @Schema(description = "流程分类")
     private String category;
     @Schema(description = "状态")
