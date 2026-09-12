@@ -42,4 +42,6 @@ public interface Route {
     String DDL_COMMENT_COLUMN = "/ddl/comment-column";
     String DDL_PREVIEW = "/ddl/preview";
     String DDL_EXECUTE_DDL = "/ddl/execute-ddl";
+
+    String DIFF_EXECUTE = "/diff/execute";
 }

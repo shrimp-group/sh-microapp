@@ -18,6 +18,7 @@
 | SQL 执行 | 分级权限控制、危险操作检测、结果集限制、执行历史 |
 | DDL 操作 | 表单驱动的表结构变更（8 种 DDL + 预览） |
 | SQL 提示 | 后端元数据 API 供前端 Monaco Editor 实现补全 |
+| 结构对比 | 双数据源/DDL 文本对比、属性开关、差异清单、统一 DDL 生成（PER_TABLE/PER_CHANGE 粒度） |
 
 ## 数据库表
 
@@ -104,6 +105,14 @@
 | POST | /ddl/preview | DDL 预览 |
 | POST | /ddl/execute-ddl | 执行 DDL 字符串（预览确认后执行） |
 
+### 结构对比 `/micro-dbview/diff/*`
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | /diff/execute | 执行表结构对比（base=基准侧，other=对比侧；交换两侧重调即反转同步方向） |
+
+对比源类型：`DATASOURCE`（datasourceId + schemaName，tableName 可选）与 `DDL_TEXT`（ddlText，DDL 文件由前端读取内容传入）。响应含差异清单 diffResult 与统一 DDL syncDdls。对比属性全部可通过 `options` 开关（见 `DiffOptions`），DDL 粒度 `PER_TABLE`/`PER_CHANGE`。
+
 ## 交互工作流
 
 用户通过以下步骤完成表结构浏览与变更：
@@ -137,3 +146,12 @@
 - 危险 SQL 检测（UPDATE/DELETE 无 WHERE、DROP TABLE、TRUNCATE）
 - 结果集行数限制（默认 1000，上限 10000）
 - 禁止一次执行多条 SQL
+
+## 表结构对比
+
+核心实现在 `utils/schemadiff` 包，纯静态、零 Spring/三方依赖，整包拷贝即可移植：
+
+- `DdlParseUtil`：MySQL CREATE TABLE 文本解析 → `Map<表名, TableStructure>`；数据源侧经 `SHOW CREATE TABLE` 走同一解析路径
+- `SchemaDiffUtil`：`diff`（差异清单，属性开关见 `DiffOptions`）+ `generateSyncDdl`（统一 DDL：ALTER 按表聚合或逐项单步、新表输出原文 CREATE TABLE、缺表 DROP 受 dropMissingTable 控制）
+- 本地 main 使用：`SchemaDiffUtil.diff(DdlParseUtil.parse(a), DdlParseUtil.parse(b), new DiffOptions())`
+- 同步方向：diff 的第一个参数为基准侧；前端交换 base/other 重调即反转方向
