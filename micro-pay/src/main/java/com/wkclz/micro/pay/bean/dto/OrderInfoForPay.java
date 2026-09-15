@@ -31,8 +31,8 @@ public class OrderInfoForPay implements Serializable {
     @Schema(description = "支付金额")
     private BigDecimal paymentAmount;
 
-    @Schema(description = "本次订单使用的积分数量")
-    private Integer points;
+    @Schema(description = "本次订单使用的积分数量（支持两位小数）")
+    private BigDecimal points;
 
     @Schema(description = "订单描述")
     private String orderDesc;

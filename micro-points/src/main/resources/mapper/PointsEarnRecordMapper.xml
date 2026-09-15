@@ -20,7 +20,7 @@
     </select>
 
     <!-- 按 source_no 聚合 REFUND 获取流水的 points 之和 -->
-    <select id="sumRefundPointsBySourceNo" resultType="java.lang.Integer">
+    <select id="sumRefundPointsBySourceNo" resultType="java.math.BigDecimal">
         SELECT COALESCE(SUM(points), 0)
         FROM
             points_earn_record

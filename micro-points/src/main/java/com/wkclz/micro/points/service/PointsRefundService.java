@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -171,17 +172,17 @@ public class PointsRefundService {
 
         // ===== CALC：计算可退回额 =====
         // total_deducted = COMPLETED 动作记录 deduction_points 之和
-        Integer totalDeductedVal = deductionMapper.sumCompletedDeductionPointsByOrderNo(tenantCode, req.getOrderNo());
-        Integer totalDeducted = totalDeductedVal == null ? 0 : totalDeductedVal;
+        BigDecimal totalDeductedVal = deductionMapper.sumCompletedDeductionPointsByOrderNo(tenantCode, req.getOrderNo());
+        BigDecimal totalDeducted = totalDeductedVal == null ? BigDecimal.ZERO : totalDeductedVal;
         // already_refunded = REFUND 获取流水 points 之和（source_no=orderNo）
-        Integer alreadyRefundedVal = earnMapper.sumRefundPointsBySourceNo(tenantCode, req.getOrderNo());
-        Integer alreadyRefunded = alreadyRefundedVal == null ? 0 : alreadyRefundedVal;
-        Integer refundable = totalDeducted - alreadyRefunded;
+        BigDecimal alreadyRefundedVal = earnMapper.sumRefundPointsBySourceNo(tenantCode, req.getOrderNo());
+        BigDecimal alreadyRefunded = alreadyRefundedVal == null ? BigDecimal.ZERO : alreadyRefundedVal;
+        BigDecimal refundable = totalDeducted.subtract(alreadyRefunded);
         log.info("可退回额计算, orderNo={}, totalDeducted={}, alreadyRefunded={}, refundable={}",
                 req.getOrderNo(), totalDeducted, alreadyRefunded, refundable);
 
         // ===== CHK2：超额防护 =====
-        if (req.getPoints() > refundable) {
+        if (req.getPoints().compareTo(refundable) > 0) {
             log.warn("退回积分超过原单据扣减积分, orderNo={}, requestPoints={}, refundable={}",
                     req.getOrderNo(), req.getPoints(), refundable);
             throw ValidationException.of("退回积分超过原单据扣减积分，可退回：" + refundable);
@@ -198,7 +199,7 @@ public class PointsRefundService {
         record.setReason(req.getReason());
         // expire_time 为空时由 DB 默认值 2099-12-31 23:59:59 填充
         record.setExpireTime(req.getExpireTime());
-        record.setUsedPoints(0);
+        record.setUsedPoints(BigDecimal.ZERO);
         record.setAvailablePoints(req.getPoints());
         record.setIsUsedUp(0);
         record.setPointSourceType(PointsSourceType.REFUND.name());
@@ -224,7 +225,7 @@ public class PointsRefundService {
         if (req.getUserCode() == null || req.getUserCode().isBlank()) {
             throw ValidationException.of("userCode 不能为空");
         }
-        if (req.getPoints() == null || req.getPoints() <= 0) {
+        if (req.getPoints() == null || req.getPoints().signum() <= 0) {
             throw ValidationException.of("points 必须大于 0");
         }
         if (req.getOrderNo() == null || req.getOrderNo().isBlank()) {

@@ -27,6 +27,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
+
 /**
  * 积分 C 端 REST（基于登录 userCode，只读）
  * <p>
@@ -65,9 +67,9 @@ public class PointsRest {
         PointsWallet wallet = walletService.getOrCreateWallet(tenantCode, userCode);
         PointsWalletResp resp = new PointsWalletResp();
         resp.setUserCode(wallet.getUserCode());
-        resp.setAvailablePoints(wallet.getAvailablePoints() == null ? 0 : wallet.getAvailablePoints());
-        resp.setFrozenPoints(wallet.getFrozenPoints() == null ? 0 : wallet.getFrozenPoints());
-        resp.setTotalEarnedPoints(wallet.getTotalEarnedPoints() == null ? 0 : wallet.getTotalEarnedPoints());
+        resp.setAvailablePoints(wallet.getAvailablePoints() == null ? BigDecimal.ZERO : wallet.getAvailablePoints());
+        resp.setFrozenPoints(wallet.getFrozenPoints() == null ? BigDecimal.ZERO : wallet.getFrozenPoints());
+        resp.setTotalEarnedPoints(wallet.getTotalEarnedPoints() == null ? BigDecimal.ZERO : wallet.getTotalEarnedPoints());
         return R.ok(resp);
     }
 

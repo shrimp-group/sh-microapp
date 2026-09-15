@@ -10,7 +10,7 @@
 
 - **积分钱包**：按 `(tenant_code, user_code)` 唯一，维护可用 / 冻结 / 历史总额三态，首次发放或查询时按需创建
 - **积分发放**：业务方（`ISSUANCE`）与管理员手动发放（`ADMIN_ISSUE`）共用 `PointsIssueService`
-- **积分试算**：按 100:1（100 积分 = 1 元）换算可抵扣金额，只读
+- **积分试算**：按 1:1（1 积分 = 1 元）换算可抵扣金额，只读
 - **两阶段消费**：同步冻结（`FROZEN`）→ 异步扣减（`@Async`），保证消费接口快速返回
 - **积分消费取消（支付失败补偿）**：`releaseConsume(orderNo, reason)` 在支付失败时补偿——FROZEN 释放冻结并置 CANCELLED；DEDUCTED 调 `refundWithoutLock` 退剩余全部积分；幂等键 `CANCEL:orderNo`
 - **积分回退**：以发放方式回退（`REFUND`），含原单据校验与超额防护
@@ -155,8 +155,8 @@ com.wkclz.micro.points.PointsAutoConfig
 
 ```java
 public class PointsConstants {
-    /** 积分与现金比例：100 积分 = 1 元 */
-    public static final int POINTS_TO_CASH_RATE = 100;
+    /** 积分与现金比例：1 积分 = 1 元 */
+    public static final BigDecimal POINTS_TO_CASH_RATE = BigDecimal.ONE;
     /** 默认到期时间（数据库默认值，表示永不过期） */
     public static final String DEFAULT_EXPIRE_TIME = "2099-12-31 23:59:59";
     /** 幂等检测 Redis key 前缀 */
@@ -249,9 +249,9 @@ public void executeWithUserLock(String userCode, Runnable runnable);       // �
 | id | bigint | 主键 |
 | tenant_code | varchar(31) | 租户编码 |
 | user_code | varchar(31) | 用户编码 |
-| available_points | bigint | 可用积分 |
-| frozen_points | bigint | 冻结积分 |
-| total_earned_points | bigint | 历史总获得积分 |
+| available_points | decimal(12,2) | 可用积分（两位小数） |
+| frozen_points | decimal(12,2) | 冻结积分（两位小数） |
+| total_earned_points | decimal(12,2) | 历史总获得积分（两位小数） |
 | 基础字段 | — | sort/create_time/create_by/update_time/update_by/remark/version/deleted |
 | 索引 | — | uk(tenant_code, user_code) |
 
@@ -266,11 +266,11 @@ public void executeWithUserLock(String userCode, Runnable runnable);       // �
 | user_code | varchar(31) | 用户编码 |
 | flow_no | varchar(64) | 流水号（系统生成，唯一标识） |
 | earn_time | datetime | 获取时间 |
-| points | bigint | 获取积分数 |
+| points | decimal(12,2) | 获取积分数（两位小数） |
 | reason | varchar(255) | 获取原因 |
 | expire_time | datetime | 到期时间（DB 默认 2099-12-31 23:59:59） |
-| used_points | bigint | 已使用积分数 |
-| available_points | bigint | 可用积分数 |
+| used_points | decimal(12,2) | 已使用积分数（两位小数） |
+| available_points | decimal(12,2) | 可用积分数（两位小数） |
 | is_used_up | tinyint | 是否已使用完(0/1) |
 | point_source_type | varchar(16) | 来源类型（枚举 `PointsSourceType`：ISSUANCE 发放 / REFUND 回退 / ADMIN_ISSUE 管理员手动发放） |
 | source_no | varchar(64) | 来源单据号（发放时为业务单据号；回退时为原消费单据号 `order_no`） |
@@ -290,7 +290,7 @@ public void executeWithUserLock(String userCode, Runnable runnable);       // �
 | user_code | varchar(31) | 用户编码 |
 | flow_no | varchar(64) | 流水号（系统生成，唯一标识） |
 | consume_time | datetime | 使用时间 |
-| points | bigint | 使用积分数 |
+| points | decimal(12,2) | 使用积分数（两位小数） |
 | reason | varchar(255) | 使用原因 |
 | order_no | varchar(64) | 关联单据号（业务单据，唯一） |
 | status | varchar(16) | 状态（枚举 `PointsConsumeStatus`：FROZEN 冻结 / DEDUCTED 已扣减 / CANCELLED 已取消（支付失败补偿）） |
@@ -311,7 +311,7 @@ public void executeWithUserLock(String userCode, Runnable runnable);       // �
 | flow_no | varchar(64) | 扣减流水号（系统生成，唯一标识） |
 | order_no | varchar(64) | 关联消费单据号（= 消费流水的 `order_no`，用于溯源） |
 | earn_flow_no | varchar(64) | 积分获取流水号（任务记录为 NULL，动作记录指向 `earn_record.flow_no`） |
-| deduction_points | bigint | 扣减金额 |
+| deduction_points | decimal(12,2) | 扣减金额（两位小数） |
 | status | varchar(16) | 状态（枚举 `PointsDeductionStatus`：PENDING 待处理 / PROCESSED 已处理 / COMPLETED 已完成 / PARTIAL 部分完成 / CANCELLED 已取消（仅任务记录，支付失败补偿时置）） |
 | 基础字段 | — | 同上 |
 | 索引 | — | idx(status, user_code), idx(order_no), idx(earn_flow_no) |
@@ -350,14 +350,14 @@ flowchart TD
 ```mermaid
 flowchart TD
     S([调用试算接口]) --> Q[查询钱包 available]
-    Q --> CAL{available / 100<br/>对比 paymentAmount}
-    CAL -->|available/100 >= 金额| F[可全额抵扣<br/>deductAmount=paymentAmount<br/>requiredPoints=paymentAmount*100]
-    CAL -->|available/100 < 金额| P[部分抵扣<br/>deductAmount=floor(available/100)<br/>requiredPoints=available - available%100]
+    Q --> CAL{available >= paymentAmount?}
+    CAL -->|available >= 金额| F[可全额抵扣<br/>deductAmount=paymentAmount<br/>requiredPoints=paymentAmount]
+    CAL -->|available < 金额| P[部分抵扣<br/>deductAmount=available<br/>requiredPoints=available]
     F --> R([返回试算结果])
     P --> R
 ```
 
-试算**只读**，不修改任何数据，不获取用户锁，不开启事务。换算使用 `BigDecimal` + `RoundingMode.FLOOR`。
+试算**只读**，不修改任何数据，不获取用户锁，不开启事务。按 1:1 换算（1 积分 = 1 元），使用 `BigDecimal` 运算。
 
 ### 5.3 积分消费（两阶段之第一阶段：冻结）
 
@@ -593,7 +593,7 @@ private PointsConsumeService consumeService;
 // 1. 发放积分（pointSourceType 默认 ISSUANCE）
 PointsIssueReq issueReq = new PointsIssueReq();
 issueReq.setUserCode("U001");
-issueReq.setPoints(1000L);
+issueReq.setPoints(new BigDecimal("10.50"));
 issueReq.setReason("签到奖励");
 issueReq.setSourceNo("SIGN-20260627-U001");  // 业务单据号（幂等键）
 issueReq.setExpireTime(LocalDateTime.of(2027, 1, 1, 0, 0));  // 可选，默认永不过期
@@ -603,7 +603,7 @@ PointsIssueResp issueResp = issueService.issuePoints(issueReq);
 // 2. 消费积分（两阶段：冻结 → 异步扣减）
 PointsConsumeReq consumeReq = new PointsConsumeReq();
 consumeReq.setUserCode("U001");
-consumeReq.setPoints(500L);
+consumeReq.setPoints(new BigDecimal("5.20"));
 consumeReq.setReason("订单抵扣");
 consumeReq.setOrderNo("ORD-20260627-0001");  // 业务单据号（幂等键）
 PointsConsumeResp consumeResp = consumeService.consume(consumeReq);
@@ -621,8 +621,7 @@ req.setUserCode("U001");
 req.setPaymentAmount(new BigDecimal("10.00"));  // 现金金额（元）
 PointsTrialResp resp = trialService.trial(req);
 // resp.getAvailablePoints() / getDeductAmount() / getRequiredPoints()
-// 全额抵扣: deductAmount=10.00, requiredPoints=1000
-// 部分抵扣: deductAmount=floor(available/100), requiredPoints=available-available%100
+// 1:1 换算：全额抵扣 requiredPoints=paymentAmount；部分抵扣 requiredPoints=available
 ```
 
 ### 管理员手动发放
@@ -660,7 +659,7 @@ micro-points 模块遵循 sh-mybatis 全局配置（`mapUnderscoreToCamelCase=tr
 5. **`@Transactional` 同类自调用失效**：发放 / 消费 / 回退采用 `TransactionTemplate` 编程式事务包裹 `doXxx` 方法
 6. **乐观锁更新**：钱包 / 获取流水 / 任务记录 / 消费流水更新均使用 `version` 乐观锁，失败抛异常回滚
 7. **`expire_time` DB 默认值**：`2099-12-31 23:59:59`（即默认永不过期，仅业务指定时才过期）
-8. **积分使用 `long` 类型**：避免浮点；现金换算用 `BigDecimal` 仅用于展示
+8. **积分使用 `BigDecimal`（两位小数）**：DB 列为 `decimal(12,2)`；积分与现金按 1:1 换算
 9. **回退不更新原消费记录状态**：保持 `DEDUCTED`，回退关系仅通过获取流水的 `source_no` 关联
 10. **PARTIAL 是防御性处理**：正常流程不应发生（消费时已校验钱包余额），仅作为数据不一致的兜底；对账时标记异常待处理
 11. **过期与消费冻结竞态**：已冻结的过期积分，过期消费因钱包余额校验失败跳过，不报错；等异步扣减后 available=0 不再处理
@@ -735,4 +734,4 @@ A: `@Async` 必须由外部 Bean 调用才能使 Spring AOP 代理生效（同�
 
 ---
 
-**最后更新时间**: 2026-06-27（新增：积分消费取消 releaseConsume 支付失败补偿 / refundWithoutLock 包级方法 / CANCELLED 状态 / CANCEL 幂等键；优化：XxlJob 弱依赖 / C 端 /custom 前缀 / Mapper XML 简化）
+**最后更新时间**: 2026-09-16（变更：积分由整数改为两位小数 `BigDecimal`，DB 列 bigint→decimal(12,2)；积分与现金比例由 100:1 调整为 1:1；试算按 1:1 换算）

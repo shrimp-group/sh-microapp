@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -29,7 +30,7 @@ public class PointsEarnRecordResp extends EntityResp {
     private LocalDateTime earnTime;
 
     @Schema(description = "获取积分数")
-    private Integer points;
+    private BigDecimal points;
 
     @Schema(description = "获取原因")
     private String reason;
@@ -38,10 +39,10 @@ public class PointsEarnRecordResp extends EntityResp {
     private LocalDateTime expireTime;
 
     @Schema(description = "已使用积分数")
-    private Integer usedPoints;
+    private BigDecimal usedPoints;
 
     @Schema(description = "可用积分数")
-    private Integer availablePoints;
+    private BigDecimal availablePoints;
 
     @Schema(description = "是否已使用完(0/1)")
     private Integer isUsedUp;

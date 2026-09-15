@@ -18,7 +18,7 @@
     </select>
 
     <!-- 按 order_no 聚合 COMPLETED 动作记录（earn_flow_no IS NOT NULL AND status='COMPLETED'）的 deduction_points 之和 -->
-    <select id="sumCompletedDeductionPointsByOrderNo" resultType="java.lang.Integer">
+    <select id="sumCompletedDeductionPointsByOrderNo" resultType="java.math.BigDecimal">
         SELECT COALESCE(SUM(deduction_points), 0)
         FROM
             points_deduction_record

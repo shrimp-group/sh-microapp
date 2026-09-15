@@ -4,6 +4,7 @@ import com.wkclz.micro.points.bean.entity.PointsDeductionRecord;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class PointsConsumeDeductionResp {
     private LocalDateTime consumeTime;
 
     @Schema(description = "消费积分")
-    private Integer points;
+    private BigDecimal points;
 
     @Schema(description = "关联单据号")
     private String orderNo;
@@ -34,6 +35,6 @@ public class PointsConsumeDeductionResp {
     private List<PointsDeductionRecord> deductions;
 
     @Schema(description = "已扣减总额（便于前端展示）")
-    private Integer deductedSum;
+    private BigDecimal deductedSum;
 
 }

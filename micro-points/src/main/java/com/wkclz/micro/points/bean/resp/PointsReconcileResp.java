@@ -3,6 +3,8 @@ package com.wkclz.micro.points.bean.resp;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * 对账结果出参
  * 核对消费流水与扣减记录（COMPLETED 动作记录）一致性
@@ -15,13 +17,13 @@ public class PointsReconcileResp {
     private String consumeFlowNo;
 
     @Schema(description = "消费积分")
-    private Integer points;
+    private BigDecimal points;
 
     @Schema(description = "扣减记录之和（COMPLETED 动作记录）")
-    private Integer deductedSum;
+    private BigDecimal deductedSum;
 
     @Schema(description = "差异（消费积分 - 扣减记录之和）")
-    private Integer diff;
+    private BigDecimal diff;
 
     @Schema(description = "对账状态（一致 / 不一致 / 异常）")
     private String status;

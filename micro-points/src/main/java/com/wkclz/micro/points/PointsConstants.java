@@ -1,14 +1,16 @@
 package com.wkclz.micro.points;
 
+import java.math.BigDecimal;
+
 /**
  * 积分模块常量
  */
 public class PointsConstants {
 
     /**
-     * 积分与现金比例：100 积分 = 1 元
+     * 积分与现金比例：1 积分 = 1 元
      */
-    public static final int POINTS_TO_CASH_RATE = 100;
+    public static final BigDecimal POINTS_TO_CASH_RATE = BigDecimal.ONE;
 
     /**
      * 默认到期时间（数据库默认值，表示永不过期）

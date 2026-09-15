@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -148,7 +149,7 @@ public class PointsConsumeService {
         PointsWallet wallet = walletService.getOrCreateWallet(tenantCode, req.getUserCode());
 
         // ===== CHK：校验可用积分余额 =====
-        if (wallet.getAvailablePoints() < req.getPoints()) {
+        if (wallet.getAvailablePoints().compareTo(req.getPoints()) < 0) {
             log.warn("可用积分不足, userCode={}, available={}, need={}",
                     req.getUserCode(), wallet.getAvailablePoints(), req.getPoints());
             throw ValidationException.of("可用积分不足");
@@ -243,7 +244,7 @@ public class PointsConsumeService {
             throw ValidationException.of("原消费记录不存在");
         }
         String userCode = consumeRecord.getUserCode();
-        Integer points = consumeRecord.getPoints() == null ? 0 : consumeRecord.getPoints();
+        BigDecimal points = consumeRecord.getPoints() == null ? BigDecimal.ZERO : consumeRecord.getPoints();
 
         // 5. 用户锁 + 事务（在锁内执行取消逻辑，事务提交后缓存幂等结果）
         PointsConsumeResp resp;
@@ -281,7 +282,7 @@ public class PointsConsumeService {
      * @return 取消结果
      */
     private PointsConsumeResp doReleaseConsume(String orderNo, String reason, PointsConsumeRecord consumeRecord,
-                                               String tenantCode, String userCode, Integer points) {
+                                               String tenantCode, String userCode, BigDecimal points) {
         String status = consumeRecord.getStatus();
         log.info("积分消费取消分支判断, orderNo={}, status={}", orderNo, status);
 
@@ -327,19 +328,19 @@ public class PointsConsumeService {
         // ===== DEDUCTED 分支：计算可退积分，触发回退 =====
         if (PointsConsumeStatus.DEDUCTED.name().equals(status)) {
             // 计算已退积分：already_refunded = REFUND 获取流水 points 之和（source_no=orderNo）
-            Integer alreadyRefundedVal = earnMapper.sumRefundPointsBySourceNo(tenantCode, orderNo);
-            Integer alreadyRefunded = alreadyRefundedVal == null ? 0 : alreadyRefundedVal;
-            Integer refundable = points - alreadyRefunded;
+            BigDecimal alreadyRefundedVal = earnMapper.sumRefundPointsBySourceNo(tenantCode, orderNo);
+            BigDecimal alreadyRefunded = alreadyRefundedVal == null ? BigDecimal.ZERO : alreadyRefundedVal;
+            BigDecimal refundable = points.subtract(alreadyRefunded);
             log.info("DEDUCTED 分支可退积分计算, orderNo={}, totalPoints={}, alreadyRefunded={}, refundable={}",
                     orderNo, points, alreadyRefunded, refundable);
 
             // 无可退积分：跳过退款，仅返回幂等结果
-            if (refundable <= 0) {
+            if (refundable.signum() <= 0) {
                 log.info("无可退积分，跳过退款, orderNo={}, refundable={}", orderNo, refundable);
                 PointsConsumeResp resp = new PointsConsumeResp();
                 resp.setFlowNo(consumeRecord.getFlowNo());
                 resp.setStatus(PointsConsumeStatus.DEDUCTED.name());
-                resp.setPoints(0);
+                resp.setPoints(BigDecimal.ZERO);
                 return resp;
             }
 
@@ -387,7 +388,7 @@ public class PointsConsumeService {
         if (req.getUserCode() == null || req.getUserCode().isBlank()) {
             throw ValidationException.of("userCode 不能为空");
         }
-        if (req.getPoints() == null || req.getPoints() <= 0) {
+        if (req.getPoints() == null || req.getPoints().signum() <= 0) {
             throw ValidationException.of("points 必须大于 0");
         }
         if (req.getOrderNo() == null || req.getOrderNo().isBlank()) {

@@ -5,6 +5,7 @@ import com.wkclz.mybatis.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -28,7 +29,7 @@ public interface PointsDeductionRecordMapper extends BaseMapper<PointsDeductionR
      * 按 order_no 聚合 COMPLETED 动作记录（earn_flow_no IS NOT NULL AND status='COMPLETED'）的 deduction_points 之和
      * 用于回退校验的 total_deducted 计算
      */
-    Integer sumCompletedDeductionPointsByOrderNo(@Param("tenantCode") String tenantCode, @Param("orderNo") String orderNo);
+    BigDecimal sumCompletedDeductionPointsByOrderNo(@Param("tenantCode") String tenantCode, @Param("orderNo") String orderNo);
 
     /**
      * 按 order_no 查所有 COMPLETED 动作记录（earn_flow_no IS NOT NULL AND status='COMPLETED'）

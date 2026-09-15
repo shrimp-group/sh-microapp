@@ -5,6 +5,7 @@ import com.wkclz.mybatis.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -29,7 +30,7 @@ public interface PointsEarnRecordMapper extends BaseMapper<PointsEarnRecord> {
      * 按 source_no 聚合 REFUND 获取流水的 points 之和
      * 用于回退校验的 already_refunded 计算
      */
-    Integer sumRefundPointsBySourceNo(@Param("tenantCode") String tenantCode, @Param("sourceNo") String sourceNo);
+    BigDecimal sumRefundPointsBySourceNo(@Param("tenantCode") String tenantCode, @Param("sourceNo") String sourceNo);
 
     /**
      * 扫描过期且可用的获取流水（expire_time < #{expireTime} AND available_points > 0）

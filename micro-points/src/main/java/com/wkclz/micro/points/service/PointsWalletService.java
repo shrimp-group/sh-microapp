@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+
 /**
  * 积分钱包服务
  * <p>
@@ -48,9 +50,9 @@ public class PointsWalletService extends BaseService<PointsWallet, PointsWalletM
         PointsWallet newWallet = new PointsWallet();
         newWallet.setTenantCode(tenantCode);
         newWallet.setUserCode(userCode);
-        newWallet.setAvailablePoints(0);
-        newWallet.setFrozenPoints(0);
-        newWallet.setTotalEarnedPoints(0);
+        newWallet.setAvailablePoints(BigDecimal.ZERO);
+        newWallet.setFrozenPoints(BigDecimal.ZERO);
+        newWallet.setTotalEarnedPoints(BigDecimal.ZERO);
         try {
             mapper.insert(newWallet);
             log.info("钱包创建成功, tenantCode={}, userCode={}, id={}", tenantCode, userCode, newWallet.getId());
@@ -75,11 +77,11 @@ public class PointsWalletService extends BaseService<PointsWallet, PointsWalletM
      * @param userCode   用户编码
      * @param points     积分数（正数）
      */
-    public void addAvailable(String tenantCode, String userCode, Integer points) {
+    public void addAvailable(String tenantCode, String userCode, BigDecimal points) {
         log.info("钱包累加可用积分, tenantCode={}, userCode={}, points={}", tenantCode, userCode, points);
         PointsWallet wallet = getOrCreateWallet(tenantCode, userCode);
-        Integer newAvailable = wallet.getAvailablePoints() + points;
-        Integer newTotal = wallet.getTotalEarnedPoints() + points;
+        BigDecimal newAvailable = wallet.getAvailablePoints().add(points);
+        BigDecimal newTotal = wallet.getTotalEarnedPoints().add(points);
         int rows = mapper.updatePointsByVersion(
                 wallet.getId(), newAvailable, wallet.getFrozenPoints(), newTotal, wallet.getVersion());
         if (rows < 1) {
@@ -97,16 +99,16 @@ public class PointsWalletService extends BaseService<PointsWallet, PointsWalletM
      * @param userCode   用户编码
      * @param points     积分数（正数）
      */
-    public void freeze(String tenantCode, String userCode, Integer points) {
+    public void freeze(String tenantCode, String userCode, BigDecimal points) {
         log.info("钱包冻结积分, tenantCode={}, userCode={}, points={}", tenantCode, userCode, points);
         PointsWallet wallet = getOrCreateWallet(tenantCode, userCode);
-        if (wallet.getAvailablePoints() < points) {
+        if (wallet.getAvailablePoints().compareTo(points) < 0) {
             log.warn("可用积分不足, userCode={}, available={}, need={}",
                     userCode, wallet.getAvailablePoints(), points);
             throw ValidationException.of("可用积分不足");
         }
-        Integer newAvailable = wallet.getAvailablePoints() - points;
-        Integer newFrozen = wallet.getFrozenPoints() + points;
+        BigDecimal newAvailable = wallet.getAvailablePoints().subtract(points);
+        BigDecimal newFrozen = wallet.getFrozenPoints().add(points);
         int rows = mapper.updatePointsByVersion(
                 wallet.getId(), newAvailable, newFrozen, wallet.getTotalEarnedPoints(), wallet.getVersion());
         if (rows < 1) {
@@ -124,15 +126,15 @@ public class PointsWalletService extends BaseService<PointsWallet, PointsWalletM
      * @param userCode   用户编码
      * @param points     积分数（正数）
      */
-    public void releaseFrozen(String tenantCode, String userCode, Integer points) {
+    public void releaseFrozen(String tenantCode, String userCode, BigDecimal points) {
         log.info("钱包释放冻结积分, tenantCode={}, userCode={}, points={}", tenantCode, userCode, points);
         PointsWallet wallet = getOrCreateWallet(tenantCode, userCode);
-        if (wallet.getFrozenPoints() < points) {
+        if (wallet.getFrozenPoints().compareTo(points) < 0) {
             log.warn("冻结积分不足, userCode={}, frozen={}, need={}",
                     userCode, wallet.getFrozenPoints(), points);
             throw ValidationException.of("冻结积分不足");
         }
-        Integer newFrozen = wallet.getFrozenPoints() - points;
+        BigDecimal newFrozen = wallet.getFrozenPoints().subtract(points);
         int rows = mapper.updatePointsByVersion(
                 wallet.getId(), wallet.getAvailablePoints(), newFrozen, wallet.getTotalEarnedPoints(), wallet.getVersion());
         if (rows < 1) {

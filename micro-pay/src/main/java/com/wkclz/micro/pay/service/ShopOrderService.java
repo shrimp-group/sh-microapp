@@ -123,7 +123,7 @@ public class ShopOrderService {
         payOrder.setBody(orderInfo.getOrderDesc());
         payOrder.setDetail(orderInfo.getOrderDesc());
         payOrder.setPayMethod(req.getPayMethod());
-        payOrder.setPoints(orderInfo.getPoints() != null ? orderInfo.getPoints() : 0);
+        payOrder.setPoints(orderInfo.getPoints() != null ? orderInfo.getPoints() : BigDecimal.ZERO);
 
         // 调用 createPayOrder 创建支付订单（复用历史订单处理、outTradeNo 生成、记录插入逻辑）
         // MOCK_PAY 分支会跳过支付平台调用，paramCheck 已适配 MOCK_PAY 跳过 terminalType
@@ -165,7 +165,7 @@ public class ShopOrderService {
             }
         } catch (Exception e) {
             // 模拟支付回调失败，释放已扣减的积分
-            if (payOrder.getPoints() != null && payOrder.getPoints() > 0) {
+            if (payOrder.getPoints() != null && payOrder.getPoints().signum() > 0) {
                 try {
                     consumeService.releaseConsume(payOrder.getOutTradeNo(), "模拟支付回调失败");
                     log.warn("模拟支付回调失败已释放积分, outTradeNo={}", payOrder.getOutTradeNo());
@@ -239,7 +239,7 @@ public class ShopOrderService {
         payOrder.setDetail(orderInfo.getOrderDesc());
         payOrder.setPayMethod(req.getPayMethod());
         payOrder.setTerminalType(req.getTerminalType());
-        payOrder.setPoints(orderInfo.getPoints() != null ? orderInfo.getPoints() : 0);
+        payOrder.setPoints(orderInfo.getPoints() != null ? orderInfo.getPoints() : BigDecimal.ZERO);
 
         // 调用 createPayOrder 发起支付
         PayOrderDto result = createPayOrder(payOrder, httpReq, httpRep);
@@ -335,7 +335,7 @@ public class ShopOrderService {
 
         // 积分消费（在 outTradeNo 生成且 payOrder 持久化之后、调用支付 helper 之前）
         // 使用 outTradeNo 作为 consume 的 orderNo，保证重试支付时幂等键不冲突
-        if (model.getPoints() != null && model.getPoints() > 0) {
+        if (model.getPoints() != null && model.getPoints().signum() > 0) {
             PointsConsumeReq consumeReq = new PointsConsumeReq();
             consumeReq.setTenantCode(model.getTenantCode());
             consumeReq.setUserCode(model.getUserCode());
@@ -365,7 +365,7 @@ public class ShopOrderService {
             }
         } catch (Exception e) {
             // 支付失败补偿：释放已扣减的积分
-            if (model.getPoints() != null && model.getPoints() > 0) {
+            if (model.getPoints() != null && model.getPoints().signum() > 0) {
                 try {
                     consumeService.releaseConsume(model.getOutTradeNo(), "支付失败");
                     log.warn("支付失败已释放积分, outTradeNo={}", model.getOutTradeNo());
@@ -401,7 +401,7 @@ public class ShopOrderService {
             payOrder.setRefundedAmount(BigDecimal.ZERO);
         }
         if (payOrder.getPoints() == null) {
-            payOrder.setPoints(0);
+            payOrder.setPoints(BigDecimal.ZERO);
         }
 
         // 申请退款
@@ -415,7 +415,7 @@ public class ShopOrderService {
             log.info("总单退款开始, outTradeNo={}, payMethod={}, points={}", payOrder.getOutTradeNo(), payMethod, payOrder.getPoints());
 
             // 积分全单回退：releaseConsume 处理 FROZEN 释放 + DEDUCTED 退回（不重复调用 pointsRefundService.refund，避免重复退款）
-            if (payOrder.getPoints() != null && payOrder.getPoints() > 0) {
+            if (payOrder.getPoints() != null && payOrder.getPoints().signum() > 0) {
                 if (payConfig.getPointsRefundOnRefundEnable() == 1) {
                     log.info("总单退款-积分回退开始, outTradeNo={}, points={}", payOrder.getOutTradeNo(), payOrder.getPoints());
                     try {
@@ -469,7 +469,7 @@ public class ShopOrderService {
         if (subOrderInfo == null) {
             throw ValidationException.of("子单 %s 不存在", subOrderNo);
         }
-        Integer subOrderPoints = subOrderInfo.getPoints() != null ? subOrderInfo.getPoints() : 0;
+        BigDecimal subOrderPoints = subOrderInfo.getPoints() != null ? subOrderInfo.getPoints() : BigDecimal.ZERO;
         log.info("子单退款-子单积分, subOrderNo={}, subOrderPoints={}", subOrderNo, subOrderPoints);
 
         // 校验退款金额不超额
@@ -482,7 +482,7 @@ public class ShopOrderService {
         }
 
         // 调用积分退款（仅当开关开启且 subOrderPoints > 0）
-        if (subOrderPoints > 0) {
+        if (subOrderPoints.signum() > 0) {
             if (payConfig.getPointsRefundOnRefundEnable() == 1) {
                 PointsRefundReq req = new PointsRefundReq();
                 req.setTenantCode(payOrder.getTenantCode());

@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -24,8 +25,8 @@ public class PointsIssueReq {
     private String userCode;
 
     @NotNull(message = "points 不能为空")
-    @Schema(description = "发放积分数", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Integer points;
+    @Schema(description = "发放积分数（支持两位小数）", requiredMode = Schema.RequiredMode.REQUIRED)
+    private BigDecimal points;
 
     @Schema(description = "发放原因")
     private String reason;

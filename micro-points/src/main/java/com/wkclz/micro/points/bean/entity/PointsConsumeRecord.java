@@ -5,6 +5,7 @@ import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -43,7 +44,7 @@ public class PointsConsumeRecord extends BaseEntity {
      * 使用积分数
      */
     @Schema(description = "使用积分数")
-    private Integer points;
+    private BigDecimal points;
 
     /**
      * 使用原因

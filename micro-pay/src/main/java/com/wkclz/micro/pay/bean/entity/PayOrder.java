@@ -217,10 +217,10 @@ public class PayOrder extends BaseEntity {
     private Integer isSubscribe;
 
     /**
-     * 本次支付使用的积分数量
+     * 本次支付使用的积分数量（支持两位小数）
      */
     @Schema(description = "本次支付使用的积分数量")
-    private Integer points = 0;
+    private BigDecimal points = BigDecimal.ZERO;
 
     /**
      * 已退款现金金额累计

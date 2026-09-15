@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * 积分消费入参
  * 两阶段消费之第一阶段：校验余额 + 冻结 + 触发异步扣减，orderNo 作为幂等键
@@ -21,8 +23,8 @@ public class PointsConsumeReq {
     private String userCode;
 
     @NotNull(message = "points 不能为空")
-    @Schema(description = "消费积分数", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Integer points;
+    @Schema(description = "消费积分数（支持两位小数）", requiredMode = Schema.RequiredMode.REQUIRED)
+    private BigDecimal points;
 
     @Schema(description = "消费原因")
     private String reason;

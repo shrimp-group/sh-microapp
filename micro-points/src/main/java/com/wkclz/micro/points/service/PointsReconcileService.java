@@ -14,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,16 +77,16 @@ public class PointsReconcileService {
     private PointsReconcileResp reconcileOne(String tenantCode, PointsConsumeRecord consume) {
         String orderNo = consume.getOrderNo();
         String consumeFlowNo = consume.getFlowNo();
-        Integer consumePoints = consume.getPoints() == null ? 0 : consume.getPoints();
+        BigDecimal consumePoints = consume.getPoints() == null ? BigDecimal.ZERO : consume.getPoints();
 
         // 聚合 COMPLETED 动作记录（earn_flow_no 非空）deduction_points 之和
-        Integer deductedSum = deductionMapper.sumCompletedDeductionPointsByOrderNo(tenantCode, orderNo);
+        BigDecimal deductedSum = deductionMapper.sumCompletedDeductionPointsByOrderNo(tenantCode, orderNo);
         if (deductedSum == null) {
-            deductedSum = 0;
+            deductedSum = BigDecimal.ZERO;
         }
 
         // 差异 = 消费积分 - 扣减记录之和
-        Integer diff = consumePoints - deductedSum;
+        BigDecimal diff = consumePoints.subtract(deductedSum);
 
         // 查询任务记录（earn_flow_no IS NULL）用于判断 PENDING / PARTIAL / PROCESSED
         PointsDeductionRecord taskRecord = deductionMapper.selectTaskRecordByOrderNo(tenantCode, orderNo);
@@ -117,7 +118,7 @@ public class PointsReconcileService {
      * - DEDUCTED 消费：diff==0 一致，否则 不一致
      * - FROZEN 消费：存在 PENDING 任务记录 冻结中，否则 异常
      */
-    private String determineStatus(String consumeStatus, int diff, PointsDeductionRecord taskRecord, String orderNo) {
+    private String determineStatus(String consumeStatus, BigDecimal diff, PointsDeductionRecord taskRecord, String orderNo) {
         // PARTIAL 任务记录检查（优先级最高，无论消费状态）
         if (taskRecord != null && PointsDeductionStatus.PARTIAL.name().equals(taskRecord.getStatus())) {
             return "异常待处理";
@@ -136,7 +137,7 @@ public class PointsReconcileService {
 
         if (PointsConsumeStatus.DEDUCTED.name().equals(consumeStatus)) {
             // DEDUCTED 消费：COMPLETED 动作记录之和应等于消费 points
-            return diff == 0 ? "一致" : "不一致";
+            return diff.compareTo(BigDecimal.ZERO) == 0 ? "一致" : "不一致";
         }
 
         // 未知消费状态

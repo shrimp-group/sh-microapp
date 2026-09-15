@@ -5,6 +5,7 @@ import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -43,7 +44,7 @@ public class PointsEarnRecord extends BaseEntity {
      * 获取积分数
      */
     @Schema(description = "获取积分数")
-    private Integer points;
+    private BigDecimal points;
 
     /**
      * 获取原因
@@ -61,13 +62,13 @@ public class PointsEarnRecord extends BaseEntity {
      * 已使用积分数
      */
     @Schema(description = "已使用积分数")
-    private Integer usedPoints;
+    private BigDecimal usedPoints;
 
     /**
      * 可用积分数
      */
     @Schema(description = "可用积分数")
-    private Integer availablePoints;
+    private BigDecimal availablePoints;
 
     /**
      * 是否已使用完(0/1)

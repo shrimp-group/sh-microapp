@@ -17,6 +17,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -228,8 +229,8 @@ public class PointsAsyncDeductService {
         String tenantCode = task.getTenantCode();
         String userCode = task.getUserCode();
         String orderNo = task.getOrderNo();
-        Integer need = task.getDeductionPoints() == null ? 0 : task.getDeductionPoints();
-        Integer accumulatedPoints = 0;
+        BigDecimal need = task.getDeductionPoints() == null ? BigDecimal.ZERO : task.getDeductionPoints();
+        BigDecimal accumulatedPoints = BigDecimal.ZERO;
 
         int batchN = 1;
         int offset = 0;
@@ -246,15 +247,15 @@ public class PointsAsyncDeductService {
             }
             // 遍历批次中每条 earn，逐条扣减
             for (PointsEarnRecord earn : batch) {
-                if (accumulatedPoints >= need) {
+                if (accumulatedPoints.compareTo(need) >= 0) {
                     break;
                 }
-                Integer earnAvailable = earn.getAvailablePoints() == null ? 0 : earn.getAvailablePoints();
-                if (earnAvailable <= 0) {
+                BigDecimal earnAvailable = earn.getAvailablePoints() == null ? BigDecimal.ZERO : earn.getAvailablePoints();
+                if (earnAvailable.signum() <= 0) {
                     continue;
                 }
                 // 本次扣减 = min(earn.available, need - accumulated)
-                Integer deduct = Math.min(earnAvailable, need - accumulatedPoints);
+                BigDecimal deduct = earnAvailable.min(need.subtract(accumulatedPoints));
 
                 // 写 COMPLETED 动作记录（earn_flow_no 非空）
                 String actionFlowNo = redisIdGenerator.generateIdWithPrefix(DEDUCTION_FLOW_NO_PREFIX);
@@ -269,30 +270,30 @@ public class PointsAsyncDeductService {
                 deductionMapper.insert(action);
 
                 // 更新 earn：usedPoints += deduct, availablePoints -= deduct, isUsedUp 视情况置 1
-                Integer newUsed = (earn.getUsedPoints() == null ? 0 : earn.getUsedPoints()) + deduct;
-                Integer newAvailable = earnAvailable - deduct;
+                BigDecimal newUsed = (earn.getUsedPoints() == null ? BigDecimal.ZERO : earn.getUsedPoints()).add(deduct);
+                BigDecimal newAvailable = earnAvailable.subtract(deduct);
                 earn.setUsedPoints(newUsed);
                 earn.setAvailablePoints(newAvailable);
-                earn.setIsUsedUp(newAvailable == 0 ? 1 : 0);
+                earn.setIsUsedUp(newAvailable.compareTo(BigDecimal.ZERO) == 0 ? 1 : 0);
                 int rows = earnMapper.updateByIdSelective(earn);
                 if (rows < 1) {
                     log.warn("earn 更新乐观锁失败, earnFlowNo={}, version={}", earn.getFlowNo(), earn.getVersion());
                     throw ValidationException.of("获取流水更新冲突，请重试");
                 }
 
-                accumulatedPoints += deduct;
+                accumulatedPoints = accumulatedPoints.add(deduct);
                 log.info("扣减明细, deductionFlowNo={}, earnFlowNo={}, actionFlowNo={}, deduct={}, accumulated={}, need={}",
                         task.getFlowNo(), earn.getFlowNo(), actionFlowNo, deduct, accumulatedPoints, need);
             }
             offset += batch.size();
-            if (accumulatedPoints >= need) {
+            if (accumulatedPoints.compareTo(need) >= 0) {
                 break;
             }
             batchN++;
         }
 
         // 处理结果：满足或不足
-        if (accumulatedPoints >= need) {
+        if (accumulatedPoints.compareTo(need) >= 0) {
             // ===== DONE：任务记录置 PROCESSED，钱包 releaseFrozen(need)，消费流水置 DEDUCTED =====
             int taskRows = deductionMapper.updateStatusByVersion(task.getId(), PointsDeductionStatus.PROCESSED.name(), task.getVersion());
             if (taskRows < 1) {
@@ -322,10 +323,10 @@ public class PointsAsyncDeductService {
                 log.warn("任务记录状态更新乐观锁失败（PARTIAL）, id={}, version={}", task.getId(), task.getVersion());
                 throw ValidationException.of("任务记录状态更新冲突，请重试");
             }
-            if (accumulatedPoints > 0) {
+            if (accumulatedPoints.signum() > 0) {
                 walletService.releaseFrozen(tenantCode, userCode, accumulatedPoints);
             }
-            Integer gap = need - accumulatedPoints;
+            BigDecimal gap = need.subtract(accumulatedPoints);
             log.warn("积分不足（PARTIAL）, deductionFlowNo={}, userCode={}, orderNo={}, need={}, deducted={}, gap={}",
                     task.getFlowNo(), userCode, orderNo, need, accumulatedPoints, gap);
         }

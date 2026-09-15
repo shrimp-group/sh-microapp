@@ -5,6 +5,8 @@ import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.math.BigDecimal;
+
 /**
  * 积分钱包
  * @table points_wallet (积分钱包)
@@ -29,19 +31,19 @@ public class PointsWallet extends BaseEntity {
      * 可用积分
      */
     @Schema(description = "可用积分")
-    private Integer availablePoints;
+    private BigDecimal availablePoints;
 
     /**
      * 冻结积分
      */
     @Schema(description = "冻结积分")
-    private Integer frozenPoints;
+    private BigDecimal frozenPoints;
 
     /**
      * 历史总获得积分
      */
     @Schema(description = "历史总获得积分")
-    private Integer totalEarnedPoints;
+    private BigDecimal totalEarnedPoints;
 
 
     public static PointsWallet copy(PointsWallet source, PointsWallet target) {

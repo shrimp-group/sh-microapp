@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -94,9 +95,9 @@ public class PointsAdminRest {
         PointsWallet wallet = walletService.getOrCreateWallet(tenantCode, req.getUserCode());
         PointsWalletResp resp = new PointsWalletResp();
         resp.setUserCode(wallet.getUserCode());
-        resp.setAvailablePoints(wallet.getAvailablePoints() == null ? 0 : wallet.getAvailablePoints());
-        resp.setFrozenPoints(wallet.getFrozenPoints() == null ? 0 : wallet.getFrozenPoints());
-        resp.setTotalEarnedPoints(wallet.getTotalEarnedPoints() == null ? 0 : wallet.getTotalEarnedPoints());
+        resp.setAvailablePoints(wallet.getAvailablePoints() == null ? BigDecimal.ZERO : wallet.getAvailablePoints());
+        resp.setFrozenPoints(wallet.getFrozenPoints() == null ? BigDecimal.ZERO : wallet.getFrozenPoints());
+        resp.setTotalEarnedPoints(wallet.getTotalEarnedPoints() == null ? BigDecimal.ZERO : wallet.getTotalEarnedPoints());
         return R.ok(resp);
     }
 
@@ -170,17 +171,17 @@ public class PointsAdminRest {
                 deductions = Collections.emptyList();
             }
             // 已扣减总额 = COMPLETED 动作记录 deduction_points 之和
-            Integer deductedSum = 0;
+            BigDecimal deductedSum = BigDecimal.ZERO;
             for (PointsDeductionRecord d : deductions) {
                 if (d.getDeductionPoints() != null) {
-                    deductedSum += d.getDeductionPoints();
+                    deductedSum = deductedSum.add(d.getDeductionPoints());
                 }
             }
 
             PointsConsumeDeductionResp resp = new PointsConsumeDeductionResp();
             resp.setConsumeFlowNo(consume.getFlowNo());
             resp.setConsumeTime(consume.getConsumeTime());
-            resp.setPoints(consume.getPoints() == null ? 0 : consume.getPoints());
+            resp.setPoints(consume.getPoints() == null ? BigDecimal.ZERO : consume.getPoints());
             resp.setOrderNo(consume.getOrderNo());
             resp.setStatus(consume.getStatus());
             resp.setDeductions(deductions);

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -134,7 +135,7 @@ public class PointsIssueService {
         record.setReason(req.getReason());
         // expire_time 为空时由 DB 默认值 2099-12-31 23:59:59 填充
         record.setExpireTime(req.getExpireTime());
-        record.setUsedPoints(0);
+        record.setUsedPoints(BigDecimal.ZERO);
         record.setAvailablePoints(req.getPoints());
         record.setIsUsedUp(0);
         record.setPointSourceType(sourceType.name());
@@ -149,8 +150,8 @@ public class PointsIssueService {
         PointsIssueResp resp = new PointsIssueResp();
         resp.setFlowNo(flowNo);
         resp.setPoints(req.getPoints());
-        resp.setAvailablePoints(wallet.getAvailablePoints() + req.getPoints());
-        resp.setTotalEarnedPoints(wallet.getTotalEarnedPoints() + req.getPoints());
+        resp.setAvailablePoints(wallet.getAvailablePoints().add(req.getPoints()));
+        resp.setTotalEarnedPoints(wallet.getTotalEarnedPoints().add(req.getPoints()));
         return resp;
     }
 
@@ -161,7 +162,7 @@ public class PointsIssueService {
         if (req.getUserCode() == null || req.getUserCode().isBlank()) {
             throw ValidationException.of("userCode 不能为空");
         }
-        if (req.getPoints() == null || req.getPoints() <= 0) {
+        if (req.getPoints() == null || req.getPoints().signum() <= 0) {
             throw ValidationException.of("points 必须大于 0");
         }
         if (req.getSourceNo() == null || req.getSourceNo().isBlank()) {

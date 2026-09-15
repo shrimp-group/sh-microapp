@@ -5,6 +5,8 @@ import com.wkclz.mybatis.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
+
 /**
  * 积分钱包 Mapper
  * @table points_wallet (积分钱包)
@@ -22,9 +24,9 @@ public interface PointsWalletMapper extends BaseMapper<PointsWallet> {
      * 乐观锁更新积分（available/frozen/total_earned）
      */
     int updatePointsByVersion(@Param("id") Long id,
-                             @Param("availablePoints") Integer availablePoints,
-                             @Param("frozenPoints") Integer frozenPoints,
-                             @Param("totalEarnedPoints") Integer totalEarnedPoints,
+                             @Param("availablePoints") BigDecimal availablePoints,
+                             @Param("frozenPoints") BigDecimal frozenPoints,
+                             @Param("totalEarnedPoints") BigDecimal totalEarnedPoints,
                              @Param("version") Integer version);
 
 }

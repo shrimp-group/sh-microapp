@@ -3,6 +3,8 @@ package com.wkclz.micro.points.bean.resp;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * 积分消费出参
  * 两阶段消费之第一阶段结果，status=FROZEN，真实扣减异步完成
@@ -18,6 +20,6 @@ public class PointsConsumeResp {
     private String status;
 
     @Schema(description = "消费积分数")
-    private Integer points;
+    private BigDecimal points;
 
 }

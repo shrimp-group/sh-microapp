@@ -5,6 +5,8 @@ import com.wkclz.core.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.math.BigDecimal;
+
 /**
  * 积分扣减记录
  * 存放两类记录，通过 earn_flow_no 是否为 NULL 区分：
@@ -50,7 +52,7 @@ public class PointsDeductionRecord extends BaseEntity {
      * 扣减金额
      */
     @Schema(description = "扣减金额")
-    private Integer deductionPoints;
+    private BigDecimal deductionPoints;
 
     /**
      * 状态（PENDING 待处理 / PROCESSED 已处理 / COMPLETED 已完成 / PARTIAL 部分完成）

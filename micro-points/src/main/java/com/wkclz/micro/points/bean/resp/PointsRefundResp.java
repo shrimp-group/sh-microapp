@@ -3,6 +3,8 @@ package com.wkclz.micro.points.bean.resp;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * 积分回退出参
  */
@@ -14,6 +16,6 @@ public class PointsRefundResp {
     private String flowNo;
 
     @Schema(description = "回退积分数")
-    private Integer points;
+    private BigDecimal points;
 
 }

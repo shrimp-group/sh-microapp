@@ -200,14 +200,14 @@ com.wkclz.micro.pay.PayAutoConfig
 |------|------|------|
 | `PayWxpayConfig` | `pay_wxpay_config` | 微信支付配置：appId, mchId, mchV3Key, apiclientKey/Cert, notifyUrl, returnUrl, refundNotifyUrl, verifySign |
 | `PayAlipayConfig` | `pay_alipay_config` | 支付宝配置：appId, merchantPrivateKey, alipayPublicKey, appPublicKey, notifyUrl, returnUrl, signType, charset, isProd |
-| `PayOrder` | `pay_order` | 支付订单：outTradeNo, orderNo, totalAmount, discountAmount, paymentAmount, payStatus, payMethod, payFlowNo, payTime, terminalType, **points**（本次订单使用积分数量，`Long`，默认 `0L`）, **refundedAmount**（已退款金额，`BigDecimal`，默认 `BigDecimal.ZERO`）等 |
+| `PayOrder` | `pay_order` | 支付订单：outTradeNo, orderNo, totalAmount, discountAmount, paymentAmount, payStatus, payMethod, payFlowNo, payTime, terminalType, **points**（本次订单使用积分数量，`BigDecimal` 两位小数，默认 `BigDecimal.ZERO`）, **refundedAmount**（已退款金额，`BigDecimal`，默认 `BigDecimal.ZERO`）等 |
 
 ### 2. DTO
 
 | 类名 | 继承/实现 | 扩展字段 |
 |------|----------|----------|
 | `PayOrderDto` | `PayOrder` | aliPayBody, wxpayUrl, prepayId, jsapiResult, timeoutMinute |
-| `OrderInfoForPay` | `Serializable` | 订单支付信息（SPI 获取）：orderNo, userCode, tenantCode, totalAmount, discountAmount, paymentAmount, **points**（本次订单使用积分，`Long`，可空）, orderDesc, orderStatus |
+| `OrderInfoForPay` | `Serializable` | 订单支付信息（SPI 获取）：orderNo, userCode, tenantCode, totalAmount, discountAmount, paymentAmount, **points**（本次订单使用积分，`BigDecimal` 两位小数，可空）, orderDesc, orderStatus |
 | `OrderPayResult` | — | 支付结果信息（SPI 回传订单模块）|
 | `PayWxpayConfigDto` | `PayWxpayConfig` | tenantName |
 | `PayAlipayConfigDto` | `PayAlipayConfig` | tenantName |

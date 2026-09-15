@@ -3,6 +3,8 @@ package com.wkclz.micro.points.bean.resp;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * 钱包查询出参
  */
@@ -14,12 +16,12 @@ public class PointsWalletResp {
     private String userCode;
 
     @Schema(description = "可用积分")
-    private Integer availablePoints;
+    private BigDecimal availablePoints;
 
     @Schema(description = "冻结积分")
-    private Integer frozenPoints;
+    private BigDecimal frozenPoints;
 
     @Schema(description = "历史总获得积分")
-    private Integer totalEarnedPoints;
+    private BigDecimal totalEarnedPoints;
 
 }
