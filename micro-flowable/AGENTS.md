@@ -64,72 +64,72 @@ src/main/resources/
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| POST | `/micro-flowable/admin/design/upload` | 上传 BPMN XML 创建设计 |
-| GET | `/micro-flowable/admin/design/page` | 设计列表分页 |
-| GET | `/micro-flowable/admin/design/info` | 设计详情（含节点） |
-| POST | `/micro-flowable/admin/design/update` | 更新设计 |
-| POST | `/micro-flowable/admin/design/remove` | 删除设计 |
-| POST | `/micro-flowable/admin/design/deploy` | 推送部署到 flowable |
+| POST | `/micro-flowable/admin/design/create` | 3.流程设计-创建 |
+| GET | `/micro-flowable/admin/design/page` | 1.流程设计-分页查询 |
+| GET | `/micro-flowable/admin/design/info` | 2.流程设计-详情（含节点） |
+| POST | `/micro-flowable/admin/design/update` | 4.流程设计-修改 |
+| POST | `/micro-flowable/admin/design/remove` | 5.流程设计-删除 |
+| POST | `/micro-flowable/admin/design/deploy` | 6.流程设计-部署 |
 
 ### 管理端 - 节点配置（NodeConfigRest）
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/micro-flowable/admin/node/list` | 节点配置列表 |
-| GET | `/micro-flowable/admin/node/info` | 节点配置详情 |
-| POST | `/micro-flowable/admin/node/update` | 更新节点配置 |
+| GET | `/micro-flowable/admin/node/list` | 1.节点配置-列表 |
+| GET | `/micro-flowable/admin/node/info` | 2.节点配置-详情 |
+| POST | `/micro-flowable/admin/node/update` | 3.节点配置-修改 |
 
 ### 管理端 - 透传查询（DefinitionPassthroughRest）
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/micro-flowable/admin/definition/page` | 流程定义分页 |
-| GET | `/micro-flowable/admin/definition/info` | 流程定义详情 |
-| GET | `/micro-flowable/admin/definition/list` | 流程定义列表 |
-| GET | `/micro-flowable/admin/deploy/page` | 部署记录分页 |
-| POST | `/micro-flowable/admin/deploy/remove` | 删除部署记录 |
+| GET | `/micro-flowable/admin/definition/page` | 1.流程定义-分页查询 |
+| GET | `/micro-flowable/admin/definition/info` | 2.流程定义-详情 |
+| GET | `/micro-flowable/admin/definition/list` | 3.流程定义-列表 |
+| GET | `/micro-flowable/admin/deploy/page` | 4.部署记录-分页查询 |
+| POST | `/micro-flowable/admin/deploy/remove` | 5.部署记录-删除 |
 
 ### 业务端 - 申请（ApplyRest）
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| POST | `/micro-flowable/apply/create` | 发起流程申请 |
-| GET | `/micro-flowable/apply/page` | 我的申请列表 |
-| GET | `/micro-flowable/apply/info` | 申请详情 |
+| POST | `/micro-flowable/apply/create` | 1.流程申请-发起 |
+| GET | `/micro-flowable/apply/page` | 2.流程申请-我的申请 |
+| GET | `/micro-flowable/apply/info` | 3.流程申请-详情 |
 
 ### 业务端 - 任务审批（FlowableTaskRest）
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/micro-flowable/task/todo/page` | 待办任务分页 |
-| GET | `/micro-flowable/task/done/page` | 已办任务分页 |
-| GET | `/micro-flowable/task/info` | 任务详情 |
-| POST | `/micro-flowable/task/complete` | 完成任务（通过） |
-| POST | `/micro-flowable/task/claim` | 认领任务 |
-| POST | `/micro-flowable/task/unclaim` | 取消认领 |
-| POST | `/micro-flowable/task/reject` | 驳回任务 |
-| POST | `/micro-flowable/task/transfer` | 转办任务 |
-| POST | `/micro-flowable/task/delegate` | 委派任务 |
-| GET | `/micro-flowable/approval/list` | 审批意见时间线 |
+| GET | `/micro-flowable/task/todo/page` | 1.任务审批-待办分页查询 |
+| GET | `/micro-flowable/task/done/page` | 2.任务审批-已办分页查询 |
+| GET | `/micro-flowable/task/info` | 3.任务审批-详情 |
+| POST | `/micro-flowable/task/complete` | 4.任务审批-通过 |
+| POST | `/micro-flowable/task/claim` | 5.任务审批-认领 |
+| POST | `/micro-flowable/task/unclaim` | 6.任务审批-取消认领 |
+| POST | `/micro-flowable/task/reject` | 8.任务审批-驳回 |
+| POST | `/micro-flowable/task/transfer` | 9.任务审批-转办 |
+| POST | `/micro-flowable/task/delegate` | 10.任务审批-委派 |
+| GET | `/micro-flowable/approval/list` | 7.任务审批-意见时间线 |
 
 ### 业务端 - 实例历史（InstanceHistoryRest）
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/micro-flowable/instance/page` | 流程实例分页 |
-| GET | `/micro-flowable/instance/info` | 流程实例详情 |
-| POST | `/micro-flowable/instance/withdraw` | 撤回流程 |
-| GET | `/micro-flowable/history/instance/page` | 历史流程实例分页 |
-| GET | `/micro-flowable/history/task/page` | 历史任务分页 |
-| GET | `/micro-flowable/history/activity/list` | 历史活动列表 |
+| GET | `/micro-flowable/instance/page` | 1.流程实例-分页查询 |
+| GET | `/micro-flowable/instance/info` | 2.流程实例-详情 |
+| POST | `/micro-flowable/instance/withdraw` | 6.流程实例-撤回 |
+| GET | `/micro-flowable/history/instance/page` | 3.历史实例-分页查询 |
+| GET | `/micro-flowable/history/task/page` | 4.历史任务-分页查询 |
+| GET | `/micro-flowable/history/activity/list` | 5.历史活动-列表 |
 
 ### 异常监控（ErrorLogRest）
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | `/micro-flowable/error/page` | 异常日志分页 |
-| GET | `/micro-flowable/error/info` | 异常日志详情 |
-| POST | `/micro-flowable/error/handle` | 标记处理状态 |
+| GET | `/micro-flowable/error/page` | 1.异常日志-分页查询 |
+| GET | `/micro-flowable/error/info` | 2.异常日志-详情 |
+| POST | `/micro-flowable/error/handle` | 3.异常日志-标记处理 |
 
 ## 配置项
 

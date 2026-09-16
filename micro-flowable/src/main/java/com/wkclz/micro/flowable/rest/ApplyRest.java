@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-@Tag(name = "业务端-流程申请", description = "流程申请管理接口")
+@Tag(name = "4.业务端-流程申请", description = "流程申请管理接口")
 @RestController
 @RequestMapping(Route.PREFIX)
 @Validated
@@ -47,7 +47,7 @@ public class ApplyRest {
     @Autowired
     private FlowableClientWrapper clientWrapper;
 
-    @Operation(summary = "发起流程申请")
+    @Operation(summary = "1.流程申请-发起")
     @PostMapping(Route.APPLY_CREATE)
     @Transactional(rollbackFor = Exception.class)
     public R<ApplyCreateResp> create(@Valid @RequestBody ApplyCreateReq req) {
@@ -99,7 +99,7 @@ public class ApplyRest {
         return R.ok(resp);
     }
 
-    @Operation(summary = "我的申请列表")
+    @Operation(summary = "2.流程申请-我的申请", description = "分页查询当前用户发起的流程申请")
     @GetMapping(Route.APPLY_PAGE)
     public R<PageData<ApplyPageResp>> page(@Valid ApplyPageReq req) {
         FlowableApply entity = BeanUtil.cp(req, FlowableApply.class);
@@ -108,7 +108,7 @@ public class ApplyRest {
         return R.ok(page.convert(ApplyPageResp.class));
     }
 
-    @Operation(summary = "申请详情")
+    @Operation(summary = "3.流程申请-详情")
     @GetMapping(Route.APPLY_INFO)
     public R<ApplyInfoResp> info(@Valid IdReq req) {
         FlowableApply apply = applyService.selectById(req.getId());

@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "管理端-透传查询", description = "透传 flowable 流程定义/部署记录查询")
+@Tag(name = "3.管理端-透传查询", description = "透传 flowable 流程定义/部署记录查询")
 @RestController
 @RequestMapping(Route.PREFIX)
 @Validated
@@ -27,35 +27,35 @@ public class DefinitionPassthroughRest {
     @Autowired
     private FlowableClientWrapper clientWrapper;
 
-    @Operation(summary = "流程定义分页")
+    @Operation(summary = "1.流程定义-分页查询")
     @GetMapping(Route.ADMIN_DEFINITION_PAGE)
     public R<PageData<ProcessDefPageResp>> definitionPage(@Valid ProcessDefPageReq req) {
         return clientWrapper.call(ErrorType.QUERY_ERROR, "ProcessDefinitionClient#page", req,
                 () -> clientWrapper.getClient().getDefinition().page(req));
     }
 
-    @Operation(summary = "流程定义详情")
+    @Operation(summary = "2.流程定义-详情")
     @GetMapping(Route.ADMIN_DEFINITION_INFO)
     public R<ProcessDefResp> definitionInfo(@Valid IdReq req) {
         return clientWrapper.call(ErrorType.QUERY_ERROR, "ProcessDefinitionClient#info", req,
                 () -> clientWrapper.getClient().getDefinition().info(req));
     }
 
-    @Operation(summary = "流程定义列表")
+    @Operation(summary = "3.流程定义-列表")
     @GetMapping(Route.ADMIN_DEFINITION_LIST)
     public R<List<ProcessDefListResp>> definitionList() {
         return clientWrapper.call(ErrorType.QUERY_ERROR, "ProcessDefinitionClient#list", null,
                 () -> clientWrapper.getClient().getDefinition().list());
     }
 
-    @Operation(summary = "部署记录分页")
+    @Operation(summary = "4.部署记录-分页查询")
     @GetMapping(Route.ADMIN_DEPLOY_PAGE)
     public R<PageData<ProcessDeployPageResp>> deployPage(@Valid ProcessDeployPageReq req) {
         return clientWrapper.call(ErrorType.QUERY_ERROR, "ProcessDeployClient#page", req,
                 () -> clientWrapper.getClient().getDeploy().page(req));
     }
 
-    @Operation(summary = "删除部署记录")
+    @Operation(summary = "5.部署记录-删除")
     @PostMapping(Route.ADMIN_DEPLOY_REMOVE)
     public R<Integer> deployRemove(@Valid @RequestBody RemoveReq req) {
         return clientWrapper.call(ErrorType.DEPLOY_ERROR, "ProcessDeployClient#remove", req,

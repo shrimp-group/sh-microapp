@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "管理端-节点配置", description = "节点配置管理接口")
+@Tag(name = "2.管理端-节点配置", description = "节点配置管理接口")
 @RestController
 @RequestMapping(Route.PREFIX)
 @Validated
@@ -31,7 +31,7 @@ public class NodeConfigRest {
     @Autowired
     private FlowableNodeConfigService nodeConfigService;
 
-    @Operation(summary = "节点配置列表")
+    @Operation(summary = "1.节点配置-列表")
     @GetMapping(Route.ADMIN_NODE_LIST)
     public R<List<NodeConfigResp>> list(@Valid NodeListReq req) {
         FlowableNodeConfig param = new FlowableNodeConfig();
@@ -40,7 +40,7 @@ public class NodeConfigRest {
         return R.ok(BeanUtil.cp(nodes, NodeConfigResp.class));
     }
 
-    @Operation(summary = "节点配置详情")
+    @Operation(summary = "2.节点配置-详情")
     @GetMapping(Route.ADMIN_NODE_INFO)
     public R<NodeConfigResp> info(@Valid IdReq req) {
         FlowableNodeConfig node = nodeConfigService.selectById(req.getId());
@@ -50,7 +50,7 @@ public class NodeConfigRest {
         return R.ok(BeanUtil.cp(node, NodeConfigResp.class));
     }
 
-    @Operation(summary = "更新节点配置")
+    @Operation(summary = "3.节点配置-修改")
     @PostMapping(Route.ADMIN_NODE_UPDATE)
     public R<Integer> update(@Valid @RequestBody NodeUpdateReq req) {
         log.info("更新节点配置: id={}", req.getId());

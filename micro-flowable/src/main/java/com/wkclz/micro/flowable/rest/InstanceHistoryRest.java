@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "业务端-实例历史", description = "流程实例/历史查询（透传）")
+@Tag(name = "6.业务端-实例历史", description = "流程实例/历史查询（透传）")
 @RestController
 @RequestMapping(Route.PREFIX)
 @Validated
@@ -35,42 +35,42 @@ public class InstanceHistoryRest {
     @Autowired
     private FlowableApplyService applyService;
 
-    @Operation(summary = "流程实例分页")
+    @Operation(summary = "1.流程实例-分页查询")
     @GetMapping(Route.INSTANCE_PAGE)
     public R<PageData<ProcessInstancePageResp>> instancePage(@Valid ProcessInstancePageReq req) {
         return clientWrapper.call(ErrorType.QUERY_ERROR, "ProcessInstanceClient#page", req,
                 () -> clientWrapper.getClient().getInstance().page(req));
     }
 
-    @Operation(summary = "流程实例详情")
+    @Operation(summary = "2.流程实例-详情")
     @GetMapping(Route.INSTANCE_INFO)
     public R<ProcessInstanceResp> instanceInfo(@Valid IdReq req) {
         return clientWrapper.call(ErrorType.QUERY_ERROR, "ProcessInstanceClient#info", req,
                 () -> clientWrapper.getClient().getInstance().info(req));
     }
 
-    @Operation(summary = "历史流程实例分页")
+    @Operation(summary = "3.历史实例-分页查询")
     @GetMapping(Route.HISTORY_INSTANCE_PAGE)
     public R<PageData<HistoryInstancePageResp>> historyInstancePage(@Valid HistoryPageReq req) {
         return clientWrapper.call(ErrorType.QUERY_ERROR, "HistoryClient#instancePage", req,
                 () -> clientWrapper.getClient().getHistory().instancePage(req));
     }
 
-    @Operation(summary = "历史任务分页")
+    @Operation(summary = "4.历史任务-分页查询")
     @GetMapping(Route.HISTORY_TASK_PAGE)
     public R<PageData<HistoryTaskPageResp>> historyTaskPage(@Valid HistoryPageReq req) {
         return clientWrapper.call(ErrorType.QUERY_ERROR, "HistoryClient#taskPage", req,
                 () -> clientWrapper.getClient().getHistory().taskPage(req));
     }
 
-    @Operation(summary = "历史活动列表")
+    @Operation(summary = "5.历史活动-列表")
     @GetMapping(Route.HISTORY_ACTIVITY_LIST)
     public R<List<HistoryActivityResp>> historyActivityList(@Valid IdReq req) {
         return clientWrapper.call(ErrorType.QUERY_ERROR, "HistoryClient#activityList", req,
                 () -> clientWrapper.getClient().getHistory().activityList(req));
     }
 
-    @Operation(summary = "撤回流程")
+    @Operation(summary = "6.流程实例-撤回")
     @PostMapping(Route.INSTANCE_WITHDRAW)
     @Transactional(rollbackFor = Exception.class)
     public R<Integer> withdraw(@Valid @RequestBody com.wkclz.micro.flowable.bean.req.InstanceWithdrawReq req) {

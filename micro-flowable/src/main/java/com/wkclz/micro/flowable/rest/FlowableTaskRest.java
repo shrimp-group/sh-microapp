@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "业务端-任务审批", description = "待办/已办/审批流转/审批意见")
+@Tag(name = "5.业务端-任务审批", description = "待办/已办/审批流转/审批意见")
 @RestController
 @RequestMapping(Route.PREFIX)
 @Validated
@@ -45,28 +45,28 @@ public class FlowableTaskRest {
     @Autowired
     private FlowableApplyService applyService;
 
-    @Operation(summary = "待办任务分页")
+    @Operation(summary = "1.任务审批-待办分页查询")
     @GetMapping(Route.TASK_TODO_PAGE)
     public R<PageData<TaskPageResp>> todoPage(@Valid TaskPageReq req) {
         return clientWrapper.call(ErrorType.QUERY_ERROR, "TaskClient#todoPage", req,
                 () -> clientWrapper.getClient().getTask().todoPage(req));
     }
 
-    @Operation(summary = "已办任务分页")
+    @Operation(summary = "2.任务审批-已办分页查询")
     @GetMapping(Route.TASK_DONE_PAGE)
     public R<PageData<TaskPageResp>> donePage(@Valid TaskPageReq req) {
         return clientWrapper.call(ErrorType.QUERY_ERROR, "TaskClient#donePage", req,
                 () -> clientWrapper.getClient().getTask().donePage(req));
     }
 
-    @Operation(summary = "任务详情")
+    @Operation(summary = "3.任务审批-详情")
     @GetMapping(Route.TASK_INFO)
     public R<TaskResp> taskInfo(@Valid IdReq req) {
         return clientWrapper.call(ErrorType.QUERY_ERROR, "TaskClient#info", req,
                 () -> clientWrapper.getClient().getTask().info(req));
     }
 
-    @Operation(summary = "完成任务（通过）")
+    @Operation(summary = "4.任务审批-通过", description = "完成任务（审批通过）")
     @PostMapping(Route.TASK_COMPLETE)
     @Transactional(rollbackFor = Exception.class)
     public R<Integer> complete(@Valid @RequestBody TaskCompleteReq req) {
@@ -77,7 +77,7 @@ public class FlowableTaskRest {
         return result;
     }
 
-    @Operation(summary = "认领任务")
+    @Operation(summary = "5.任务审批-认领")
     @PostMapping(Route.TASK_CLAIM)
     @Transactional(rollbackFor = Exception.class)
     public R<Integer> claim(@Valid @RequestBody IdReq req) {
@@ -88,7 +88,7 @@ public class FlowableTaskRest {
         return result;
     }
 
-    @Operation(summary = "取消认领")
+    @Operation(summary = "6.任务审批-取消认领")
     @PostMapping(Route.TASK_UNCLAIM)
     public R<Integer> unclaim(@Valid @RequestBody IdReq req) {
         log.info("取消认领: taskId={}", req.getId());
@@ -96,7 +96,7 @@ public class FlowableTaskRest {
                 () -> clientWrapper.getClient().getTask().unclaim(req));
     }
 
-    @Operation(summary = "审批意见时间线")
+    @Operation(summary = "7.任务审批-意见时间线")
     @GetMapping(Route.APPROVAL_LIST)
     public R<List<ApprovalResp>> approvalList(@Valid ApprovalListReq req) {
         FlowableApproval param = new FlowableApproval();
@@ -106,7 +106,7 @@ public class FlowableTaskRest {
         return R.ok(BeanUtil.cp(list, ApprovalResp.class));
     }
 
-    @Operation(summary = "驳回任务")
+    @Operation(summary = "8.任务审批-驳回")
     @PostMapping(Route.TASK_REJECT)
     @Transactional(rollbackFor = Exception.class)
     public R<Integer> reject(@Valid @RequestBody com.wkclz.micro.flowable.bean.req.TaskRejectReq req) {
@@ -121,7 +121,7 @@ public class FlowableTaskRest {
         return result;
     }
 
-    @Operation(summary = "转办任务")
+    @Operation(summary = "9.任务审批-转办")
     @PostMapping(Route.TASK_TRANSFER)
     @Transactional(rollbackFor = Exception.class)
     public R<Integer> transfer(@Valid @RequestBody com.wkclz.micro.flowable.bean.req.TaskTransferReq req) {
@@ -136,7 +136,7 @@ public class FlowableTaskRest {
         return result;
     }
 
-    @Operation(summary = "委派任务")
+    @Operation(summary = "10.任务审批-委派")
     @PostMapping(Route.TASK_DELEGATE)
     @Transactional(rollbackFor = Exception.class)
     public R<Integer> delegate(@Valid @RequestBody com.wkclz.micro.flowable.bean.req.TaskDelegateReq req) {

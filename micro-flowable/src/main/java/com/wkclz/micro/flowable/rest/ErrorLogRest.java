@@ -19,7 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "异常监控", description = "异常日志查询与处理")
+@Tag(name = "7.异常监控", description = "异常日志查询与处理")
 @RestController
 @RequestMapping(Route.PREFIX)
 @Validated
@@ -30,7 +30,7 @@ public class ErrorLogRest {
     @Autowired
     private FlowableErrorLogService errorLogService;
 
-    @Operation(summary = "异常日志分页")
+    @Operation(summary = "1.异常日志-分页查询")
     @GetMapping(Route.ERROR_PAGE)
     public R<PageData<ErrorLogResp>> page(@Valid ErrorPageReq req) {
         FlowableErrorLog entity = BeanUtil.cp(req, FlowableErrorLog.class);
@@ -38,7 +38,7 @@ public class ErrorLogRest {
         return R.ok(page.convert(ErrorLogResp.class));
     }
 
-    @Operation(summary = "异常日志详情")
+    @Operation(summary = "2.异常日志-详情")
     @GetMapping(Route.ERROR_INFO)
     public R<ErrorLogResp> info(@Valid IdReq req) {
         FlowableErrorLog errorLog = errorLogService.selectById(req.getId());
@@ -48,7 +48,7 @@ public class ErrorLogRest {
         return R.ok(BeanUtil.cp(errorLog, ErrorLogResp.class));
     }
 
-    @Operation(summary = "标记异常处理状态")
+    @Operation(summary = "3.异常日志-标记处理")
     @PostMapping(Route.ERROR_HANDLE)
     public R<Integer> handle(@Valid @RequestBody ErrorHandleReq req) {
         log.info("处理异常日志: id={}, handleStatus={}", req.getId(), req.getHandleStatus());

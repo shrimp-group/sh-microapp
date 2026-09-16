@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@Tag(name = "管理端-流程设计", description = "流程设计管理接口")
+@Tag(name = "1.管理端-流程设计", description = "流程设计管理接口")
 @RestController
 @RequestMapping(Route.PREFIX)
 @Validated
@@ -46,7 +46,7 @@ public class ProcessDesignRest {
     @Autowired
     private FlowableClientWrapper clientWrapper;
 
-    @Operation(summary = "设计列表分页")
+    @Operation(summary = "1.流程设计-分页查询")
     @GetMapping(Route.ADMIN_DESIGN_PAGE)
     public R<PageData<DesignPageResp>> page(@Valid DesignPageReq req) {
         FlowableProcessDesign entity = BeanUtil.cp(req, FlowableProcessDesign.class);
@@ -55,7 +55,7 @@ public class ProcessDesignRest {
         return R.ok(respPage);
     }
 
-    @Operation(summary = "设计详情")
+    @Operation(summary = "2.流程设计-详情")
     @GetMapping(Route.ADMIN_DESIGN_INFO)
     public R<DesignInfoResp> info(@Valid IdReq req) {
         FlowableProcessDesign design = designService.selectById(req.getId());
@@ -71,7 +71,7 @@ public class ProcessDesignRest {
         return R.ok(resp);
     }
 
-    @Operation(summary = "上传 BPMN XML 创建设计")
+    @Operation(summary = "3.流程设计-创建")
     @PostMapping(Route.ADMIN_DESIGN_CREATE)
     @Transactional(rollbackFor = Exception.class)
     public R<DesignUploadResp> create(@Valid @RequestBody DesignUploadReq req) {
@@ -96,7 +96,7 @@ public class ProcessDesignRest {
         return R.ok(resp);
     }
 
-    @Operation(summary = "更新设计")
+    @Operation(summary = "4.流程设计-修改")
     @PostMapping(Route.ADMIN_DESIGN_UPDATE)
     @Transactional(rollbackFor = Exception.class)
     public R<Integer> update(@Valid @RequestBody DesignUpdateReq req) {
@@ -124,7 +124,7 @@ public class ProcessDesignRest {
         return R.ok(1);
     }
 
-    @Operation(summary = "删除设计")
+    @Operation(summary = "5.流程设计-删除")
     @PostMapping(Route.ADMIN_DESIGN_REMOVE)
     @Transactional(rollbackFor = Exception.class)
     public R<Integer> remove(@Valid @RequestBody RemoveReq req) {
@@ -139,7 +139,7 @@ public class ProcessDesignRest {
         return R.ok(designService.deleteById(del));
     }
 
-    @Operation(summary = "推送部署到 flowable")
+    @Operation(summary = "6.流程设计-部署", description = "推送部署流程设计到 Flowable Server")
     @PostMapping(Route.ADMIN_DESIGN_DEPLOY)
     @Transactional(rollbackFor = Exception.class)
     public R<DesignDeployResp> deploy(@Valid @RequestBody DesignDeployReq req) {
