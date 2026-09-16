@@ -8,9 +8,9 @@ public interface Route {
     String PREFIX = "/micro-flowable";
 
     // 管理端 - 流程设计
-    String ADMIN_DESIGN_UPLOAD = "/admin/design/upload";
     String ADMIN_DESIGN_PAGE = "/admin/design/page";
     String ADMIN_DESIGN_INFO = "/admin/design/info";
+    String ADMIN_DESIGN_CREATE = "/admin/design/create";
     String ADMIN_DESIGN_UPDATE = "/admin/design/update";
     String ADMIN_DESIGN_REMOVE = "/admin/design/remove";
     String ADMIN_DESIGN_DEPLOY = "/admin/design/deploy";

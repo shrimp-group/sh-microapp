@@ -46,31 +46,6 @@ public class ProcessDesignRest {
     @Autowired
     private FlowableClientWrapper clientWrapper;
 
-    @Operation(summary = "上传 BPMN XML 创建设计")
-    @PostMapping(Route.ADMIN_DESIGN_UPLOAD)
-    @Transactional(rollbackFor = Exception.class)
-    public R<DesignUploadResp> upload(@Valid @RequestBody DesignUploadReq req) {
-        log.info("上传流程设计: designName={}", req.getDesignName());
-        FlowableProcessDesign design = new FlowableProcessDesign();
-        design.setDesignCode("FD" + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase());
-        design.setDesignName(req.getDesignName());
-        design.setCategory(req.getCategory());
-        design.setXmlContent(req.getXmlContent());
-        design.setFormKey(req.getFormKey());
-        design.setDesignVersion(1);
-        design.setStatus(DesignStatus.DRAFT.name());
-        designService.insert(design);
-
-        // 解析 XML 提取节点，自动生成 node_config
-        parseAndCreateNodes(design);
-
-        DesignUploadResp resp = new DesignUploadResp();
-        resp.setDesignId(design.getId());
-        resp.setDesignCode(design.getDesignCode());
-        resp.setVersion(design.getDesignVersion());
-        return R.ok(resp);
-    }
-
     @Operation(summary = "设计列表分页")
     @GetMapping(Route.ADMIN_DESIGN_PAGE)
     public R<PageData<DesignPageResp>> page(@Valid DesignPageReq req) {
@@ -93,6 +68,31 @@ public class ProcessDesignRest {
         nodeParam.setDesignId(design.getId());
         List<FlowableNodeConfig> nodes = nodeConfigService.selectByEntity(nodeParam);
         resp.setNodes(BeanUtil.cp(nodes, NodeConfigResp.class));
+        return R.ok(resp);
+    }
+
+    @Operation(summary = "上传 BPMN XML 创建设计")
+    @PostMapping(Route.ADMIN_DESIGN_CREATE)
+    @Transactional(rollbackFor = Exception.class)
+    public R<DesignUploadResp> create(@Valid @RequestBody DesignUploadReq req) {
+        log.info("上传流程设计: designName={}", req.getDesignName());
+        FlowableProcessDesign design = new FlowableProcessDesign();
+        design.setDesignCode("FD" + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase());
+        design.setDesignName(req.getDesignName());
+        design.setCategory(req.getCategory());
+        design.setXmlContent(req.getXmlContent());
+        design.setFormKey(req.getFormKey());
+        design.setDesignVersion(1);
+        design.setStatus(DesignStatus.DRAFT.name());
+        designService.insert(design);
+
+        // 解析 XML 提取节点，自动生成 node_config
+        parseAndCreateNodes(design);
+
+        DesignUploadResp resp = new DesignUploadResp();
+        resp.setDesignId(design.getId());
+        resp.setDesignCode(design.getDesignCode());
+        resp.setVersion(design.getDesignVersion());
         return R.ok(resp);
     }
 
