@@ -13,7 +13,7 @@ public class DesignPageReq extends PageReq {
     private String designName;
     @Schema(description = "流程编码（模糊）")
     private String designCode;
-    @Schema(description = "流程分类")
+    @Schema(description = "流程分类（分类编码）")
     private String category;
     @Schema(description = "状态")
     private String status;

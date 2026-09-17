@@ -5,6 +5,7 @@ import com.wkclz.core.base.R;
 import com.wkclz.core.exception.ValidationException;
 import com.wkclz.flowable.client.bean.req.ProcessDeployReq;
 import com.wkclz.flowable.client.bean.resp.ProcessDeployResp;
+import com.wkclz.micro.flowable.bean.entity.FlowableCategory;
 import com.wkclz.micro.flowable.bean.entity.FlowableNodeConfig;
 import com.wkclz.micro.flowable.bean.entity.FlowableProcessDesign;
 import com.wkclz.micro.flowable.bean.enums.DesignStatus;
@@ -12,6 +13,7 @@ import com.wkclz.micro.flowable.bean.enums.ErrorType;
 import com.wkclz.micro.flowable.bean.enums.NodeType;
 import com.wkclz.micro.flowable.bean.req.*;
 import com.wkclz.micro.flowable.bean.resp.*;
+import com.wkclz.micro.flowable.service.FlowableCategoryService;
 import com.wkclz.micro.flowable.service.FlowableClientWrapper;
 import com.wkclz.micro.flowable.service.FlowableNodeConfigService;
 import com.wkclz.micro.flowable.service.FlowableProcessDesignService;
@@ -45,14 +47,13 @@ public class ProcessDesignRest {
     private FlowableNodeConfigService nodeConfigService;
     @Autowired
     private FlowableClientWrapper clientWrapper;
+    @Autowired
+    private FlowableCategoryService categoryService;
 
     @Operation(summary = "1.流程设计-分页查询")
     @GetMapping(Route.ADMIN_DESIGN_PAGE)
     public R<PageData<DesignPageResp>> page(@Valid DesignPageReq req) {
-        FlowableProcessDesign entity = BeanUtil.cp(req, FlowableProcessDesign.class);
-        PageData<FlowableProcessDesign> page = designService.getDesignPage(entity);
-        PageData<DesignPageResp> respPage = page.convert(DesignPageResp.class);
-        return R.ok(respPage);
+        return R.ok(designService.getDesignPage(req));
     }
 
     @Operation(summary = "2.流程设计-详情")
@@ -68,6 +69,8 @@ public class ProcessDesignRest {
         nodeParam.setDesignId(design.getId());
         List<FlowableNodeConfig> nodes = nodeConfigService.selectByEntity(nodeParam);
         resp.setNodes(BeanUtil.cp(nodes, NodeConfigResp.class));
+        // 回填分类名称
+        resp.setCategoryName(findCategoryName(design.getCategory()));
         return R.ok(resp);
     }
 
@@ -170,6 +173,16 @@ public class ProcessDesignRest {
         resp.setDeployId(deployResp.getDeployId());
         resp.setProcDefId(design.getProcDefId());
         return R.ok(resp);
+    }
+
+    private String findCategoryName(String categoryCode) {
+        if (categoryCode == null || categoryCode.isEmpty()) {
+            return null;
+        }
+        FlowableCategory query = new FlowableCategory();
+        query.setCategoryCode(categoryCode);
+        List<FlowableCategory> categories = categoryService.selectByEntity(query);
+        return categories.isEmpty() ? null : categories.get(0).getCategoryName();
     }
 
     /**

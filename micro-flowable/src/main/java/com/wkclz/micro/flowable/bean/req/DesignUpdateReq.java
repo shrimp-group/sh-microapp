@@ -14,7 +14,7 @@ public class DesignUpdateReq {
     private String xmlContent;
     @Schema(description = "流程名称")
     private String designName;
-    @Schema(description = "流程分类")
+    @Schema(description = "流程分类（分类编码）")
     private String category;
     @Schema(description = "关联表单 key")
     private String formKey;

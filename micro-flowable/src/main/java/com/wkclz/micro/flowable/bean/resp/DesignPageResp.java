@@ -15,6 +15,8 @@ public class DesignPageResp extends EntityResp {
     private String designName;
     @Schema(description = "流程分类")
     private String category;
+    @Schema(description = "分类名称")
+    private String categoryName;
     @Schema(description = "关联表单 key")
     private String formKey;
     @Schema(description = "设计版本")

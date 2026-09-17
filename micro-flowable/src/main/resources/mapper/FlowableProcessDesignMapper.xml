@@ -3,12 +3,17 @@
 <mapper namespace="com.wkclz.micro.flowable.mapper.FlowableProcessDesignMapper">
 
     <select id="getDesignPage"
-            parameterType="com.wkclz.micro.flowable.bean.entity.FlowableProcessDesign"
-            resultType="com.wkclz.micro.flowable.bean.entity.FlowableProcessDesign">
-        SELECT * FROM flowable_process_design
-        WHERE deleted = 0
+            parameterType="com.wkclz.micro.flowable.bean.req.DesignPageReq"
+            resultType="com.wkclz.micro.flowable.bean.resp.DesignPageResp">
+        SELECT
+            d.*,
+            c.category_name
+        FROM
+            flowable_process_design d
+            LEFT JOIN flowable_category c ON c.category_code = d.category AND c.deleted = 0
+        WHERE d.deleted = 0
         <if test="designCode != null">
-            AND design_code LIKE CONCAT('%', #{designCode}, '%')
+            AND d.design_code LIKE CONCAT('%', #{designCode}, '%')
         </if>
         <if test="designName != null ">
             AND design_name LIKE CONCAT('%', #{designName}, '%')
@@ -19,10 +24,9 @@
         <if test="status != null">
             AND status = #{status}
         </if>
-        <if test="tenantCode != null ">
-            AND tenant_code = #{tenantCode}
-        </if>
-        ORDER BY sort, id DESC
+        ORDER BY
+            d.sort,
+            d.id DESC
     </select>
 
 </mapper>

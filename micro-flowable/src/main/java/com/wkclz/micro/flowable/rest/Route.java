@@ -20,6 +20,13 @@ public interface Route {
     String ADMIN_NODE_INFO = "/admin/node/info";
     String ADMIN_NODE_UPDATE = "/admin/node/update";
 
+    // 管理端 - 流程分类
+    String ADMIN_CATEGORY_PAGE = "/admin/category/page";
+    String ADMIN_CATEGORY_LIST = "/admin/category/list";
+    String ADMIN_CATEGORY_CREATE = "/admin/category/create";
+    String ADMIN_CATEGORY_UPDATE = "/admin/category/update";
+    String ADMIN_CATEGORY_REMOVE = "/admin/category/remove";
+
     // 管理端 - 透传（流程定义）
     String ADMIN_DEFINITION_PAGE = "/admin/definition/page";
     String ADMIN_DEFINITION_INFO = "/admin/definition/info";
