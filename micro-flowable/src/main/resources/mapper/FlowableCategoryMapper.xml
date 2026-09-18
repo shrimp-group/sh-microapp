@@ -13,7 +13,7 @@
         <if test="categoryName != null and categoryName != ''">
             AND category_name LIKE CONCAT('%', #{categoryName}, '%')
         </if>
-        <if test="status != null and status != ''">
+        <if test="status != null">
             AND status = #{status}
         </if>
         <if test="tenantCode != null and tenantCode != ''">
@@ -27,7 +27,7 @@
             resultType="com.wkclz.micro.flowable.bean.entity.FlowableCategory">
         SELECT * FROM flowable_category
         WHERE deleted = 0
-        <if test="status != null and status != ''">
+        <if test="status != null">
             AND status = #{status}
         </if>
         <if test="tenantCode != null and tenantCode != ''">

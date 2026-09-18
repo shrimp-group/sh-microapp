@@ -16,6 +16,6 @@ public class FlowableCategory extends BaseEntity {
     @Schema(description = "分类名称")
     private String categoryName;
 
-    @Schema(description = "有效状态")
+    @Schema(description = "有效状态：1=是 0=否")
     private Integer status;
 }
