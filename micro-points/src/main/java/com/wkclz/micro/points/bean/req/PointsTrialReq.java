@@ -1,6 +1,7 @@
 package com.wkclz.micro.points.bean.req;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -23,7 +24,8 @@ public class PointsTrialReq {
     private String userCode;
 
     @NotNull(message = "paymentAmount 不能为空")
-    @Schema(description = "需付款现金金额（按 100:1 换算，100 积分 = 1 元）", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Digits(integer = 10, fraction = 2, message = "paymentAmount 最多两位小数")
+    @Schema(description = "需付款现金金额（按 1:1 换算，1 积分 = 1 元）", requiredMode = Schema.RequiredMode.REQUIRED)
     private BigDecimal paymentAmount;
 
 }

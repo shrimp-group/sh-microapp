@@ -11,7 +11,7 @@ description: "积分账户模块。提供积分钱包、发放、试算、消费
 - 修改 `com.wkclz.micro.points` 包下任何代码
 - 实现积分钱包（可用/冻结/历史总额）维护
 - 实现积分发放（业务方 `ISSUANCE` / 管理员 `ADMIN_ISSUE`）
-- 实现积分试算（100:1 现金换算，只读）
+- 实现积分试算（1:1 现金换算，1 积分 = 1 元，只读）
 - 实现积分消费（两阶段：同步冻结 `FROZEN` → 异步扣减 `@Async`）
 - 实现积分消费取消 / 支付失败补偿（`releaseConsume`，处理 FROZEN/DEDUCTED/CANCELLED 三种状态）
 - 实现积分回退（`REFUND`，含原单据校验与超额防护）
@@ -119,7 +119,7 @@ description: "积分账户模块。提供积分钱包、发放、试算、消费
 |------|------|----------|
 | `PointsWalletService` | `BaseService<PointsWallet, PointsWalletMapper>` | `getOrCreateWallet()`, `addAvailable()`, `freeze()`, `releaseFrozen()` |
 | `PointsIssueService` | — | `issuePoints(PointsIssueReq)`（业务方 + 管理员），`doIssue()`（事务内） |
-| `PointsTrialService` | — | `trial(PointsTrialReq)`（只读，100:1 换算） |
+| `PointsTrialService` | — | `trial(PointsTrialReq)`（只读，1:1 换算） |
 | `PointsConsumeService` | — | `consume(PointsConsumeReq)`（冻结阶段），`doConsume()`（事务内），`releaseConsume(orderNo, reason)`（支付失败补偿：FROZEN 释放冻结置 CANCELLED；DEDUCTED 调 `refundWithoutLock` 退剩余全部；幂等键 `CANCEL:orderNo`） |
 | `PointsAsyncDeductService` | — | `triggerAsyncDeduct(deductionFlowNo)`（@Async），`processAllPending()`（批量兜底），`processOnePending()`，`processOnePendingLocked()`，`doDeduct()`（单一事务） |
 | `PointsRefundService` | — | `refund(PointsRefundReq)`，`doRefund()`（事务内，含原单据校验），`refundWithoutLock(PointsRefundReq, tenantCode)`（**包级可见**，供 `releaseConsume` 在已持用户锁场景调用，避免 `RedisLock` 非可重入导致死锁） |
@@ -151,7 +151,7 @@ description: "积分账户模块。提供积分钱包、发放、试算、消费
 
 | 类名 | 常量 | 值 |
 |------|------|------|
-| `PointsConstants` | `POINTS_TO_CASH_RATE` | 100（100 积分 = 1 元） |
+| `PointsConstants` | `POINTS_TO_CASH_RATE` | BigDecimal.ONE（1 积分 = 1 元） |
 | | `DEFAULT_EXPIRE_TIME` | "2099-12-31 23:59:59" |
 | | `IDEMPOTENT_KEY_PREFIX` | "points:idempotent:" |
 | | `LOCK_KEY_PREFIX` | "points:lock:" |
@@ -209,14 +209,13 @@ public PointsIssueResp issuePoints(PointsIssueReq req) {
 // PointsTrialService.trial() 核心流程
 public PointsTrialResp trial(PointsTrialReq req) {
     // 1. 查询钱包 available（getOrCreateWallet）
-    // 2. availableCash = floor(available / 100)  // BigDecimal, RoundingMode.FLOOR
-    // 3. 比较 availableCash 与 paymentAmount:
-    //    - availableCash >= paymentAmount: 全额抵扣
+    // 2. 比较 available 与 paymentAmount（1 积分 = 1 元，1:1 直接比较）:
+    //    - available >= paymentAmount: 全额抵扣
     //      deductAmount = paymentAmount
-    //      requiredPoints = paymentAmount * 100
-    //    - availableCash < paymentAmount: 部分抵扣
-    //      deductAmount = availableCash
-    //      requiredPoints = available - (available % 100)
+    //      requiredPoints = paymentAmount
+    //    - available < paymentAmount: 部分抵扣
+    //      deductAmount = available
+    //      requiredPoints = available
     // 返回 availablePoints/deductAmount/requiredPoints
 }
 ```
@@ -250,8 +249,8 @@ public PointsConsumeResp consume(PointsConsumeReq req) {
 ```java
 // PointsAsyncDeductService.doDeduct() 核心流程（单一事务 all-or-nothing）
 private Void doDeduct(PointsDeductionRecord task) {
-    long need = task.getDeductionPoints();
-    long accumulatedPoints = 0;
+    BigDecimal need = task.getDeductionPoints();
+    BigDecimal accumulatedPoints = BigDecimal.ZERO;
     int batchN = 1, offset = 0;
     while (true) {
         // 1. 批量拉取可用获取流水（available > 0, expire_time ASC）
@@ -261,20 +260,20 @@ private Void doDeduct(PointsDeductionRecord task) {
 
         // 2. 遍历批次，逐条扣减
         for (earn : batch) {
-            if (accumulatedPoints >= need) break;
-            long deduct = Math.min(earn.availablePoints, need - accumulatedPoints);
+            if (accumulatedPoints.compareTo(need) >= 0) break;
+            BigDecimal deduct = earn.availablePoints.min(need.subtract(accumulatedPoints));
             // 2.1 写 COMPLETED 动作记录（earn_flow_no 非空）
             // 2.2 更新 earn：usedPoints += deduct, availablePoints -= deduct, isUsedUp 视情况
             //     （乐观锁 updateByIdSelective，失败抛异常回滚）
-            accumulatedPoints += deduct;
+            accumulatedPoints = accumulatedPoints.add(deduct);
         }
         offset += batch.size();
-        if (accumulatedPoints >= need) break;
+        if (accumulatedPoints.compareTo(need) >= 0) break;
         batchN++;
     }
 
     // 3. 处理结果
-    if (accumulatedPoints >= need) {
+    if (accumulatedPoints.compareTo(need) >= 0) {
         // 任务记录置 PROCESSED（乐观锁）
         // 钱包 releaseFrozen(need)
         // 消费流水 FROZEN → DEDUCTED
@@ -476,9 +475,9 @@ public PointsConsumeResp releaseConsume(String orderNo, String reason) {
 | id | bigint | 主键 |
 | tenant_code | varchar(31) | 租户编码 |
 | user_code | varchar(31) | 用户编码 |
-| available_points | bigint | 可用积分 |
-| frozen_points | bigint | 冻结积分 |
-| total_earned_points | bigint | 历史总获得积分 |
+| available_points | decimal(12,2) | 可用积分 |
+| frozen_points | decimal(12,2) | 冻结积分 |
+| total_earned_points | decimal(12,2) | 历史总获得积分 |
 | 基础字段 | — | sort/create_time/create_by/update_time/update_by/remark/version/deleted |
 | 索引 | — | uk(tenant_code, user_code) |
 
@@ -490,11 +489,11 @@ public PointsConsumeResp releaseConsume(String orderNo, String reason) {
 | tenant_code, user_code | varchar(31) | 租户/用户 |
 | flow_no | varchar(64) | 流水号（系统生成，唯一） |
 | earn_time | datetime | 获取时间 |
-| points | bigint | 获取积分数 |
+| points | decimal(12,2) | 获取积分数 |
 | reason | varchar(255) | 获取原因 |
 | expire_time | datetime | 到期时间（DB 默认 2099-12-31 23:59:59） |
-| used_points | bigint | 已使用积分数 |
-| available_points | bigint | 可用积分数 |
+| used_points | decimal(12,2) | 已使用积分数 |
+| available_points | decimal(12,2) | 可用积分数 |
 | is_used_up | tinyint | 是否已使用完(0/1) |
 | point_source_type | varchar(16) | 来源类型（`PointsSourceType`：ISSUANCE/REFUND/ADMIN_ISSUE） |
 | source_no | varchar(64) | 来源单据号（发放为业务单据号；回退为原消费 order_no） |
@@ -509,7 +508,7 @@ public PointsConsumeResp releaseConsume(String orderNo, String reason) {
 | tenant_code, user_code | varchar(31) | 租户/用户 |
 | flow_no | varchar(64) | 流水号（唯一） |
 | consume_time | datetime | 使用时间 |
-| points | bigint | 使用积分数 |
+| points | decimal(12,2) | 使用积分数 |
 | reason | varchar(255) | 使用原因 |
 | order_no | varchar(64) | 关联单据号（业务单据，唯一） |
 | status | varchar(16) | FROZEN 冻结 / DEDUCTED 已扣减 |
@@ -525,7 +524,7 @@ public PointsConsumeResp releaseConsume(String orderNo, String reason) {
 | flow_no | varchar(64) | 扣减流水号（唯一） |
 | order_no | varchar(64) | 关联消费单据号（= 消费流水 order_no） |
 | earn_flow_no | varchar(64) | 获取流水号（任务记录 NULL / 动作记录非空） |
-| deduction_points | bigint | 扣减金额 |
+| deduction_points | decimal(12,2) | 扣减金额 |
 | status | varchar(16) | PENDING/PROCESSED/COMPLETED/PARTIAL |
 | 基础字段 | — | 同上 |
 | 索引 | — | idx(status, user_code), idx(order_no), idx(earn_flow_no) |
@@ -614,7 +613,7 @@ public PointsConsumeResp releaseConsume(String orderNo, String reason) {
 - 同一 orderNo 仅支持单次完整回退
 
 ### 其他
-- 积分使用 `long` 类型，现金换算用 `BigDecimal`（仅展示）
+- 积分使用 `BigDecimal`（两位小数），DB 列 decimal(12,2)，与现金按 1:1 换算
 - `expire_time` DB 默认 `2099-12-31 23:59:59`（即默认永不过期）
 - `point_source_type` 在代码中对应枚举 `PointsSourceType`
 - 过期与消费冻结竞态：已冻结的过期积分，过期消费因钱包余额校验失败跳过，不报错

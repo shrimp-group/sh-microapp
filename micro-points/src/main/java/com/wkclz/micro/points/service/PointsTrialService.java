@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * 积分试算服务
@@ -33,6 +34,7 @@ public class PointsTrialService {
      *   <li>available >= paymentAmount：全额抵扣，deductAmount=paymentAmount, requiredPoints=paymentAmount</li>
      *   <li>available &lt; paymentAmount：部分抵扣，deductAmount=available, requiredPoints=available</li>
      * </ul>
+     * 入参 paymentAmount 超两位小数时按 HALF_UP 归一为两位。
      *
      * @param req 试算入参（userCode/paymentAmount）
      * @return 试算结果（availablePoints/deductAmount/requiredPoints）
@@ -48,6 +50,10 @@ public class PointsTrialService {
             throw ValidationException.of("paymentAmount 必须大于 0");
         }
 
+        // 入参超两位小数时按 HALF_UP 归一为两位（与 DB decimal(12,2) 舍入一致）
+        BigDecimal paymentAmount = req.getPaymentAmount().setScale(2, RoundingMode.HALF_UP);
+        log.info("积分试算入参精度归一, userCode={}, paymentAmount={}", req.getUserCode(), paymentAmount);
+
         // 解析租户编码：入参优先，为空时从登录态获取
         String tenantCode = req.getTenantCode();
         if (tenantCode == null || tenantCode.isBlank()) {
@@ -61,10 +67,10 @@ public class PointsTrialService {
         // 按 1:1 换算：可用积分即可抵扣现金
         BigDecimal deductAmount;
         BigDecimal requiredPoints;
-        if (available.compareTo(req.getPaymentAmount()) >= 0) {
+        if (available.compareTo(paymentAmount) >= 0) {
             // 可全额抵扣
-            deductAmount = req.getPaymentAmount();
-            requiredPoints = req.getPaymentAmount();
+            deductAmount = paymentAmount;
+            requiredPoints = paymentAmount;
             log.info("试算结果：全额抵扣, userCode={}, available={}, deductAmount={}, requiredPoints={}",
                     req.getUserCode(), available, deductAmount, requiredPoints);
         } else {

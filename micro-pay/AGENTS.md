@@ -319,9 +319,9 @@ public PayOrderDto createPayOrder(PayOrder model, HttpServletRequest req, HttpSe
     // 6. 设置状态为 PAYING，插入/更新订单（含 points / refundedAmount 字段）
 
     // 6.5 积分消费（outTradeNo 生成且 payOrder 持久化后、调用支付 helper 前）
-    //     若 model.getPoints() > 0，调 consumeService.consume
+    //     若 model.getPoints() 的 signum() > 0，调 consumeService.consume
     //     （orderNo=outTradeNo，幂等键 CONSUME:outTradeNo，冻结积分 FROZEN → 异步扣减）
-    if (model.getPoints() != null && model.getPoints() > 0) {
+    if (model.getPoints() != null && model.getPoints().signum() > 0) {
         PointsConsumeReq consumeReq = new PointsConsumeReq();
         consumeReq.setTenantCode(model.getTenantCode());
         consumeReq.setUserCode(model.getUserCode());
@@ -345,7 +345,7 @@ public PayOrderDto createPayOrder(PayOrder model, HttpServletRequest req, HttpSe
     } catch (Exception e) {
         // 支付失败补偿：释放已扣减的积分（幂等键 CANCEL:outTradeNo）
         //   FROZEN → 释放冻结 + 置 CANCELLED；DEDUCTED → 调 refundWithoutLock 退剩余全部
-        if (model.getPoints() != null && model.getPoints() > 0) {
+        if (model.getPoints() != null && model.getPoints().signum() > 0) {
             try {
                 consumeService.releaseConsume(model.getOutTradeNo(), "支付失败");
             } catch (Exception ex) {
@@ -422,7 +422,7 @@ public String managerPayRefund(PayOrderRefundReq req) {
         //    调 consumeService.releaseConsume(outTradeNo, reason)
         //    （FROZEN 释放 + DEDUCTED 调 refundWithoutLock 退回，不重复调 pointsRefundService.refund）
         //    幂等键 CANCEL:outTradeNo
-        if (payOrder.getPoints() > 0) {
+        if (payOrder.getPoints() != null && payOrder.getPoints().signum() > 0) {
             consumeService.releaseConsume(payOrder.getOutTradeNo(), reasonStr);
         }
         // 2. 支付通道退款（refundAmount=null 全单）：
@@ -436,12 +436,12 @@ public String managerPayRefund(PayOrderRefundReq req) {
     // 1. 通过 SPI 获取子单信息，points 取自 payOrderSpi.getOrderInfoForPay(subOrderNo).getPoints()
     //    （积分计算由订单模块拆单过程完成，micro-pay 只按 points 退还）
     OrderInfoForPay subOrderInfo = payOrderSpi.getOrderInfoForPay(subOrderNo);
-    long refundPoints = subOrderInfo.getPoints() == null ? 0L : subOrderInfo.getPoints();
+    BigDecimal refundPoints = subOrderInfo.getPoints() == null ? BigDecimal.ZERO : subOrderInfo.getPoints();
 
     // 2. 校验退款金额不超额（refundedAmount + refundAmount <= paymentAmount）
-    // 3. 若 refundPoints > 0 调 pointsRefundService.refund
+    // 3. 若 refundPoints 的 signum() > 0 调 pointsRefundService.refund
     //    （orderNo=outTradeNo, refundNo=本次退款单号，幂等键 REFUND:refundNo）
-    if (refundPoints > 0) {
+    if (refundPoints.signum() > 0) {
         PointsRefundReq refundReq = new PointsRefundReq();
         refundReq.setOrderNo(payOrder.getOutTradeNo());  // 关键：用 outTradeNo，与消费时一致
         refundReq.setRefundNo(refundNo);
@@ -560,4 +560,6 @@ public String wxRefundNotify(WxPayRefundNotifyV3Result refundNotifyResult) {
 
 ---
 
-**最后更新时间**: 2026-06-28（更新：退款模型由全单/部分退款（按比例计算积分）重构为总单/子单退款（按子单 points 退还积分）；PayOrderRefundReq 新增 subOrderNo 字段；移除按比例计算与 isLastRefund 逻辑、PointsEarnRecordMapper 依赖；积分计算由订单模块拆单过程完成）
+**最后更新时间**: 2026-10-10（更新：积分字段类型描述由 long 修正为 BigDecimal（两位小数，DB 列 decimal(12,2)），积分判空与正数校验伪代码改为 `signum() > 0` 风格，与实际代码对齐）
+
+**历史更新**: 2026-06-28（退款模型由全单/部分退款（按比例计算积分）重构为总单/子单退款（按子单 points 退还积分）；PayOrderRefundReq 新增 subOrderNo 字段；移除按比例计算与 isLastRefund 逻辑、PointsEarnRecordMapper 依赖；积分计算由订单模块拆单过程完成）

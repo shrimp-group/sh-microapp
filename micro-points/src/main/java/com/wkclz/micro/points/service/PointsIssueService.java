@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 
 /**
@@ -57,6 +58,7 @@ public class PointsIssueService {
      * 发放积分。
      * <p>
      * 同一 sourceNo 重复调用只生效一次（幂等键 {ISSUE|ADMIN_ISSUE}:sourceNo）。
+     * 入参 points 超两位小数时按 HALF_UP 归一为两位。
      *
      * @param req 发放入参
      * @return 发放结果（flowNo/points/availablePoints/totalEarnedPoints）
@@ -67,6 +69,10 @@ public class PointsIssueService {
 
         // 1. 参数校验
         validate(req);
+
+        // 入参超两位小数时按 HALF_UP 归一为两位（与 DB decimal(12,2) 舍入一致）
+        req.setPoints(req.getPoints().setScale(2, RoundingMode.HALF_UP));
+        log.info("积分发放入参精度归一, userCode={}, points={}", req.getUserCode(), req.getPoints());
 
         // 2. 解析来源类型与幂等业务类型
         PointsSourceType sourceType = parseSourceType(req.getPointSourceType());

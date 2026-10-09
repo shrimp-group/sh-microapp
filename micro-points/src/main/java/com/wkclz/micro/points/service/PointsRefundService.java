@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 
 /**
@@ -79,6 +80,7 @@ public class PointsRefundService {
      * </ul>
      * orderNo 始终用于查找原消费记录、超额防护计算、回退获取流水的 source_no。
      * 复用发放核心逻辑（写获取流水 + 钱包累加），额外增加原单据校验与超额防护。
+     * 入参 points 超两位小数时按 HALF_UP 归一为两位。
      *
      * @param req 回退入参
      * @return 回退结果（flowNo/points）
@@ -88,6 +90,10 @@ public class PointsRefundService {
 
         // 1. 参数校验
         validate(req);
+
+        // 入参超两位小数时按 HALF_UP 归一为两位（与 DB decimal(12,2) 舍入一致）
+        req.setPoints(req.getPoints().setScale(2, RoundingMode.HALF_UP));
+        log.info("积分回退入参精度归一, userCode={}, points={}", req.getUserCode(), req.getPoints());
 
         // 2. 幂等 bizNo：refundNo 非空时用 refundNo（部分退款幂等），为空时用 orderNo（全额退款幂等，向后兼容）
         String bizNo = (req.getRefundNo() != null && !req.getRefundNo().isBlank()) ? req.getRefundNo() : req.getOrderNo();

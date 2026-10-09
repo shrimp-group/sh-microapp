@@ -2,6 +2,7 @@ package com.wkclz.micro.points.bean.req;
 
 import com.wkclz.micro.points.bean.enums.PointsSourceType;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -25,6 +26,7 @@ public class PointsIssueReq {
     private String userCode;
 
     @NotNull(message = "points 不能为空")
+    @Digits(integer = 10, fraction = 2, message = "points 最多两位小数")
     @Schema(description = "发放积分数（支持两位小数）", requiredMode = Schema.RequiredMode.REQUIRED)
     private BigDecimal points;
 
