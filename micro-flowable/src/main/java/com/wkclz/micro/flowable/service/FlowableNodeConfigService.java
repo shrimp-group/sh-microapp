@@ -51,6 +51,8 @@ public class FlowableNodeConfigService extends BaseService<FlowableNodeConfig, F
             FlowableNodeConfig old = oldMap.get(parsed.getNodeKey());
             if (old == null) {
                 parsed.setDesignCode(designCode);
+                // insertBatch 空值也显式插入，NOT NULL 列 sort 需给定默认值
+                parsed.setSort(0);
                 inserts.add(parsed);
                 continue;
             }
