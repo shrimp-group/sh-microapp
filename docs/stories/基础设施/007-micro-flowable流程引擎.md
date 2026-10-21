@@ -174,7 +174,7 @@ flowchart TD
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `design_id` | bigint | 是 | 关联 process_design.id |
+| `design_code` | varchar(63) | 是 | 关联 process_design.design_code |
 | `node_key` | varchar(63) | 是 | 节点 ID（BPMN 中的 taskDefKey） |
 | `node_name` | varchar(127) | 是 | 节点名称 |
 | `node_type` | varchar(31) | 是 | 节点类型：START/APPROVAL/CC(抄送)/GATEWAY/END |
@@ -184,8 +184,8 @@ flowchart TD
 | `order_num` | int | 否 | 节点顺序 |
 | `tenant_code` | varchar(31) | 否 | 租户编码 |
 
-- **唯一索引**：`uk_design_node (design_id, node_key, deleted)`
-- **普通索引**：`idx_design_id (design_id, deleted)`
+- **唯一索引**：`uk_design_node (design_code, node_key, deleted)`
+- **普通索引**：`idx_design_code (design_code, deleted)`
 
 #### 3.3.3 flowable_apply（流程申请单）
 
@@ -267,7 +267,7 @@ flowchart TD
 
 | 端点 | 方法 | 入参 | 出参 | 说明 |
 |------|------|------|------|------|
-| `/admin/node/list` | GET | `NodeListReq`（designId） | `List<NodeConfigResp>` | 某设计的节点配置列表 |
+| `/admin/node/list` | GET | `NodeListReq`（designCode） | `List<NodeConfigResp>` | 某设计的节点配置列表 |
 | `/admin/node/info` | GET | `IdReq` | `NodeConfigResp` | 节点配置详情 |
 | `/admin/node/update` | POST | `NodeUpdateReq`（id/assigneeType/assigneeValue/formFields） | `Integer` | 更新节点审批人/表单权限 |
 

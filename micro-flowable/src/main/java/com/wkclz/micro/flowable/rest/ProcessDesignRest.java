@@ -17,12 +17,14 @@ import com.wkclz.micro.flowable.service.FlowableCategoryService;
 import com.wkclz.micro.flowable.service.FlowableClientWrapper;
 import com.wkclz.micro.flowable.service.FlowableNodeConfigService;
 import com.wkclz.micro.flowable.service.FlowableProcessDesignService;
+import com.wkclz.redis.helper.RedisIdGenerator;
 import com.wkclz.tool.utils.BeanUtil;
 import com.wkclz.web.bean.IdReq;
 import com.wkclz.web.bean.RemoveReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,22 +35,24 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Tag(name = "1.管理端-流程设计", description = "流程设计管理接口")
 @RestController
 @RequestMapping(Route.PREFIX)
 @Validated
 public class ProcessDesignRest {
 
-    private static final Logger log = LoggerFactory.getLogger(ProcessDesignRest.class);
 
     @Autowired
-    private FlowableProcessDesignService designService;
-    @Autowired
-    private FlowableNodeConfigService nodeConfigService;
+    private RedisIdGenerator redisIdGenerator;
     @Autowired
     private FlowableClientWrapper clientWrapper;
     @Autowired
     private FlowableCategoryService categoryService;
+    @Autowired
+    private FlowableProcessDesignService designService;
+    @Autowired
+    private FlowableNodeConfigService nodeConfigService;
 
     @Operation(summary = "1.流程设计-分页查询")
     @GetMapping(Route.ADMIN_DESIGN_PAGE)
@@ -66,7 +70,7 @@ public class ProcessDesignRest {
         DesignInfoResp resp = BeanUtil.cp(design, DesignInfoResp.class);
         // 查询节点配置
         FlowableNodeConfig nodeParam = new FlowableNodeConfig();
-        nodeParam.setDesignId(design.getId());
+        nodeParam.setDesignCode(design.getDesignCode());
         List<FlowableNodeConfig> nodes = nodeConfigService.selectByEntity(nodeParam);
         resp.setNodes(BeanUtil.cp(nodes, NodeConfigResp.class));
         // 回填分类名称
@@ -80,7 +84,7 @@ public class ProcessDesignRest {
     public R<DesignUploadResp> create(@Valid @RequestBody DesignUploadReq req) {
         log.info("上传流程设计: designName={}", req.getDesignName());
         FlowableProcessDesign design = new FlowableProcessDesign();
-        design.setDesignCode("FD" + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase());
+        design.setDesignCode(redisIdGenerator.generateIdWithPrefix("flow_"));
         design.setDesignName(req.getDesignName());
         design.setCategory(req.getCategory());
         design.setXmlContent(req.getXmlContent());
@@ -117,7 +121,7 @@ public class ProcessDesignRest {
         if (req.getXmlContent() != null) {
             update.setXmlContent(req.getXmlContent());
             // XML 变更时重新解析节点
-            deleteOldNodes(req.getId());
+            deleteOldNodes(design.getDesignCode());
         }
         designService.updateByIdSelective(update);
         if (req.getXmlContent() != null) {
@@ -136,7 +140,7 @@ public class ProcessDesignRest {
         if (design == null) {
             throw ValidationException.of("设计不存在");
         }
-        deleteOldNodes(req.getId());
+        deleteOldNodes(design.getDesignCode());
         FlowableProcessDesign del = new FlowableProcessDesign();
         del.setId(req.getId());
         return R.ok(designService.deleteById(del));
@@ -200,7 +204,7 @@ public class ProcessDesignRest {
             for (org.flowable.bpmn.model.Process process : model.getProcesses()) {
                 for (org.flowable.bpmn.model.FlowElement element : process.getFlowElements()) {
                     FlowableNodeConfig node = new FlowableNodeConfig();
-                    node.setDesignId(design.getId());
+                    node.setDesignCode(design.getDesignCode());
                     node.setNodeKey(element.getId());
                     node.setNodeName(element.getName() != null ? element.getName() : element.getId());
                     node.setOrderNum(order++);
@@ -218,15 +222,15 @@ public class ProcessDesignRest {
                     nodeConfigService.insert(node);
                 }
             }
-            log.info("解析 BPMN XML 生成 {} 个节点配置: designId={}", order, design.getId());
+            log.info("解析 BPMN XML 生成 {} 个节点配置: designCode={}", order, design.getDesignCode());
         } catch (Exception e) {
-            log.warn("解析 BPMN XML 失败，不阻塞设计保存: designId={}", design.getId(), e);
+            log.warn("解析 BPMN XML 失败，不阻塞设计保存: designCode={}", design.getDesignCode(), e);
         }
     }
 
-    private void deleteOldNodes(Long designId) {
+    private void deleteOldNodes(String designCode) {
         FlowableNodeConfig param = new FlowableNodeConfig();
-        param.setDesignId(designId);
+        param.setDesignCode(designCode);
         List<FlowableNodeConfig> oldNodes = nodeConfigService.selectByEntity(param);
         for (FlowableNodeConfig old : oldNodes) {
             FlowableNodeConfig del = new FlowableNodeConfig();

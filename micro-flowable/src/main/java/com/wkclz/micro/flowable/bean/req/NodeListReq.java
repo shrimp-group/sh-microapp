@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 @Schema(description = "节点配置列表查询")
 public class NodeListReq {
-    @NotNull(message = "designId 不能为空")
-    @Schema(description = "设计 ID")
-    private Long designId;
+    @NotNull(message = "designCode 不能为空")
+    @Schema(description = "设计编码")
+    private String designCode;
 }

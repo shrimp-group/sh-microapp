@@ -9,8 +9,8 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Schema(description = "节点配置响应")
 public class NodeConfigResp extends EntityResp {
-    @Schema(description = "设计 ID")
-    private Long designId;
+    @Schema(description = "设计编码")
+    private String designCode;
     @Schema(description = "节点 key")
     private String nodeKey;
     @Schema(description = "节点名称")

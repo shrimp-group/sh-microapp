@@ -35,7 +35,7 @@ public class NodeConfigRest {
     @GetMapping(Route.ADMIN_NODE_LIST)
     public R<List<NodeConfigResp>> list(@Valid NodeListReq req) {
         FlowableNodeConfig param = new FlowableNodeConfig();
-        param.setDesignId(req.getDesignId());
+        param.setDesignCode(req.getDesignCode());
         List<FlowableNodeConfig> nodes = nodeConfigService.selectByEntity(param);
         return R.ok(BeanUtil.cp(nodes, NodeConfigResp.class));
     }

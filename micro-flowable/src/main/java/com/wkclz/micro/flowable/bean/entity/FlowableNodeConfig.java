@@ -10,8 +10,8 @@ import lombok.EqualsAndHashCode;
 @Schema(description = "节点配置")
 public class FlowableNodeConfig extends BaseEntity {
 
-    @Schema(description = "关联 process_design.id")
-    private Long designId;
+    @Schema(description = "关联 process_design.design_code")
+    private String designCode;
 
     @Schema(description = "节点 ID（BPMN taskDefKey）")
     private String nodeKey;
