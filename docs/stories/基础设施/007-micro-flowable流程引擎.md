@@ -259,7 +259,7 @@ flowchart TD
 | `/admin/design/upload` | POST | `DesignUploadReq`（designName/category/xmlContent/formKey） | `DesignUploadResp`（designId/designCode/version） | 上传 BPMN XML 创建设计，解析 XML 提取节点自动建 node_config |
 | `/admin/design/page` | POST | `DesignPageReq`（designName/category/status/分页） | `PageData<DesignPageResp>` | 设计列表分页 |
 | `/admin/design/info` | GET | `IdReq` | `DesignInfoResp`（含节点配置列表） | 设计详情 |
-| `/admin/design/update` | POST | `DesignUpdateReq`（id/xmlContent/designName/category/formKey） | `Integer` | 更新设计，XML 变更时重新解析节点 |
+| `/admin/design/update` | POST | `DesignUpdateReq`（id/xmlContent/designName/category/formKey） | `Integer` | 更新设计，XML 变更时按 nodeKey 差量同步节点（保留人工审批配置） |
 | `/admin/design/remove` | POST | `RemoveReq` | `Integer` | 删除设计（逻辑删除） |
 | `/admin/design/deploy` | POST | `DesignDeployReq`（id） | `DesignDeployResp`（deployId/procDefId） | 推送部署：调 `client.deploy`，回写 deploy_id/proc_def_id，状态置 DEPLOYED |
 

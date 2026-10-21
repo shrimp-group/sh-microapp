@@ -169,6 +169,6 @@ sh:
 1. **透传端点**：运行态数据（定义/实例/任务/历史）全部实时透传 sh-flowable-server，不在本地缓存
 2. **审批意见**：所有审批动作（通过/驳回/转办/委派/认领/撤回）均记录到本地 `flowable_approval` 表
 3. **异常拦截**：`FlowableClientWrapper.call()` 统一包装 client 调用，异常时落库 `flowable_error_log` 并抛出业务异常
-4. **BPMN 解析**：设计上传/更新时解析 XML 自动生成节点配置，解析失败不阻塞保存
+4. **BPMN 解析**：设计上传时解析 XML 自动生成节点配置；更新时仅 XML 变更才解析，并按 nodeKey 差量同步（事务内 insertBatch + updateByIdSelective + deleteByIds，保留人工审批配置），解析失败不阻塞保存
 5. **乐观锁**：更新操作必须传 `version` 字段
 6. **design_version vs version**：`design_version` 是设计版本号，`version` 是乐观锁字段，注意区分

@@ -10,7 +10,6 @@ import com.wkclz.micro.flowable.bean.entity.FlowableNodeConfig;
 import com.wkclz.micro.flowable.bean.entity.FlowableProcessDesign;
 import com.wkclz.micro.flowable.bean.enums.DesignStatus;
 import com.wkclz.micro.flowable.bean.enums.ErrorType;
-import com.wkclz.micro.flowable.bean.enums.NodeType;
 import com.wkclz.micro.flowable.bean.req.*;
 import com.wkclz.micro.flowable.bean.resp.*;
 import com.wkclz.micro.flowable.service.FlowableCategoryService;
@@ -25,15 +24,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 @Tag(name = "1.管理端-流程设计", description = "流程设计管理接口")
@@ -93,8 +89,8 @@ public class ProcessDesignRest {
         design.setStatus(DesignStatus.DRAFT.name());
         designService.insert(design);
 
-        // 解析 XML 提取节点，自动生成 node_config
-        parseAndCreateNodes(design);
+        // 解析 XML 提取节点，自动生成 node_config（首次创建无存量节点，全部新增）
+        nodeConfigService.syncFromXml(design.getDesignCode(), design.getXmlContent());
 
         DesignUploadResp resp = new DesignUploadResp();
         resp.setDesignId(design.getId());
@@ -118,15 +114,14 @@ public class ProcessDesignRest {
         if (req.getDesignName() != null) { update.setDesignName(req.getDesignName()); }
         if (req.getCategory() != null) { update.setCategory(req.getCategory()); }
         if (req.getFormKey() != null) { update.setFormKey(req.getFormKey()); }
-        if (req.getXmlContent() != null) {
+        boolean xmlChanged = req.getXmlContent() != null && !req.getXmlContent().equals(design.getXmlContent());
+        if (xmlChanged) {
             update.setXmlContent(req.getXmlContent());
-            // XML 变更时重新解析节点
-            deleteOldNodes(design.getDesignCode());
         }
         designService.updateByIdSelective(update);
-        if (req.getXmlContent() != null) {
-            FlowableProcessDesign saved = designService.selectById(req.getId());
-            parseAndCreateNodes(saved);
+        if (xmlChanged) {
+            // 仅 XML 变更时差量同步节点，与节点无关的修改不动节点配置
+            nodeConfigService.syncFromXml(design.getDesignCode(), req.getXmlContent());
         }
         return R.ok(1);
     }
@@ -140,7 +135,7 @@ public class ProcessDesignRest {
         if (design == null) {
             throw ValidationException.of("设计不存在");
         }
-        deleteOldNodes(design.getDesignCode());
+        nodeConfigService.deleteByDesignCode(design.getDesignCode());
         FlowableProcessDesign del = new FlowableProcessDesign();
         del.setId(req.getId());
         return R.ok(designService.deleteById(del));
@@ -187,55 +182,5 @@ public class ProcessDesignRest {
         query.setCategoryCode(categoryCode);
         List<FlowableCategory> categories = categoryService.selectByEntity(query);
         return categories.isEmpty() ? null : categories.get(0).getCategoryName();
-    }
-
-    /**
-     * 解析 BPMN XML 提取用户任务节点，自动生成 node_config 记录。
-     * 使用 Flowable BPMN Model API（flowable-bpmn-model 由 sh-flowable-client 传递依赖引入）。
-     * 若解析失败仅记录日志，不阻塞设计保存。
-     */
-    private void parseAndCreateNodes(FlowableProcessDesign design) {
-        try {
-            org.flowable.bpmn.model.BpmnModel model = new org.flowable.bpmn.converter.BpmnXMLConverter()
-                    .convertToBpmnModel(
-                            () -> new java.io.ByteArrayInputStream(design.getXmlContent().getBytes(java.nio.charset.StandardCharsets.UTF_8)),
-                            false, false);
-            int order = 0;
-            for (org.flowable.bpmn.model.Process process : model.getProcesses()) {
-                for (org.flowable.bpmn.model.FlowElement element : process.getFlowElements()) {
-                    FlowableNodeConfig node = new FlowableNodeConfig();
-                    node.setDesignCode(design.getDesignCode());
-                    node.setNodeKey(element.getId());
-                    node.setNodeName(element.getName() != null ? element.getName() : element.getId());
-                    node.setOrderNum(order++);
-                    if (element instanceof org.flowable.bpmn.model.StartEvent) {
-                        node.setNodeType(NodeType.START.name());
-                    } else if (element instanceof org.flowable.bpmn.model.UserTask) {
-                        node.setNodeType(NodeType.APPROVAL.name());
-                    } else if (element instanceof org.flowable.bpmn.model.Gateway) {
-                        node.setNodeType(NodeType.GATEWAY.name());
-                    } else if (element instanceof org.flowable.bpmn.model.EndEvent) {
-                        node.setNodeType(NodeType.END.name());
-                    } else {
-                        node.setNodeType(NodeType.APPROVAL.name());
-                    }
-                    nodeConfigService.insert(node);
-                }
-            }
-            log.info("解析 BPMN XML 生成 {} 个节点配置: designCode={}", order, design.getDesignCode());
-        } catch (Exception e) {
-            log.warn("解析 BPMN XML 失败，不阻塞设计保存: designCode={}", design.getDesignCode(), e);
-        }
-    }
-
-    private void deleteOldNodes(String designCode) {
-        FlowableNodeConfig param = new FlowableNodeConfig();
-        param.setDesignCode(designCode);
-        List<FlowableNodeConfig> oldNodes = nodeConfigService.selectByEntity(param);
-        for (FlowableNodeConfig old : oldNodes) {
-            FlowableNodeConfig del = new FlowableNodeConfig();
-            del.setId(old.getId());
-            nodeConfigService.deleteById(del);
-        }
     }
 }
