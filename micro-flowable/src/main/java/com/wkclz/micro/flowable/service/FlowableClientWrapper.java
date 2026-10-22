@@ -16,6 +16,7 @@ import org.springframework.web.client.RestClientResponseException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
+import java.util.function.Supplier;
 
 /**
  * FlowableClient 调用包装层。
@@ -42,7 +43,7 @@ public class FlowableClientWrapper {
     /**
      * 包装 client 调用，异常时落库 error_log 并抛出业务异常
      */
-    public <T> R<T> call(ErrorType errorType, String clientMethod, Object requestData, java.util.function.Supplier<R<T>> supplier) {
+    public <T> R<T> call(ErrorType errorType, String clientMethod, Object requestData, Supplier<R<T>> supplier) {
         try {
             log.info("调用 flowable client: method={}", clientMethod);
             R<T> result = supplier.get();
