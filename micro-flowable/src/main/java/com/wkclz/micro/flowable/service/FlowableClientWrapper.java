@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientResponseException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -55,9 +56,17 @@ public class FlowableClientWrapper {
         } catch (ValidationException e) {
             throw e;
         } catch (Exception e) {
-            log.error("flowable client 调用异常: method={}", clientMethod, e);
-            saveErrorLog(errorType, clientMethod, requestData, e.getMessage(), e);
-            throw ValidationException.of("流程服务调用异常: {}", e.getMessage());
+            String detail = e.getMessage();
+            if (e instanceof RestClientResponseException restEx) {
+                String body = restEx.getResponseBodyAsString();
+                if (body != null && body.length() > 500) {
+                    body = body.substring(0, 500);
+                }
+                detail = "httpStatus=" + restEx.getStatusCode() + ", body=" + body;
+            }
+            log.error("flowable client 调用异常: method={}, detail={}", clientMethod, detail, e);
+            saveErrorLog(errorType, clientMethod, requestData, detail, e);
+            throw ValidationException.of("流程服务调用异常: {}", detail);
         }
     }
 

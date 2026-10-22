@@ -7,7 +7,6 @@ import com.wkclz.flowable.client.bean.req.ProcessDeployPageReq;
 import com.wkclz.flowable.client.bean.resp.*;
 import com.wkclz.micro.flowable.bean.enums.ErrorType;
 import com.wkclz.micro.flowable.service.FlowableClientWrapper;
-import com.wkclz.web.bean.IdReq;
 import com.wkclz.web.bean.RemoveReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,9 +35,9 @@ public class DefinitionPassthroughRest {
 
     @Operation(summary = "2.流程定义-详情")
     @GetMapping(Route.ADMIN_DEFINITION_INFO)
-    public R<ProcessDefResp> definitionInfo(@Valid IdReq req) {
-        return clientWrapper.call(ErrorType.QUERY_ERROR, "ProcessDefinitionClient#info", req,
-                () -> clientWrapper.getClient().getDefinition().info(req));
+    public R<ProcessDefResp> definitionInfo(@RequestParam String definitionId) {
+        return clientWrapper.call(ErrorType.QUERY_ERROR, "ProcessDefinitionClient#info", definitionId,
+                () -> clientWrapper.getClient().getDefinition().info(definitionId));
     }
 
     @Operation(summary = "3.流程定义-列表")

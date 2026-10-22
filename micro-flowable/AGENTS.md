@@ -13,7 +13,7 @@ micro-flowable 是 sh-microapp 微应用集合中的流程引擎对接模块，�
 
 ```
 micro-flowable（业务侧）
-  ├── 本地 5 张表（设计态 2 + 业务态 2 + 异常 1）
+  ├── 本地 6 张表（分类 1 + 设计态 2 + 业务态 2 + 异常 1）
   ├── 管理端：设计 CRUD / 部署 / 节点配置 / 透传查询
   ├── 业务端：申请 / 待办已办 / 6 种审批动作 / 实例历史 / 审批意见
   └── 异常监控：AOP 拦截 client 调用 + 落库 + 查询/标记
@@ -28,34 +28,36 @@ src/main/java/com/wkclz/micro/flowable/
 ├── FlowableAutoConfig.java              # 自动配置（@ComponentScan + @MapperScan）
 ├── aspect/                              # AOP（预留）
 ├── bean/
-│   ├── entity/                          # 5 个实体（extends BaseEntity）
-│   ├── enums/                           # 6 个枚举
-│   ├── req/                             # 15 个请求 Bean
-│   └── resp/                            # 10 个响应 Bean
+│   ├── entity/                          # 6 个实体（extends BaseEntity）
+│   ├── enums/                           # 7 个枚举
+│   ├── req/                             # 18 个请求 Bean
+│   └── resp/                            # 11 个响应 Bean
 ├── config/
 │   └── FlowableErrorLogProperties.java  # 异常日志配置
-├── mapper/                              # 5 个 Mapper 接口
+├── mapper/                              # 6 个 Mapper 接口
 ├── rest/
-│   ├── Route.java                       # 路由常量（36 个端点）
+│   ├── Route.java                       # 路由常量（41 个端点）
 │   ├── ProcessDesignRest.java           # 管理端-设计管理（6 端点）
 │   ├── NodeConfigRest.java              # 管理端-节点配置（3 端点）
 │   ├── DefinitionPassthroughRest.java   # 管理端-透传查询（5 端点）
 │   ├── ApplyRest.java                   # 业务端-申请（3 端点）
 │   ├── FlowableTaskRest.java            # 业务端-任务审批（10 端点）
 │   ├── InstanceHistoryRest.java         # 业务端-实例历史（6 端点）
-│   └── ErrorLogRest.java               # 异常监控（3 端点）
+│   ├── ErrorLogRest.java               # 异常监控（3 端点）
+│   └── FlowableCategoryRest.java       # 管理端-流程分类（5 端点）
 └── service/
     ├── FlowableProcessDesignService.java
     ├── FlowableNodeConfigService.java
     ├── FlowableApplyService.java
     ├── FlowableApprovalService.java
     ├── FlowableErrorLogService.java
+    ├── FlowableCategoryService.java
     └── FlowableClientWrapper.java       # client 调用包装（异常拦截落库）
 
 src/main/resources/
-├── mapper/                              # 5 个 MyBatis XML
+├── mapper/                              # 6 个 MyBatis XML
 └── sql/
-    └── micro-flowable-ddl.sql           # 建表脚本
+    └── micro-flowable-ddl.sql           # 建表脚本（6 张表）
 ```
 
 ## API 端点清单
@@ -78,6 +80,16 @@ src/main/resources/
 | GET | `/micro-flowable/admin/node/list` | 1.节点配置-列表 |
 | GET | `/micro-flowable/admin/node/info` | 2.节点配置-详情 |
 | POST | `/micro-flowable/admin/node/update` | 3.节点配置-修改 |
+
+### 管理端 - 流程分类（FlowableCategoryRest）
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/micro-flowable/admin/category/page` | 1.分类-分页查询 |
+| GET | `/micro-flowable/admin/category/list` | 2.分类-下拉列表 |
+| POST | `/micro-flowable/admin/category/create` | 3.分类-创建 |
+| POST | `/micro-flowable/admin/category/update` | 4.分类-修改 |
+| POST | `/micro-flowable/admin/category/remove` | 5.分类-删除 |
 
 ### 管理端 - 透传查询（DefinitionPassthroughRest）
 
@@ -137,7 +149,7 @@ src/main/resources/
 sh:
   flowable:
     # client 连接配置（FlowableClientProperties）
-    base-url: http://sh-flowable-server:8080
+    server-url: http://sh-flowable-server-svc:8080
     connect-timeout: 5000
     read-timeout: 30000
     # 异常日志配置（FlowableErrorLogProperties）
@@ -146,10 +158,17 @@ sh:
       include-stack: true  # 是否记录异常堆栈
 ```
 
+## 部署配置清单
+
+- 业务应用侧 ConfigMap：`sh.flowable.server-url=http://sh-flowable-server-svc:8080`（集群内 Service DNS；未配置将回退 localhost:8080 并在启动日志输出 WARN）
+- flowable-server 侧 ConfigMap：`iam.session.white-list=/**`（一期集群内不鉴权；二期恢复：与业务应用对齐 secret-key 与会话 Redis 后改回细粒度白名单）
+- 服务不对外暴露：勿为 sh-flowable-server 创建 Ingress
+
 ## 数据库表
 
 | 表名 | 说明 |
 |------|------|
+| `flowable_category` | 流程分类 |
 | `flowable_process_design` | 流程设计（设计态） |
 | `flowable_node_config` | 节点配置（设计态） |
 | `flowable_apply` | 流程申请单（业务态） |
@@ -172,3 +191,4 @@ sh:
 4. **BPMN 解析**：设计上传时解析 XML 自动生成节点配置；更新时仅 XML 变更才解析，并按 nodeKey 差量同步（事务内 insertBatch + updateByIdSelective + deleteByIds，保留人工审批配置），解析失败不阻塞保存
 5. **乐观锁**：更新操作必须传 `version` 字段
 6. **design_version vs version**：`design_version` 是设计版本号，`version` 是乐观锁字段，注意区分
+7. **流程分类**：`flowable_process_design.category` 存分类编码（`flowable_category.category_code`）；设计分页经 SQL LEFT JOIN 直接返回 `categoryName`，详情按编码单查回填；部署时经 `ProcessDeployReq.category` 透传引擎

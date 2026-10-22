@@ -160,17 +160,19 @@ public class ProcessDesignRest {
                 () -> clientWrapper.getClient().getDeploy().deploy(deployReq));
 
         ProcessDeployResp deployResp = result.getData();
+        String procDefId = deployResp.getProcDefId();
         // 回写部署信息
         FlowableProcessDesign update = new FlowableProcessDesign();
         update.setId(design.getId());
         update.setDeployId(deployResp.getDeployId());
+        update.setProcDefId(procDefId);
         update.setStatus(DesignStatus.DEPLOYED.name());
         update.setVersion(design.getVersion());
         designService.updateByIdSelective(update);
 
         DesignDeployResp resp = new DesignDeployResp();
         resp.setDeployId(deployResp.getDeployId());
-        resp.setProcDefId(design.getProcDefId());
+        resp.setProcDefId(procDefId);
         return R.ok(resp);
     }
 
