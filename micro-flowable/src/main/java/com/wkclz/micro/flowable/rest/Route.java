@@ -39,6 +39,8 @@ public interface Route {
 
     // 业务端 - 申请
     String APPLY_CREATE = "/apply/create";
+    String APPLY_CREATE_DRAFT = "/apply/create_draft";
+    String APPLY_SUBMIT = "/apply/submit";
     String APPLY_PAGE = "/apply/page";
     String APPLY_INFO = "/apply/info";
 
