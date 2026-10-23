@@ -78,11 +78,14 @@ public class ProcessDesignRest {
     @Transactional(rollbackFor = Exception.class)
     public R<DesignUploadResp> create(@Valid @RequestBody DesignUploadReq req) {
         log.info("上传流程设计: designName={}", req.getDesignName());
+        String designCode = redisIdGenerator.generateIdWithPrefix("flow_");
+        // 保存时归一化 process id/name 为设计表设置，入库与节点解析均基于归一化后 XML
+        String xmlContent = designService.normalizeProcess(req.getXmlContent(), designCode, req.getDesignName());
         FlowableProcessDesign design = new FlowableProcessDesign();
-        design.setDesignCode(redisIdGenerator.generateIdWithPrefix("flow_"));
+        design.setDesignCode(designCode);
         design.setDesignName(req.getDesignName());
         design.setCategory(req.getCategory());
-        design.setXmlContent(req.getXmlContent());
+        design.setXmlContent(xmlContent);
         design.setFormKey(req.getFormKey());
         design.setDesignVersion(1);
         design.setStatus(DesignStatus.DRAFT.name());
@@ -110,17 +113,24 @@ public class ProcessDesignRest {
         FlowableProcessDesign update = new FlowableProcessDesign();
         update.setId(req.getId());
         update.setVersion(req.getVersion());
+        boolean nameChanged = req.getDesignName() != null && !req.getDesignName().equals(design.getDesignName());
         if (req.getDesignName() != null) { update.setDesignName(req.getDesignName()); }
         if (req.getCategory() != null) { update.setCategory(req.getCategory()); }
         if (req.getFormKey() != null) { update.setFormKey(req.getFormKey()); }
         boolean xmlChanged = req.getXmlContent() != null && !req.getXmlContent().equals(design.getXmlContent());
         if (xmlChanged) {
-            update.setXmlContent(req.getXmlContent());
+            // XML 变更：以有效名称归一化 process id/name 后入库
+            String effectiveName = req.getDesignName() != null ? req.getDesignName() : design.getDesignName();
+            update.setXmlContent(designService.normalizeProcess(req.getXmlContent(), design.getDesignCode(), effectiveName));
+        } else if (nameChanged) {
+            // 仅名称变更：改写存量 XML 的 process name 后回写（幂等），节点配置不动
+            update.setXmlContent(designService.normalizeProcess(design.getXmlContent(), design.getDesignCode(), req.getDesignName()));
+            log.info("仅名称变更，回写存量 XML process name: id={}, designName={}", req.getId(), req.getDesignName());
         }
         designService.updateByIdSelective(update);
         if (xmlChanged) {
             // 仅 XML 变更时差量同步节点，与节点无关的修改不动节点配置
-            nodeConfigService.syncFromXml(design.getDesignCode(), req.getXmlContent());
+            nodeConfigService.syncFromXml(design.getDesignCode(), update.getXmlContent());
         }
         return R.ok(1);
     }
@@ -151,8 +161,8 @@ public class ProcessDesignRest {
         }
         ProcessDeployReq deployReq = new ProcessDeployReq();
         deployReq.setName(design.getDesignCode() + ".bpmn20.xml");
-        // process id/name 归一化为设计表设置，保证引擎 definition key/name 与业务数据一致
-        deployReq.setXmlContent(designService.normalizeProcess(design.getXmlContent(), design.getDesignCode(), design.getDesignName()));
+        // process id/name 已在保存时归一化，直接推送存量 XML
+        deployReq.setXmlContent(design.getXmlContent());
         deployReq.setCategory(design.getCategory());
 
         R<ProcessDeployResp> result = flowableClient.getDeploy().deploy(deployReq);

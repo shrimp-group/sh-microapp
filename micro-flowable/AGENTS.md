@@ -188,7 +188,7 @@ sh:
 1. **透传端点**：运行态数据（定义/实例/任务/历史）全部实时透传 sh-flowable-server，不在本地缓存
 2. **审批意见**：所有审批动作（通过/驳回/转办/委派/认领/撤回）均记录到本地 `flowable_approval` 表
 3. **异常拦截**：`FlowableClientAspect` 切面统一拦截 5 个 client 接口调用（`execution(* com.wkclz.flowable.client.flowable.*Client.*(..))`），失败/异常时落库 `flowable_error_log` 并抛出业务异常；Rest 层直接注入 `FlowableClient` 裸调；ErrorType 由切面按约定推导（GET → QUERY_ERROR；POST 且方法名 start 前缀 → START_ERROR；deploy、remove 前缀 → DEPLOY_ERROR；其余 POST → APPROVE_ERROR），新增 client 方法零标注自动归类，破坏约定时调整 `resolveErrorType` 规则
-4. **BPMN 解析**：设计上传时解析 XML 自动生成节点配置；更新时仅 XML 变更才解析，并按 nodeKey 差量同步（事务内 insertBatch + updateByIdSelective + deleteByIds，保留人工审批配置），解析失败不阻塞保存
+4. **BPMN 解析**：保存（创建/修改）时先归一化 process id/name 为 designCode/designName（仅改名未重传 XML 时同步回写存量 XML 的 process name），再解析 XML 自动生成节点配置；更新时仅 XML 变更才解析，并按 nodeKey 差量同步（事务内 insertBatch + updateByIdSelective + deleteByIds，保留人工审批配置），解析失败不阻塞保存（归一化校验失败会阻塞保存）
 5. **乐观锁**：更新操作必须传 `version` 字段
 6. **design_version vs version**：`design_version` 是设计版本号，`version` 是乐观锁字段，注意区分
 7. **流程分类**：`flowable_process_design.category` 存分类编码（`flowable_category.category_code`）；设计分页经 SQL LEFT JOIN 直接返回 `categoryName`，详情按编码单查回填；部署时经 `ProcessDeployReq.category` 透传引擎

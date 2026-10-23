@@ -32,8 +32,8 @@ public class FlowableProcessDesignService extends BaseService<FlowableProcessDes
 
     /**
      * BPMN process id/name 归一化为设计表设置（designCode/designName）：
-     * 引擎 definition key/name 由 XML process id/name 决定，部署前统一改写保证全链路以设计表为准，
-     * 用户 XML 原稿（含外部设计器自动生成的 id/name）不受影响；节点元素（userTask 等）id 不受影响。
+     * 保存（创建/修改）时统一改写，引擎 definition key/name 由入库 XML process id/name 决定，
+     * 保证全链路以设计表为准；改名未重传 XML 时对存量 XML 重入（幂等）；节点元素（userTask 等）id 不受影响。
      */
     public String normalizeProcess(String xmlContent, String designCode, String designName) {
         log.info("归一化 BPMN process id/name: designCode={}, designName={}", designCode, designName);
