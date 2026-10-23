@@ -14,6 +14,7 @@ public interface Route {
     String ADMIN_DESIGN_UPDATE = "/admin/design/update";
     String ADMIN_DESIGN_REMOVE = "/admin/design/remove";
     String ADMIN_DESIGN_DEPLOY = "/admin/design/deploy";
+    String ADMIN_DESIGN_REMOVE_OLD_VERSIONS = "/admin/design/remove-old-versions";
 
     // 管理端 - 节点配置
     String ADMIN_NODE_LIST = "/admin/node/list";

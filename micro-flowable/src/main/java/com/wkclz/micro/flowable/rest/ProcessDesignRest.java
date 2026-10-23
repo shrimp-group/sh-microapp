@@ -3,7 +3,9 @@ package com.wkclz.micro.flowable.rest;
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.base.R;
 import com.wkclz.core.exception.ValidationException;
+import com.wkclz.flowable.client.bean.req.ProcessDefPageReq;
 import com.wkclz.flowable.client.bean.req.ProcessDeployReq;
+import com.wkclz.flowable.client.bean.resp.ProcessDefPageResp;
 import com.wkclz.flowable.client.bean.resp.ProcessDeployResp;
 import com.wkclz.flowable.client.config.FlowableClient;
 import com.wkclz.micro.flowable.bean.entity.FlowableCategory;
@@ -28,7 +30,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Tag(name = "1.管理端-流程设计", description = "流程设计管理接口")
@@ -182,6 +186,50 @@ public class ProcessDesignRest {
         resp.setDeployId(deployResp.getDeployId());
         resp.setProcDefId(procDefId);
         return R.ok(resp);
+    }
+
+    @Operation(summary = "7.流程设计-清理旧版本", description = "保留最新版本，删除其余旧版本部署；cascade=false 保留历史（有运行实例引擎拒绝），true 级联删除运行实例与历史")
+    @PostMapping(Route.ADMIN_DESIGN_REMOVE_OLD_VERSIONS)
+    public R<Integer> removeOldVersions(@Valid @RequestBody DesignCleanupReq req) {
+        log.info("清理流程设计旧版本: id={}, cascade={}", req.getId(), req.getCascade());
+        FlowableProcessDesign design = designService.selectById(req.getId());
+        if (design == null) {
+            throw ValidationException.of("设计不存在");
+        }
+        ProcessDefPageReq defReq = new ProcessDefPageReq();
+        defReq.setKey(design.getDesignCode());
+        defReq.setCurrent(1L);
+        defReq.setSize(500L);
+        List<ProcessDefPageResp> defs = flowableClient.getDefinition().page(defReq).getData().getRecords();
+        if (defs == null || defs.isEmpty()) {
+            log.info("无已部署版本，跳过清理: designCode={}", design.getDesignCode());
+            return R.ok(0);
+        }
+        int maxVersion = defs.stream().mapToInt(ProcessDefPageResp::getVersion).max().orElse(0);
+        List<ProcessDefPageResp> oldDefs = defs.stream()
+                .filter(d -> d.getVersion() < maxVersion)
+                .sorted(Comparator.comparing(ProcessDefPageResp::getVersion))
+                .collect(Collectors.toList());
+        if (oldDefs.isEmpty()) {
+            log.info("无旧版本，跳过清理: designCode={}, maxVersion={}", design.getDesignCode(), maxVersion);
+            return R.ok(0);
+        }
+        boolean cascade = Boolean.TRUE.equals(req.getCascade());
+        int removed = 0;
+        for (ProcessDefPageResp oldDef : oldDefs) {
+            RemoveReq removeReq = new RemoveReq();
+            try {
+                removeReq.setId(Long.valueOf(oldDef.getDeployId()));
+            } catch (NumberFormatException e) {
+                log.error("旧版本 deployId 非数字: designCode={}, version={}, deployId={}", design.getDesignCode(), oldDef.getVersion(), oldDef.getDeployId());
+                throw ValidationException.of("旧版本 deployId 非数字: " + oldDef.getDeployId());
+            }
+            flowableClient.getDeploy().remove(removeReq, cascade);
+            removed++;
+            log.info("删除旧版本部署: designCode={}, version={}, deployId={}, cascade={}", design.getDesignCode(), oldDef.getVersion(), oldDef.getDeployId(), cascade);
+        }
+        log.info("清理流程设计旧版本完成: designCode={}, removed={}", design.getDesignCode(), removed);
+        return R.ok(removed);
     }
 
     private String findCategoryName(String categoryCode) {

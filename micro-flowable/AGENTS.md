@@ -72,6 +72,7 @@ src/main/resources/
 | POST | `/micro-flowable/admin/design/update` | 4.流程设计-修改 |
 | POST | `/micro-flowable/admin/design/remove` | 5.流程设计-删除 |
 | POST | `/micro-flowable/admin/design/deploy` | 6.流程设计-部署 |
+| POST | `/micro-flowable/admin/design/remove-old-versions` | 7.流程设计-清理旧版本 |
 
 ### 管理端 - 节点配置（NodeConfigRest）
 
@@ -192,3 +193,4 @@ sh:
 5. **乐观锁**：更新操作必须传 `version` 字段
 6. **design_version vs version**：`design_version` 是设计版本号，`version` 是乐观锁字段，注意区分
 7. **流程分类**：`flowable_process_design.category` 存分类编码（`flowable_category.category_code`）；设计分页经 SQL LEFT JOIN 直接返回 `categoryName`，详情按编码单查回填；部署时经 `ProcessDeployReq.category` 透传引擎
+8. **旧版本清理**：POST /admin/design/remove-old-versions 按 designCode 保留最大 version、删除旧版本部署；入参 cascade 可选：false（默认，保留已完结历史，旧版本存在运行实例时引擎拒绝）/ true（级联删除运行实例与全部历史）；透传 /admin/deploy/remove 固定 cascade=true 维持级联语义

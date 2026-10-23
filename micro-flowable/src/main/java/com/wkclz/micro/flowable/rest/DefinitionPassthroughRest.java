@@ -52,6 +52,7 @@ public class DefinitionPassthroughRest {
     @Operation(summary = "5.部署记录-删除")
     @PostMapping(Route.ADMIN_DEPLOY_REMOVE)
     public R<Integer> deployRemove(@Valid @RequestBody RemoveReq req) {
-        return flowableClient.getDeploy().remove(req);
+        // 保持级联透传语义（cascade=false）
+        return flowableClient.getDeploy().remove(req, false);
     }
 }
