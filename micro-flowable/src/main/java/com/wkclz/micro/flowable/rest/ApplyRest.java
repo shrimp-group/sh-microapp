@@ -81,14 +81,12 @@ public class ApplyRest {
 
         R<ProcessInstanceResp> result = flowableClient.getInstance().start(startReq);
 
-        // 回填流程实例 ID
+        // 回填流程实例 ID（insert 不回填 version，乐观锁需先查询再更新）
+        FlowableApply dbApply = applyService.selectById(apply.getId());
         ProcessInstanceResp instanceResp = result.getData();
-        FlowableApply updateApply = new FlowableApply();
-        updateApply.setId(apply.getId());
-        updateApply.setProcInsId(instanceResp.getProcessInstanceId());
-        updateApply.setProcDefId(instanceResp.getDefinitionKey());
-        updateApply.setVersion(apply.getVersion());
-        applyService.updateByIdSelective(updateApply);
+        dbApply.setProcInsId(instanceResp.getProcessInstanceId());
+        dbApply.setProcDefId(instanceResp.getDefinitionKey());
+        applyService.updateByIdSelective(dbApply);
 
         ApplyCreateResp resp = new ApplyCreateResp();
         resp.setApplyCode(applyCode);
