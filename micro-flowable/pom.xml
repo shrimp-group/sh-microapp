@@ -30,6 +30,11 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
+        <!-- AOP：FlowableClient 调用切面（异常拦截落库） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
         <!-- Flowable BPMN Model API：解析 BPMN XML 提取节点（版本由 sh-flowable 对齐 8.0.0） -->
         <dependency>
             <groupId>org.flowable</groupId>

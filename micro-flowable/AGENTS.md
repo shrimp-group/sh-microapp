@@ -26,10 +26,11 @@ sh-flowable-server（独立部署，内嵌 Flowable 8.0.0）
 ```
 src/main/java/com/wkclz/micro/flowable/
 ├── FlowableAutoConfig.java              # 自动配置（@ComponentScan + @MapperScan）
-├── aspect/                              # AOP（预留）
+├── aspect/
+│   └── FlowableClientAspect.java        # AOP 切面：client 调用异常拦截落库
 ├── bean/
 │   ├── entity/                          # 6 个实体（extends BaseEntity）
-│   ├── enums/                           # 7 个枚举
+│   ├── enums/                           # 6 个枚举
 │   ├── req/                             # 18 个请求 Bean
 │   └── resp/                            # 11 个响应 Bean
 ├── config/
@@ -51,8 +52,7 @@ src/main/java/com/wkclz/micro/flowable/
     ├── FlowableApplyService.java
     ├── FlowableApprovalService.java
     ├── FlowableErrorLogService.java
-    ├── FlowableCategoryService.java
-    └── FlowableClientWrapper.java       # client 调用包装（异常拦截落库）
+    └── FlowableCategoryService.java
 
 src/main/resources/
 ├── mapper/                              # 6 个 MyBatis XML
@@ -179,7 +179,7 @@ sh:
 
 ## 依赖关系
 
-- **sh-flowable-client**（`com.wkclz.flowable:sh-flowable-client:1.0.0-SNAPSHOT`）：5 个 HttpExchange 客户端
+- **sh-flowable-client**（`com.wkclz.flowable:sh-flowable-client:1.0.0-SNAPSHOT`）：5 个 HttpExchange 客户端（`@ImportHttpServices` 声明式注册，纯传输层声明，不含消费方语义）
 - **flowable-bpmn-model / flowable-bpmn-converter**（8.0.0）：BPMN XML 解析（设计上传时提取节点）
 - **sh-framework**：BaseEntity / BaseService / BaseMapper / R / PageData 等基础能力
 
@@ -187,7 +187,7 @@ sh:
 
 1. **透传端点**：运行态数据（定义/实例/任务/历史）全部实时透传 sh-flowable-server，不在本地缓存
 2. **审批意见**：所有审批动作（通过/驳回/转办/委派/认领/撤回）均记录到本地 `flowable_approval` 表
-3. **异常拦截**：`FlowableClientWrapper.call()` 统一包装 client 调用，异常时落库 `flowable_error_log` 并抛出业务异常
+3. **异常拦截**：`FlowableClientAspect` 切面统一拦截 5 个 client 接口调用（`execution(* com.wkclz.flowable.client.flowable.*Client.*(..))`），失败/异常时落库 `flowable_error_log` 并抛出业务异常；Rest 层直接注入 `FlowableClient` 裸调；ErrorType 由切面按约定推导（GET → QUERY_ERROR；POST 且方法名 start 前缀 → START_ERROR；deploy、remove 前缀 → DEPLOY_ERROR；其余 POST → APPROVE_ERROR），新增 client 方法零标注自动归类，破坏约定时调整 `resolveErrorType` 规则
 4. **BPMN 解析**：设计上传时解析 XML 自动生成节点配置；更新时仅 XML 变更才解析，并按 nodeKey 差量同步（事务内 insertBatch + updateByIdSelective + deleteByIds，保留人工审批配置），解析失败不阻塞保存
 5. **乐观锁**：更新操作必须传 `version` 字段
 6. **design_version vs version**：`design_version` 是设计版本号，`version` 是乐观锁字段，注意区分

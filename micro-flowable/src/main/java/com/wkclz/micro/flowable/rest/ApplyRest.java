@@ -6,17 +6,16 @@ import com.wkclz.core.exception.ValidationException;
 import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.flowable.client.bean.req.ProcessStartReq;
 import com.wkclz.flowable.client.bean.resp.ProcessInstanceResp;
+import com.wkclz.flowable.client.config.FlowableClient;
 import com.wkclz.micro.flowable.bean.entity.FlowableApply;
 import com.wkclz.micro.flowable.bean.entity.FlowableProcessDesign;
 import com.wkclz.micro.flowable.bean.enums.ApplyStatus;
-import com.wkclz.micro.flowable.bean.enums.ErrorType;
 import com.wkclz.micro.flowable.bean.req.ApplyCreateReq;
 import com.wkclz.micro.flowable.bean.req.ApplyPageReq;
 import com.wkclz.micro.flowable.bean.resp.ApplyCreateResp;
 import com.wkclz.micro.flowable.bean.resp.ApplyInfoResp;
 import com.wkclz.micro.flowable.bean.resp.ApplyPageResp;
 import com.wkclz.micro.flowable.service.FlowableApplyService;
-import com.wkclz.micro.flowable.service.FlowableClientWrapper;
 import com.wkclz.micro.flowable.service.FlowableProcessDesignService;
 import com.wkclz.tool.utils.BeanUtil;
 import com.wkclz.web.bean.IdReq;
@@ -45,7 +44,7 @@ public class ApplyRest {
     @Autowired
     private FlowableProcessDesignService designService;
     @Autowired
-    private FlowableClientWrapper clientWrapper;
+    private FlowableClient flowableClient;
 
     @Operation(summary = "1.流程申请-发起")
     @PostMapping(Route.APPLY_CREATE)
@@ -80,9 +79,7 @@ public class ApplyRest {
         startReq.setBusinessKey(applyCode);
         startReq.setVariables(req.getVariables());
 
-        R<ProcessInstanceResp> result = clientWrapper.call(
-                ErrorType.START_ERROR, "ProcessInstanceClient#start", startReq,
-                () -> clientWrapper.getClient().getInstance().start(startReq));
+        R<ProcessInstanceResp> result = flowableClient.getInstance().start(startReq);
 
         // 回填流程实例 ID
         ProcessInstanceResp instanceResp = result.getData();

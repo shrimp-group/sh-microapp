@@ -16,13 +16,13 @@
             AND d.design_code LIKE CONCAT('%', #{designCode}, '%')
         </if>
         <if test="designName != null ">
-            AND design_name LIKE CONCAT('%', #{designName}, '%')
+            AND d.design_name LIKE CONCAT('%', #{designName}, '%')
         </if>
         <if test="category != null">
-            AND category = #{category}
+            AND d.category = #{category}
         </if>
         <if test="status != null">
-            AND status = #{status}
+            AND d.status = #{status}
         </if>
         ORDER BY
             d.sort,

@@ -5,8 +5,7 @@ import com.wkclz.core.base.R;
 import com.wkclz.flowable.client.bean.req.ProcessDefPageReq;
 import com.wkclz.flowable.client.bean.req.ProcessDeployPageReq;
 import com.wkclz.flowable.client.bean.resp.*;
-import com.wkclz.micro.flowable.bean.enums.ErrorType;
-import com.wkclz.micro.flowable.service.FlowableClientWrapper;
+import com.wkclz.flowable.client.config.FlowableClient;
 import com.wkclz.web.bean.RemoveReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,40 +23,35 @@ import java.util.List;
 public class DefinitionPassthroughRest {
 
     @Autowired
-    private FlowableClientWrapper clientWrapper;
+    private FlowableClient flowableClient;
 
     @Operation(summary = "1.流程定义-分页查询")
     @GetMapping(Route.ADMIN_DEFINITION_PAGE)
     public R<PageData<ProcessDefPageResp>> definitionPage(@Valid ProcessDefPageReq req) {
-        return clientWrapper.call(ErrorType.QUERY_ERROR, "ProcessDefinitionClient#page", req,
-                () -> clientWrapper.getClient().getDefinition().page(req));
+        return flowableClient.getDefinition().page(req);
     }
 
     @Operation(summary = "2.流程定义-详情")
     @GetMapping(Route.ADMIN_DEFINITION_INFO)
     public R<ProcessDefResp> definitionInfo(@RequestParam String definitionId) {
-        return clientWrapper.call(ErrorType.QUERY_ERROR, "ProcessDefinitionClient#info", definitionId,
-                () -> clientWrapper.getClient().getDefinition().info(definitionId));
+        return flowableClient.getDefinition().info(definitionId);
     }
 
     @Operation(summary = "3.流程定义-列表")
     @GetMapping(Route.ADMIN_DEFINITION_LIST)
     public R<List<ProcessDefListResp>> definitionList() {
-        return clientWrapper.call(ErrorType.QUERY_ERROR, "ProcessDefinitionClient#list", null,
-                () -> clientWrapper.getClient().getDefinition().list());
+        return flowableClient.getDefinition().list();
     }
 
     @Operation(summary = "4.部署记录-分页查询")
     @GetMapping(Route.ADMIN_DEPLOY_PAGE)
     public R<PageData<ProcessDeployPageResp>> deployPage(@Valid ProcessDeployPageReq req) {
-        return clientWrapper.call(ErrorType.QUERY_ERROR, "ProcessDeployClient#page", req,
-                () -> clientWrapper.getClient().getDeploy().page(req));
+        return flowableClient.getDeploy().page(req);
     }
 
     @Operation(summary = "5.部署记录-删除")
     @PostMapping(Route.ADMIN_DEPLOY_REMOVE)
     public R<Integer> deployRemove(@Valid @RequestBody RemoveReq req) {
-        return clientWrapper.call(ErrorType.DEPLOY_ERROR, "ProcessDeployClient#remove", req,
-                () -> clientWrapper.getClient().getDeploy().remove(req));
+        return flowableClient.getDeploy().remove(req);
     }
 }

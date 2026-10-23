@@ -16,6 +16,7 @@ public class NodeUpdateReq {
     private String assigneeValue;
     @Schema(description = "表单字段权限 JSON")
     private String formFields;
+    @NotNull(message = "version 不能为空")
     @Schema(description = "乐观锁版本")
     private Integer version;
 }

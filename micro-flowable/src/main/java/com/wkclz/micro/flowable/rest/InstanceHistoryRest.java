@@ -5,10 +5,9 @@ import com.wkclz.core.base.R;
 import com.wkclz.flowable.client.bean.req.HistoryPageReq;
 import com.wkclz.flowable.client.bean.req.ProcessInstancePageReq;
 import com.wkclz.flowable.client.bean.resp.*;
+import com.wkclz.flowable.client.config.FlowableClient;
 import com.wkclz.micro.flowable.bean.entity.FlowableApply;
-import com.wkclz.micro.flowable.bean.enums.ErrorType;
 import com.wkclz.micro.flowable.service.FlowableApplyService;
-import com.wkclz.micro.flowable.service.FlowableClientWrapper;
 import com.wkclz.web.bean.IdReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,43 +30,38 @@ public class InstanceHistoryRest {
     private static final Logger log = LoggerFactory.getLogger(InstanceHistoryRest.class);
 
     @Autowired
-    private FlowableClientWrapper clientWrapper;
+    private FlowableClient flowableClient;
     @Autowired
     private FlowableApplyService applyService;
 
     @Operation(summary = "1.流程实例-分页查询")
     @GetMapping(Route.INSTANCE_PAGE)
     public R<PageData<ProcessInstancePageResp>> instancePage(@Valid ProcessInstancePageReq req) {
-        return clientWrapper.call(ErrorType.QUERY_ERROR, "ProcessInstanceClient#page", req,
-                () -> clientWrapper.getClient().getInstance().page(req));
+        return flowableClient.getInstance().page(req);
     }
 
     @Operation(summary = "2.流程实例-详情")
     @GetMapping(Route.INSTANCE_INFO)
     public R<ProcessInstanceResp> instanceInfo(@Valid IdReq req) {
-        return clientWrapper.call(ErrorType.QUERY_ERROR, "ProcessInstanceClient#info", req,
-                () -> clientWrapper.getClient().getInstance().info(req));
+        return flowableClient.getInstance().info(req);
     }
 
     @Operation(summary = "3.历史实例-分页查询")
     @GetMapping(Route.HISTORY_INSTANCE_PAGE)
     public R<PageData<HistoryInstancePageResp>> historyInstancePage(@Valid HistoryPageReq req) {
-        return clientWrapper.call(ErrorType.QUERY_ERROR, "HistoryClient#instancePage", req,
-                () -> clientWrapper.getClient().getHistory().instancePage(req));
+        return flowableClient.getHistory().instancePage(req);
     }
 
     @Operation(summary = "4.历史任务-分页查询")
     @GetMapping(Route.HISTORY_TASK_PAGE)
     public R<PageData<HistoryTaskPageResp>> historyTaskPage(@Valid HistoryPageReq req) {
-        return clientWrapper.call(ErrorType.QUERY_ERROR, "HistoryClient#taskPage", req,
-                () -> clientWrapper.getClient().getHistory().taskPage(req));
+        return flowableClient.getHistory().taskPage(req);
     }
 
     @Operation(summary = "5.历史活动-列表")
     @GetMapping(Route.HISTORY_ACTIVITY_LIST)
     public R<List<HistoryActivityResp>> historyActivityList(@Valid IdReq req) {
-        return clientWrapper.call(ErrorType.QUERY_ERROR, "HistoryClient#activityList", req,
-                () -> clientWrapper.getClient().getHistory().activityList(req));
+        return flowableClient.getHistory().activityList(req);
     }
 
     @Operation(summary = "6.流程实例-撤回")
@@ -78,8 +72,7 @@ public class InstanceHistoryRest {
         com.wkclz.flowable.client.bean.req.InstanceWithdrawReq clientReq = new com.wkclz.flowable.client.bean.req.InstanceWithdrawReq();
         clientReq.setProcessInstanceId(req.getProcInsId());
         clientReq.setReason(req.getComment());
-        R<Integer> result = clientWrapper.call(ErrorType.APPROVE_ERROR, "ProcessInstanceClient#withdraw", clientReq,
-                () -> clientWrapper.getClient().getInstance().withdraw(clientReq));
+        R<Integer> result = flowableClient.getInstance().withdraw(clientReq);
         // 更新申请单状态
         FlowableApply applyParam = new FlowableApply();
         applyParam.setProcInsId(req.getProcInsId());

@@ -5,15 +5,14 @@ import com.wkclz.core.base.R;
 import com.wkclz.core.exception.ValidationException;
 import com.wkclz.flowable.client.bean.req.ProcessDeployReq;
 import com.wkclz.flowable.client.bean.resp.ProcessDeployResp;
+import com.wkclz.flowable.client.config.FlowableClient;
 import com.wkclz.micro.flowable.bean.entity.FlowableCategory;
 import com.wkclz.micro.flowable.bean.entity.FlowableNodeConfig;
 import com.wkclz.micro.flowable.bean.entity.FlowableProcessDesign;
 import com.wkclz.micro.flowable.bean.enums.DesignStatus;
-import com.wkclz.micro.flowable.bean.enums.ErrorType;
 import com.wkclz.micro.flowable.bean.req.*;
 import com.wkclz.micro.flowable.bean.resp.*;
 import com.wkclz.micro.flowable.service.FlowableCategoryService;
-import com.wkclz.micro.flowable.service.FlowableClientWrapper;
 import com.wkclz.micro.flowable.service.FlowableNodeConfigService;
 import com.wkclz.micro.flowable.service.FlowableProcessDesignService;
 import com.wkclz.redis.helper.RedisIdGenerator;
@@ -42,7 +41,7 @@ public class ProcessDesignRest {
     @Autowired
     private RedisIdGenerator redisIdGenerator;
     @Autowired
-    private FlowableClientWrapper clientWrapper;
+    private FlowableClient flowableClient;
     @Autowired
     private FlowableCategoryService categoryService;
     @Autowired
@@ -152,12 +151,11 @@ public class ProcessDesignRest {
         }
         ProcessDeployReq deployReq = new ProcessDeployReq();
         deployReq.setName(design.getDesignCode() + ".bpmn20.xml");
-        deployReq.setXmlContent(design.getXmlContent());
+        // process id/name 归一化为设计表设置，保证引擎 definition key/name 与业务数据一致
+        deployReq.setXmlContent(designService.normalizeProcess(design.getXmlContent(), design.getDesignCode(), design.getDesignName()));
         deployReq.setCategory(design.getCategory());
 
-        R<ProcessDeployResp> result = clientWrapper.call(
-                ErrorType.DEPLOY_ERROR, "ProcessDeployClient#deploy", deployReq,
-                () -> clientWrapper.getClient().getDeploy().deploy(deployReq));
+        R<ProcessDeployResp> result = flowableClient.getDeploy().deploy(deployReq);
 
         ProcessDeployResp deployResp = result.getData();
         String procDefId = deployResp.getProcDefId();

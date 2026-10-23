@@ -64,7 +64,11 @@ public class NodeConfigRest {
         if (req.getAssigneeType() != null) { update.setAssigneeType(req.getAssigneeType()); }
         if (req.getAssigneeValue() != null) { update.setAssigneeValue(req.getAssigneeValue()); }
         if (req.getFormFields() != null) { update.setFormFields(req.getFormFields()); }
-        nodeConfigService.updateByIdSelective(update);
-        return R.ok(1);
+        int rows = nodeConfigService.updateByIdSelective(update);
+        if (rows == 0) {
+            log.error("节点配置更新乐观锁冲突: id={}, version={}", req.getId(), req.getVersion());
+            throw ValidationException.of("配置已被他人修改，请刷新后重试");
+        }
+        return R.ok(rows);
     }
 }

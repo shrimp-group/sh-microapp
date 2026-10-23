@@ -7,15 +7,14 @@ import com.wkclz.flowable.client.bean.req.TaskCompleteReq;
 import com.wkclz.flowable.client.bean.req.TaskPageReq;
 import com.wkclz.flowable.client.bean.resp.TaskPageResp;
 import com.wkclz.flowable.client.bean.resp.TaskResp;
+import com.wkclz.flowable.client.config.FlowableClient;
 import com.wkclz.micro.flowable.bean.entity.FlowableApply;
 import com.wkclz.micro.flowable.bean.entity.FlowableApproval;
 import com.wkclz.micro.flowable.bean.enums.ApprovalAction;
-import com.wkclz.micro.flowable.bean.enums.ErrorType;
 import com.wkclz.micro.flowable.bean.req.ApprovalListReq;
 import com.wkclz.micro.flowable.bean.resp.ApprovalResp;
 import com.wkclz.micro.flowable.service.FlowableApplyService;
 import com.wkclz.micro.flowable.service.FlowableApprovalService;
-import com.wkclz.micro.flowable.service.FlowableClientWrapper;
 import com.wkclz.tool.utils.BeanUtil;
 import com.wkclz.web.bean.IdReq;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,7 +38,7 @@ public class FlowableTaskRest {
     private static final Logger log = LoggerFactory.getLogger(FlowableTaskRest.class);
 
     @Autowired
-    private FlowableClientWrapper clientWrapper;
+    private FlowableClient flowableClient;
     @Autowired
     private FlowableApprovalService approvalService;
     @Autowired
@@ -48,22 +47,19 @@ public class FlowableTaskRest {
     @Operation(summary = "1.任务审批-待办分页查询")
     @GetMapping(Route.TASK_TODO_PAGE)
     public R<PageData<TaskPageResp>> todoPage(@Valid TaskPageReq req) {
-        return clientWrapper.call(ErrorType.QUERY_ERROR, "TaskClient#todoPage", req,
-                () -> clientWrapper.getClient().getTask().todoPage(req));
+        return flowableClient.getTask().todoPage(req);
     }
 
     @Operation(summary = "2.任务审批-已办分页查询")
     @GetMapping(Route.TASK_DONE_PAGE)
     public R<PageData<TaskPageResp>> donePage(@Valid TaskPageReq req) {
-        return clientWrapper.call(ErrorType.QUERY_ERROR, "TaskClient#donePage", req,
-                () -> clientWrapper.getClient().getTask().donePage(req));
+        return flowableClient.getTask().donePage(req);
     }
 
     @Operation(summary = "3.任务审批-详情")
     @GetMapping(Route.TASK_INFO)
     public R<TaskResp> taskInfo(@Valid IdReq req) {
-        return clientWrapper.call(ErrorType.QUERY_ERROR, "TaskClient#info", req,
-                () -> clientWrapper.getClient().getTask().info(req));
+        return flowableClient.getTask().info(req);
     }
 
     @Operation(summary = "4.任务审批-通过", description = "完成任务（审批通过）")
@@ -71,8 +67,7 @@ public class FlowableTaskRest {
     @Transactional(rollbackFor = Exception.class)
     public R<Integer> complete(@Valid @RequestBody TaskCompleteReq req) {
         log.info("完成任务: taskId={}", req.getTaskId());
-        R<Integer> result = clientWrapper.call(ErrorType.APPROVE_ERROR, "TaskClient#complete", req,
-                () -> clientWrapper.getClient().getTask().complete(req));
+        R<Integer> result = flowableClient.getTask().complete(req);
         recordApproval(req.getTaskId(), null, ApprovalAction.APPROVE, req.getComment(), null);
         return result;
     }
@@ -82,8 +77,7 @@ public class FlowableTaskRest {
     @Transactional(rollbackFor = Exception.class)
     public R<Integer> claim(@Valid @RequestBody IdReq req) {
         log.info("认领任务: taskId={}", req.getId());
-        R<Integer> result = clientWrapper.call(ErrorType.APPROVE_ERROR, "TaskClient#claim", req,
-                () -> clientWrapper.getClient().getTask().claim(req));
+        R<Integer> result = flowableClient.getTask().claim(req);
         recordApproval(String.valueOf(req.getId()), null, ApprovalAction.CLAIM, null, null);
         return result;
     }
@@ -92,8 +86,7 @@ public class FlowableTaskRest {
     @PostMapping(Route.TASK_UNCLAIM)
     public R<Integer> unclaim(@Valid @RequestBody IdReq req) {
         log.info("取消认领: taskId={}", req.getId());
-        return clientWrapper.call(ErrorType.APPROVE_ERROR, "TaskClient#unclaim", req,
-                () -> clientWrapper.getClient().getTask().unclaim(req));
+        return flowableClient.getTask().unclaim(req);
     }
 
     @Operation(summary = "7.任务审批-意见时间线")
@@ -115,8 +108,7 @@ public class FlowableTaskRest {
         clientReq.setTaskId(req.getTaskId());
         clientReq.setComment(req.getComment());
         clientReq.setTargetNodeKey(req.getTargetNodeKey());
-        R<Integer> result = clientWrapper.call(ErrorType.APPROVE_ERROR, "TaskClient#reject", clientReq,
-                () -> clientWrapper.getClient().getTask().reject(clientReq));
+        R<Integer> result = flowableClient.getTask().reject(clientReq);
         recordApproval(req.getTaskId(), null, ApprovalAction.REJECT, req.getComment(), null);
         return result;
     }
@@ -130,8 +122,7 @@ public class FlowableTaskRest {
         clientReq.setTaskId(req.getTaskId());
         clientReq.setTargetUserId(req.getTargetUserId());
         clientReq.setComment(req.getComment());
-        R<Integer> result = clientWrapper.call(ErrorType.APPROVE_ERROR, "TaskClient#transfer", clientReq,
-                () -> clientWrapper.getClient().getTask().transfer(clientReq));
+        R<Integer> result = flowableClient.getTask().transfer(clientReq);
         recordApproval(req.getTaskId(), null, ApprovalAction.TRANSFER, req.getComment(), req.getTargetUserId());
         return result;
     }
@@ -145,8 +136,7 @@ public class FlowableTaskRest {
         clientReq.setTaskId(req.getTaskId());
         clientReq.setTargetUserId(req.getTargetUserId());
         clientReq.setComment(req.getComment());
-        R<Integer> result = clientWrapper.call(ErrorType.APPROVE_ERROR, "TaskClient#delegate", clientReq,
-                () -> clientWrapper.getClient().getTask().delegate(clientReq));
+        R<Integer> result = flowableClient.getTask().delegate(clientReq);
         recordApproval(req.getTaskId(), null, ApprovalAction.DELEGATE, req.getComment(), req.getTargetUserId());
         return result;
     }
