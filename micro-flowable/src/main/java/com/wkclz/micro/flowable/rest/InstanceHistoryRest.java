@@ -2,12 +2,16 @@ package com.wkclz.micro.flowable.rest;
 
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.base.R;
+import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.flowable.client.bean.req.HistoryPageReq;
 import com.wkclz.flowable.client.bean.req.ProcessInstancePageReq;
 import com.wkclz.flowable.client.bean.resp.*;
 import com.wkclz.flowable.client.config.FlowableClient;
 import com.wkclz.micro.flowable.bean.entity.FlowableApply;
+import com.wkclz.micro.flowable.bean.entity.FlowableApproval;
+import com.wkclz.micro.flowable.bean.enums.ApprovalAction;
 import com.wkclz.micro.flowable.service.FlowableApplyService;
+import com.wkclz.micro.flowable.service.FlowableApprovalService;
 import com.wkclz.web.bean.IdReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,6 +37,8 @@ public class InstanceHistoryRest {
     private FlowableClient flowableClient;
     @Autowired
     private FlowableApplyService applyService;
+    @Autowired
+    private FlowableApprovalService approvalService;
 
     @Operation(summary = "1.流程实例-分页查询")
     @GetMapping(Route.INSTANCE_PAGE)
@@ -83,6 +89,20 @@ public class InstanceHistoryRest {
             updateApply.setStatus("WITHDRAWN");
             updateApply.setVersion(apply.getVersion());
             applyService.updateByIdSelective(updateApply);
+        }
+        // 补写撤回审批意见
+        try {
+            FlowableApproval approval = new FlowableApproval();
+            approval.setProcInsId(req.getProcInsId());
+            approval.setApproverId(IdentityContext.getUserCode());
+            approval.setAction(ApprovalAction.WITHDRAW.name());
+            approval.setComment(req.getComment());
+            if (apply != null) {
+                approval.setApplyId(apply.getId());
+            }
+            approvalService.insert(approval);
+        } catch (Exception e) {
+            log.error("记录撤回意见失败: procInsId={}", req.getProcInsId(), e);
         }
         return result;
     }
