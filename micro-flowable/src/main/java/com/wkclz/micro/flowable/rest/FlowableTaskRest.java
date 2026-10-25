@@ -4,6 +4,7 @@ import com.wkclz.core.base.PageData;
 import com.wkclz.core.base.R;
 import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.flowable.client.bean.req.TaskCompleteReq;
+import com.wkclz.flowable.client.bean.req.TaskIdReq;
 import com.wkclz.flowable.client.bean.req.TaskPageReq;
 import com.wkclz.flowable.client.bean.resp.TaskPageResp;
 import com.wkclz.flowable.client.bean.resp.TaskResp;
@@ -16,7 +17,6 @@ import com.wkclz.micro.flowable.bean.resp.ApprovalResp;
 import com.wkclz.micro.flowable.service.FlowableApplyService;
 import com.wkclz.micro.flowable.service.FlowableApprovalService;
 import com.wkclz.tool.utils.BeanUtil;
-import com.wkclz.web.bean.IdReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -53,12 +53,14 @@ public class FlowableTaskRest {
     @Operation(summary = "2.任务审批-已办分页查询")
     @GetMapping(Route.TASK_DONE_PAGE)
     public R<PageData<TaskPageResp>> donePage(@Valid TaskPageReq req) {
+        // 已办固定按当前用户过滤
+        req.setAssignee(IdentityContext.getUserCode());
         return flowableClient.getTask().donePage(req);
     }
 
     @Operation(summary = "3.任务审批-详情")
     @GetMapping(Route.TASK_INFO)
-    public R<TaskResp> taskInfo(@Valid IdReq req) {
+    public R<TaskResp> taskInfo(@Valid TaskIdReq req) {
         return flowableClient.getTask().info(req);
     }
 
@@ -75,17 +77,17 @@ public class FlowableTaskRest {
     @Operation(summary = "5.任务审批-认领")
     @PostMapping(Route.TASK_CLAIM)
     @Transactional(rollbackFor = Exception.class)
-    public R<Integer> claim(@Valid @RequestBody IdReq req) {
-        log.info("认领任务: taskId={}", req.getId());
+    public R<Integer> claim(@Valid @RequestBody TaskIdReq req) {
+        log.info("认领任务: taskId={}", req.getTaskId());
         R<Integer> result = flowableClient.getTask().claim(req);
-        recordApproval(String.valueOf(req.getId()), null, ApprovalAction.CLAIM, null, null);
+        recordApproval(req.getTaskId(), null, ApprovalAction.CLAIM, null, null);
         return result;
     }
 
     @Operation(summary = "6.任务审批-取消认领")
     @PostMapping(Route.TASK_UNCLAIM)
-    public R<Integer> unclaim(@Valid @RequestBody IdReq req) {
-        log.info("取消认领: taskId={}", req.getId());
+    public R<Integer> unclaim(@Valid @RequestBody TaskIdReq req) {
+        log.info("取消认领: taskId={}", req.getTaskId());
         return flowableClient.getTask().unclaim(req);
     }
 

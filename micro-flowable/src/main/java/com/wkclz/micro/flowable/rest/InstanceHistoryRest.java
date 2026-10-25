@@ -4,6 +4,7 @@ import com.wkclz.core.base.PageData;
 import com.wkclz.core.base.R;
 import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.flowable.client.bean.req.HistoryPageReq;
+import com.wkclz.flowable.client.bean.req.InstanceIdReq;
 import com.wkclz.flowable.client.bean.req.ProcessInstancePageReq;
 import com.wkclz.flowable.client.bean.resp.*;
 import com.wkclz.flowable.client.config.FlowableClient;
@@ -66,7 +67,7 @@ public class InstanceHistoryRest {
 
     @Operation(summary = "5.历史活动-列表")
     @GetMapping(Route.HISTORY_ACTIVITY_LIST)
-    public R<List<HistoryActivityResp>> historyActivityList(@Valid IdReq req) {
+    public R<List<HistoryActivityResp>> historyActivityList(@Valid InstanceIdReq req) {
         return flowableClient.getHistory().activityList(req);
     }
 
