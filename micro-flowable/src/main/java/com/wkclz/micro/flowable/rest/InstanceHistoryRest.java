@@ -44,7 +44,10 @@ public class InstanceHistoryRest {
     @Operation(summary = "1.流程实例-分页查询")
     @GetMapping(Route.INSTANCE_PAGE)
     public R<PageData<ProcessInstancePageResp>> instancePage(@Valid ProcessInstancePageReq req) {
-        return flowableClient.getInstance().page(req);
+        R<PageData<ProcessInstancePageResp>> result = flowableClient.getInstance().page(req);
+        fillApplyInfo(result.getData(), ProcessInstancePageResp::getBusinessKey,
+                (r, a) -> { r.setBusinessType(a.getBusinessType()); r.setBusinessSummary(a.getBusinessSummary()); });
+        return result;
     }
 
     @Operation(summary = "2.流程实例-详情")
@@ -56,7 +59,10 @@ public class InstanceHistoryRest {
     @Operation(summary = "3.历史实例-分页查询")
     @GetMapping(Route.HISTORY_INSTANCE_PAGE)
     public R<PageData<HistoryInstancePageResp>> historyInstancePage(@Valid HistoryPageReq req) {
-        return flowableClient.getHistory().instancePage(req);
+        R<PageData<HistoryInstancePageResp>> result = flowableClient.getHistory().instancePage(req);
+        fillApplyInfo(result.getData(), HistoryInstancePageResp::getBusinessKey,
+                (r, a) -> { r.setBusinessType(a.getBusinessType()); r.setBusinessSummary(a.getBusinessSummary()); });
+        return result;
     }
 
     @Operation(summary = "4.历史任务-分页查询")
@@ -69,6 +75,28 @@ public class InstanceHistoryRest {
     @GetMapping(Route.HISTORY_ACTIVITY_LIST)
     public R<List<HistoryActivityResp>> historyActivityList(@Valid InstanceIdReq req) {
         return flowableClient.getHistory().activityList(req);
+    }
+
+    /**
+     * 按申请单号（businessKey）反查申请单，回填业务类型与摘要
+     */
+    private <T> void fillApplyInfo(PageData<T> page, java.util.function.Function<T, String> businessKeyGetter,
+                                   java.util.function.BiConsumer<T, FlowableApply> applySetter) {
+        if (page == null || page.getRecords() == null) {
+            return;
+        }
+        for (T row : page.getRecords()) {
+            String applyCode = businessKeyGetter.apply(row);
+            if (applyCode == null || applyCode.isEmpty()) {
+                continue;
+            }
+            FlowableApply param = new FlowableApply();
+            param.setApplyCode(applyCode);
+            FlowableApply apply = applyService.selectOneByEntity(param);
+            if (apply != null) {
+                applySetter.accept(row, apply);
+            }
+        }
     }
 
     @Operation(summary = "6.流程实例-撤回")

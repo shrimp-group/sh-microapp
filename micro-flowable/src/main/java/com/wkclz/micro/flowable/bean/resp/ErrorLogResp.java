@@ -31,4 +31,10 @@ public class ErrorLogResp extends EntityResp {
     private LocalDateTime occurTime;
     @Schema(description = "处理状态")
     private String handleStatus;
+    @Schema(description = "业务类型（反查回填）")
+    private String businessType;
+    @Schema(description = "申请摘要（反查回填）")
+    private String businessSummary;
+    @Schema(description = "流程编码（反查回填）")
+    private String designCode;
 }

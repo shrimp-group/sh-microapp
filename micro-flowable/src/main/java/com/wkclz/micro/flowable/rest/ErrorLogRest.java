@@ -7,6 +7,8 @@ import com.wkclz.micro.flowable.bean.entity.FlowableErrorLog;
 import com.wkclz.micro.flowable.bean.req.ErrorHandleReq;
 import com.wkclz.micro.flowable.bean.req.ErrorPageReq;
 import com.wkclz.micro.flowable.bean.resp.ErrorLogResp;
+import com.wkclz.micro.flowable.bean.entity.FlowableApply;
+import com.wkclz.micro.flowable.service.FlowableApplyService;
 import com.wkclz.micro.flowable.service.FlowableErrorLogService;
 import com.wkclz.tool.utils.BeanUtil;
 import com.wkclz.web.bean.IdReq;
@@ -29,13 +31,29 @@ public class ErrorLogRest {
 
     @Autowired
     private FlowableErrorLogService errorLogService;
+    @Autowired
+    private FlowableApplyService applyService;
 
     @Operation(summary = "1.异常日志-分页查询")
     @GetMapping(Route.ERROR_PAGE)
     public R<PageData<ErrorLogResp>> page(@Valid ErrorPageReq req) {
         FlowableErrorLog entity = BeanUtil.cp(req, FlowableErrorLog.class);
         PageData<FlowableErrorLog> page = errorLogService.getErrorLogPage(entity);
-        return R.ok(page.convert(ErrorLogResp.class));
+        PageData<ErrorLogResp> respPage = page.convert(ErrorLogResp.class);
+        if (respPage.getRecords() != null) {
+            for (ErrorLogResp row : respPage.getRecords()) {
+                if (row.getApplyId() == null) {
+                    continue;
+                }
+                FlowableApply apply = applyService.selectById(row.getApplyId());
+                if (apply != null) {
+                    row.setBusinessType(apply.getBusinessType());
+                    row.setBusinessSummary(apply.getBusinessSummary());
+                    row.setDesignCode(apply.getDesignCode());
+                }
+            }
+        }
+        return R.ok(respPage);
     }
 
     @Operation(summary = "2.异常日志-详情")

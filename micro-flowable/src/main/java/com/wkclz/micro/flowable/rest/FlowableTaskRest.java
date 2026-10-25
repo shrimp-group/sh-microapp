@@ -47,7 +47,10 @@ public class FlowableTaskRest {
     @Operation(summary = "1.任务审批-待办分页查询")
     @GetMapping(Route.TASK_TODO_PAGE)
     public R<PageData<TaskPageResp>> todoPage(@Valid TaskPageReq req) {
-        return flowableClient.getTask().todoPage(req);
+        R<PageData<TaskPageResp>> result = flowableClient.getTask().todoPage(req);
+        fillApplyInfo(result.getData(), TaskPageResp::getBusinessKey,
+                (r, a) -> { r.setBusinessType(a.getBusinessType()); r.setBusinessSummary(a.getBusinessSummary()); });
+        return result;
     }
 
     @Operation(summary = "2.任务审批-已办分页查询")
@@ -55,7 +58,10 @@ public class FlowableTaskRest {
     public R<PageData<TaskPageResp>> donePage(@Valid TaskPageReq req) {
         // 已办固定按当前用户过滤
         req.setAssignee(IdentityContext.getUserCode());
-        return flowableClient.getTask().donePage(req);
+        R<PageData<TaskPageResp>> result = flowableClient.getTask().donePage(req);
+        fillApplyInfo(result.getData(), TaskPageResp::getBusinessKey,
+                (r, a) -> { r.setBusinessType(a.getBusinessType()); r.setBusinessSummary(a.getBusinessSummary()); });
+        return result;
     }
 
     @Operation(summary = "3.任务审批-详情")
@@ -141,6 +147,28 @@ public class FlowableTaskRest {
         R<Integer> result = flowableClient.getTask().delegate(clientReq);
         recordApproval(req.getTaskId(), null, ApprovalAction.DELEGATE, req.getComment(), req.getTargetUserId());
         return result;
+    }
+
+    /**
+     * 按申请单号（businessKey）反查申请单，回填业务类型与摘要
+     */
+    private <T> void fillApplyInfo(PageData<T> page, java.util.function.Function<T, String> businessKeyGetter,
+                                   java.util.function.BiConsumer<T, FlowableApply> applySetter) {
+        if (page == null || page.getRecords() == null) {
+            return;
+        }
+        for (T row : page.getRecords()) {
+            String applyCode = businessKeyGetter.apply(row);
+            if (applyCode == null || applyCode.isEmpty()) {
+                continue;
+            }
+            FlowableApply param = new FlowableApply();
+            param.setApplyCode(applyCode);
+            FlowableApply apply = applyService.selectOneByEntity(param);
+            if (apply != null) {
+                applySetter.accept(row, apply);
+            }
+        }
     }
 
     /**
