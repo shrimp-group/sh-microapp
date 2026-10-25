@@ -7,6 +7,9 @@
             resultType="com.wkclz.micro.flowable.bean.entity.FlowableApply">
         SELECT * FROM flowable_apply
         WHERE deleted = 0
+        <if test="applyCode != null and applyCode != ''">
+            AND apply_code = #{applyCode}
+        </if>
         <if test="designCode != null and designCode != ''">
             AND design_code = #{designCode}
         </if>

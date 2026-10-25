@@ -9,6 +9,8 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Schema(description = "申请单分页查询")
 public class ApplyPageReq extends PageReq {
+    @Schema(description = "申请单号")
+    private String applyCode;
     @Schema(description = "业务类型")
     private String businessType;
     @Schema(description = "状态")
