@@ -105,7 +105,7 @@ public class FlowableNodeConfigService extends BaseService<FlowableNodeConfig, F
         deleteByIds(delParam);
     }
 
-    private List<FlowableNodeConfig> selectByDesignCode(String designCode) {
+    public List<FlowableNodeConfig> selectByDesignCode(String designCode) {
         FlowableNodeConfig param = new FlowableNodeConfig();
         param.setDesignCode(designCode);
         return selectByEntity(param);

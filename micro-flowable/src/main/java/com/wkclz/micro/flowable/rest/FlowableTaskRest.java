@@ -11,11 +11,13 @@ import com.wkclz.flowable.client.bean.resp.TaskResp;
 import com.wkclz.flowable.client.config.FlowableClient;
 import com.wkclz.micro.flowable.bean.entity.FlowableApply;
 import com.wkclz.micro.flowable.bean.entity.FlowableApproval;
+import com.wkclz.micro.flowable.bean.entity.FlowableNodeConfig;
 import com.wkclz.micro.flowable.bean.enums.ApprovalAction;
 import com.wkclz.micro.flowable.bean.req.ApprovalListReq;
 import com.wkclz.micro.flowable.bean.resp.ApprovalResp;
 import com.wkclz.micro.flowable.service.FlowableApplyService;
 import com.wkclz.micro.flowable.service.FlowableApprovalService;
+import com.wkclz.micro.flowable.service.FlowableNodeConfigService;
 import com.wkclz.tool.utils.BeanUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,7 +29,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Tag(name = "5.业务端-任务审批", description = "待办/已办/审批流转/审批意见")
 @RestController
@@ -43,13 +47,17 @@ public class FlowableTaskRest {
     private FlowableApprovalService approvalService;
     @Autowired
     private FlowableApplyService applyService;
+    @Autowired
+    private FlowableNodeConfigService nodeConfigService;
 
     @Operation(summary = "1.任务审批-待办分页查询")
     @GetMapping(Route.TASK_TODO_PAGE)
     public R<PageData<TaskPageResp>> todoPage(@Valid TaskPageReq req) {
         R<PageData<TaskPageResp>> result = flowableClient.getTask().todoPage(req);
-        fillApplyInfo(result.getData(), TaskPageResp::getBusinessKey,
-                (r, a) -> { r.setBusinessType(a.getBusinessType()); r.setBusinessSummary(a.getBusinessSummary()); });
+        fillTaskInfo(result.getData(), TaskPageResp::getBusinessKey, TaskPageResp::getTaskDefinitionKey,
+                TaskPageResp::getAssignee,
+                (r, a) -> { r.setBusinessType(a.getBusinessType()); r.setBusinessSummary(a.getBusinessSummary()); },
+                (r, text) -> r.setAssigneeText(text));
         return result;
     }
 
@@ -59,8 +67,10 @@ public class FlowableTaskRest {
         // 已办固定按当前用户过滤
         req.setAssignee(IdentityContext.getUserCode());
         R<PageData<TaskPageResp>> result = flowableClient.getTask().donePage(req);
-        fillApplyInfo(result.getData(), TaskPageResp::getBusinessKey,
-                (r, a) -> { r.setBusinessType(a.getBusinessType()); r.setBusinessSummary(a.getBusinessSummary()); });
+        fillTaskInfo(result.getData(), TaskPageResp::getBusinessKey, TaskPageResp::getTaskDefinitionKey,
+                TaskPageResp::getAssignee,
+                (r, a) -> { r.setBusinessType(a.getBusinessType()); r.setBusinessSummary(a.getBusinessSummary()); },
+                (r, text) -> r.setAssigneeText(text));
         return result;
     }
 
@@ -150,13 +160,18 @@ public class FlowableTaskRest {
     }
 
     /**
-     * 按申请单号（businessKey）反查申请单，回填业务类型与摘要
+     * 回填任务行业务信息：按申请单号（businessKey）反查申请单回填业务类型/摘要，
+     * 并按审批人类型计算处理人展示文本（引擎受理人优先）
      */
-    private <T> void fillApplyInfo(PageData<T> page, java.util.function.Function<T, String> businessKeyGetter,
-                                   java.util.function.BiConsumer<T, FlowableApply> applySetter) {
+    private <T> void fillTaskInfo(PageData<T> page, java.util.function.Function<T, String> businessKeyGetter,
+                                  java.util.function.Function<T, String> taskDefinitionKeyGetter,
+                                  java.util.function.Function<T, String> assigneeGetter,
+                                  java.util.function.BiConsumer<T, FlowableApply> applySetter,
+                                  java.util.function.BiConsumer<T, String> assigneeTextSetter) {
         if (page == null || page.getRecords() == null) {
             return;
         }
+        Map<String, List<FlowableNodeConfig>> nodeCache = new HashMap<>();
         for (T row : page.getRecords()) {
             String applyCode = businessKeyGetter.apply(row);
             if (applyCode == null || applyCode.isEmpty()) {
@@ -165,9 +180,40 @@ public class FlowableTaskRest {
             FlowableApply param = new FlowableApply();
             param.setApplyCode(applyCode);
             FlowableApply apply = applyService.selectOneByEntity(param);
-            if (apply != null) {
-                applySetter.accept(row, apply);
+            if (apply == null) {
+                continue;
             }
+            applySetter.accept(row, apply);
+            assigneeTextSetter.accept(row, calcAssigneeText(apply, taskDefinitionKeyGetter.apply(row), assigneeGetter.apply(row), nodeCache));
+        }
+    }
+
+    /**
+     * 按审批人类型计算处理人展示文本：引擎受理人优先；USER/ROLE/DEPT 取配置值，STARTER 取发起人，其余 '-'
+     */
+    private String calcAssigneeText(FlowableApply apply, String nodeKey, String assignee, Map<String, List<FlowableNodeConfig>> nodeCache) {
+        if (assignee != null && !assignee.isEmpty()) {
+            return assignee;
+        }
+        if (nodeKey == null || nodeKey.isEmpty()) {
+            return "-";
+        }
+        List<FlowableNodeConfig> nodes = nodeCache.computeIfAbsent(apply.getDesignCode(),
+                dc -> nodeConfigService.selectByDesignCode(dc));
+        FlowableNodeConfig node = nodes.stream()
+                .filter(n -> nodeKey.equals(n.getNodeKey())).findFirst().orElse(null);
+        if (node == null || node.getAssigneeType() == null || node.getAssigneeType().isEmpty()) {
+            return "-";
+        }
+        switch (node.getAssigneeType()) {
+            case "USER":
+            case "ROLE":
+            case "DEPT":
+                return node.getAssigneeValue() != null && !node.getAssigneeValue().isEmpty() ? node.getAssigneeValue() : "-";
+            case "STARTER":
+                return apply.getStartUserId() != null ? apply.getStartUserId() : "-";
+            default:
+                return "-";
         }
     }
 
