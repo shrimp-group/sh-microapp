@@ -5,35 +5,33 @@
     <select id="getCategoryPage"
             parameterType="com.wkclz.micro.flowable.bean.entity.FlowableCategory"
             resultType="com.wkclz.micro.flowable.bean.entity.FlowableCategory">
-        SELECT * FROM flowable_category
-        WHERE deleted = 0
-        <if test="categoryCode != null and categoryCode != ''">
-            AND category_code LIKE CONCAT('%', #{categoryCode}, '%')
-        </if>
-        <if test="categoryName != null and categoryName != ''">
-            AND category_name LIKE CONCAT('%', #{categoryName}, '%')
-        </if>
-        <if test="status != null">
-            AND status = #{status}
-        </if>
-        <if test="tenantCode != null and tenantCode != ''">
-            AND tenant_code = #{tenantCode}
-        </if>
-        ORDER BY sort, id DESC
+        SELECT
+            *
+        FROM
+            flowable_category
+        WHERE
+            deleted = 0
+            <if test="categoryCode != null"> AND category_code LIKE CONCAT('%', #{categoryCode}, '%') </if>
+            <if test="categoryName != null"> AND category_name LIKE CONCAT('%', #{categoryName}, '%') </if>
+            <if test="status != null"> AND status = #{status} </if>
+            <if test="tenantCode != null"> AND tenant_code = #{tenantCode} </if>
+        ORDER BY
+            sort, id DESC
     </select>
 
     <select id="getCategoryList"
             parameterType="com.wkclz.micro.flowable.bean.entity.FlowableCategory"
             resultType="com.wkclz.micro.flowable.bean.entity.FlowableCategory">
-        SELECT * FROM flowable_category
-        WHERE deleted = 0
-        <if test="status != null">
-            AND status = #{status}
-        </if>
-        <if test="tenantCode != null and tenantCode != ''">
-            AND tenant_code = #{tenantCode}
-        </if>
-        ORDER BY sort, id ASC
+        SELECT
+            *
+        FROM
+            flowable_category
+        WHERE
+            deleted = 0
+            <if test="status != null"> AND status = #{status} </if>
+            <if test="tenantCode != null"> AND tenant_code = #{tenantCode} </if>
+        ORDER BY
+            sort, id ASC
     </select>
 
 </mapper>

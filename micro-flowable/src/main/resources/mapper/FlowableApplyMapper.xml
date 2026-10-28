@@ -5,27 +5,20 @@
     <select id="getApplyPage"
             parameterType="com.wkclz.micro.flowable.bean.entity.FlowableApply"
             resultType="com.wkclz.micro.flowable.bean.entity.FlowableApply">
-        SELECT * FROM flowable_apply
-        WHERE deleted = 0
-        <if test="applyCode != null and applyCode != ''">
-            AND apply_code = #{applyCode}
-        </if>
-        <if test="designCode != null and designCode != ''">
-            AND design_code = #{designCode}
-        </if>
-        <if test="businessType != null and businessType != ''">
-            AND business_type = #{businessType}
-        </if>
-        <if test="status != null and status != ''">
-            AND status = #{status}
-        </if>
-        <if test="startUserId != null and startUserId != ''">
-            AND start_user_id = #{startUserId}
-        </if>
-        <if test="tenantCode != null and tenantCode != ''">
-            AND tenant_code = #{tenantCode}
-        </if>
-        ORDER BY id DESC
+        SELECT
+            *
+        FROM
+            flowable_apply
+        WHERE
+            deleted = 0
+            <if test="applyCode != null"> AND apply_code = #{applyCode} </if>
+            <if test="designCode != null"> AND design_code = #{designCode} </if>
+            <if test="businessType != null"> AND business_type = #{businessType} </if>
+            <if test="status != null"> AND status = #{status} </if>
+            <if test="startUserId != null"> AND start_user_id = #{startUserId} </if>
+            <if test="tenantCode != null"> AND tenant_code = #{tenantCode} </if>
+        ORDER BY
+            id DESC
     </select>
 
 </mapper>

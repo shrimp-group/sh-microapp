@@ -1,4 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.wkclz.micro.flowable.mapper.FlowableNodeConfigMapper">
+
+    <select id="getNodeConfigList"
+            parameterType="com.wkclz.micro.flowable.bean.entity.FlowableNodeConfig"
+            resultType="com.wkclz.micro.flowable.bean.entity.FlowableNodeConfig">
+        SELECT
+            *
+        FROM
+            flowable_node_config
+        WHERE
+            deleted = 0
+            <if test="designCode != null"> AND design_code = #{designCode} </if>
+            <if test="tenantCode != null"> AND tenant_code = #{tenantCode} </if>
+        ORDER BY
+            sort ASC, id ASC
+    </select>
+
 </mapper>

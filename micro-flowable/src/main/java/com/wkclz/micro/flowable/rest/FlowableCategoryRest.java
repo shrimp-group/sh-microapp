@@ -11,11 +11,13 @@ import com.wkclz.micro.flowable.bean.req.CategoryUpdateReq;
 import com.wkclz.micro.flowable.bean.resp.CategoryResp;
 import com.wkclz.micro.flowable.service.FlowableCategoryService;
 import com.wkclz.micro.flowable.service.FlowableProcessDesignService;
+import com.wkclz.redis.helper.RedisIdGenerator;
 import com.wkclz.tool.utils.BeanUtil;
 import com.wkclz.web.bean.RemoveReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,11 @@ public class FlowableCategoryRest {
 
     private static final Logger log = LoggerFactory.getLogger(FlowableCategoryRest.class);
 
+    /** 默认分类编码，不可删除 */
+    private static final String DEFAULT_CATEGORY_CODE = "default";
+
+    @Autowired
+    private RedisIdGenerator redisIdGenerator;
     @Autowired
     private FlowableCategoryService categoryService;
     @Autowired
@@ -56,19 +63,26 @@ public class FlowableCategoryRest {
         return R.ok(BeanUtil.cp(list, CategoryResp.class));
     }
 
-    @Operation(summary = "3.分类-创建")
+    @Operation(summary = "3.分类-创建", description = "分类编码为空则自动生成")
     @PostMapping(Route.ADMIN_CATEGORY_CREATE)
     public R<CategoryResp> create(@Valid @RequestBody CategoryCreateReq req) {
         log.info("创建流程分类: categoryCode={}, categoryName={}", req.getCategoryCode(), req.getCategoryName());
+        // 分类编码留空自动生成
+        String categoryCode = req.getCategoryCode();
+        if (StringUtils.isBlank(categoryCode)) {
+            categoryCode = redisIdGenerator.generateIdWithPrefix("flow_cat_");
+            log.info("分类编码自动生成: categoryCode={}", categoryCode);
+        }
         FlowableCategory query = new FlowableCategory();
-        query.setCategoryCode(req.getCategoryCode());
+        query.setCategoryCode(categoryCode);
         if (!categoryService.selectByEntity(query).isEmpty()) {
-            throw ValidationException.of("分类编码已存在: " + req.getCategoryCode());
+            throw ValidationException.of("分类编码已存在: " + categoryCode);
         }
         FlowableCategory category = BeanUtil.cp(req, FlowableCategory.class);
+        category.setCategoryCode(categoryCode);
         category.setStatus(1);
         categoryService.insert(category);
-        log.info("创建流程分类成功: id={}", category.getId());
+        log.info("创建流程分类成功: id={}, categoryCode={}", category.getId(), category.getCategoryCode());
         return R.ok(BeanUtil.cp(category, CategoryResp.class));
     }
 
@@ -90,13 +104,16 @@ public class FlowableCategoryRest {
         return R.ok(categoryService.updateByIdSelective(update));
     }
 
-    @Operation(summary = "5.分类-删除", description = "被流程设计引用的分类不允许删除")
+    @Operation(summary = "5.分类-删除", description = "默认分类与被流程设计引用的分类不允许删除")
     @PostMapping(Route.ADMIN_CATEGORY_REMOVE)
     public R<Integer> remove(@Valid @RequestBody RemoveReq req) {
         log.info("删除流程分类: id={}", req.getId());
         FlowableCategory category = categoryService.selectById(req.getId());
         if (category == null) {
             throw ValidationException.of("分类不存在");
+        }
+        if (DEFAULT_CATEGORY_CODE.equals(category.getCategoryCode())) {
+            throw ValidationException.of("默认分类不允许删除");
         }
         FlowableProcessDesign ref = new FlowableProcessDesign();
         ref.setCategory(category.getCategoryCode());

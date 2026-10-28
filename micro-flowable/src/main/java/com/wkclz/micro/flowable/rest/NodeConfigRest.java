@@ -34,9 +34,10 @@ public class NodeConfigRest {
     @Operation(summary = "1.节点配置-列表")
     @GetMapping(Route.ADMIN_NODE_LIST)
     public R<List<NodeConfigResp>> list(@Valid NodeListReq req) {
+        log.info("查询节点配置列表: designCode={}", req.getDesignCode());
         FlowableNodeConfig param = new FlowableNodeConfig();
         param.setDesignCode(req.getDesignCode());
-        List<FlowableNodeConfig> nodes = nodeConfigService.selectByEntity(param);
+        List<FlowableNodeConfig> nodes = nodeConfigService.getNodeConfigList(param);
         return R.ok(BeanUtil.cp(nodes, NodeConfigResp.class));
     }
 

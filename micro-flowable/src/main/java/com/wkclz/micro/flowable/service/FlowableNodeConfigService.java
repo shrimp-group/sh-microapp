@@ -111,6 +111,11 @@ public class FlowableNodeConfigService extends BaseService<FlowableNodeConfig, F
         return selectByEntity(param);
     }
 
+    /** 自定义 SQL：按 sort, id 升序 */
+    public List<FlowableNodeConfig> getNodeConfigList(FlowableNodeConfig entity) {
+        return mapper.getNodeConfigList(entity);
+    }
+
     private List<FlowableNodeConfig> parseNodes(String xmlContent) {
         org.flowable.bpmn.model.BpmnModel model = new org.flowable.bpmn.converter.BpmnXMLConverter()
                 .convertToBpmnModel(

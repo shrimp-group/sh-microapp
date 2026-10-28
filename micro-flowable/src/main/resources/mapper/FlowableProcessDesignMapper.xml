@@ -10,23 +10,16 @@
             c.category_name
         FROM
             flowable_process_design d
-            LEFT JOIN flowable_category c ON c.category_code = d.category AND c.deleted = 0
-        WHERE d.deleted = 0
-        <if test="designCode != null">
-            AND d.design_code LIKE CONCAT('%', #{designCode}, '%')
-        </if>
-        <if test="designName != null ">
-            AND d.design_name LIKE CONCAT('%', #{designName}, '%')
-        </if>
-        <if test="category != null">
-            AND d.category = #{category}
-        </if>
-        <if test="status != null">
-            AND d.status = #{status}
-        </if>
+        LEFT JOIN
+            flowable_category c ON c.category_code = d.category AND c.deleted = 0
+        WHERE
+            d.deleted = 0
+            <if test="designCode != null"> AND d.design_code LIKE CONCAT('%', #{designCode}, '%') </if>
+            <if test="designName != null"> AND d.design_name LIKE CONCAT('%', #{designName}, '%') </if>
+            <if test="category != null"> AND d.category = #{category} </if>
+            <if test="status != null"> AND d.status = #{status} </if>
         ORDER BY
-            d.sort,
-            d.id DESC
+            d.sort, d.id DESC
     </select>
 
 </mapper>

@@ -10,6 +10,7 @@ public class DesignUploadReq {
     @NotBlank(message = "流程名称不能为空")
     @Schema(description = "流程名称")
     private String designName;
+    @NotBlank(message = "流程分类不能为空")
     @Schema(description = "流程分类（分类编码）")
     private String category;
     @NotBlank(message = "XML 内容不能为空")
