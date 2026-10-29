@@ -25,6 +25,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Tag(name = "6.业务端-实例历史", description = "流程实例/历史查询（透传）")
 @RestController
@@ -78,21 +81,22 @@ public class InstanceHistoryRest {
     }
 
     /**
-     * 按申请单号（businessKey）反查申请单，回填业务类型与摘要
+     * 按申请单号（businessKey）一次批量反查申请单，回填业务类型与摘要，查不到的行跳过
      */
     private <T> void fillApplyInfo(PageData<T> page, java.util.function.Function<T, String> businessKeyGetter,
                                    java.util.function.BiConsumer<T, FlowableApply> applySetter) {
         if (page == null || page.getRecords() == null) {
             return;
         }
+        log.info("实例业务信息回填: rows={}", page.getRecords().size());
+        Set<String> applyCodes = page.getRecords().stream()
+                .map(businessKeyGetter)
+                .filter(c -> c != null && !c.isEmpty())
+                .collect(Collectors.toSet());
+        Map<String, FlowableApply> applyMap = applyService.selectByApplyCodes(applyCodes).stream()
+                .collect(Collectors.toMap(FlowableApply::getApplyCode, a -> a, (a, b) -> a));
         for (T row : page.getRecords()) {
-            String applyCode = businessKeyGetter.apply(row);
-            if (applyCode == null || applyCode.isEmpty()) {
-                continue;
-            }
-            FlowableApply param = new FlowableApply();
-            param.setApplyCode(applyCode);
-            FlowableApply apply = applyService.selectOneByEntity(param);
+            FlowableApply apply = applyMap.get(businessKeyGetter.apply(row));
             if (apply != null) {
                 applySetter.accept(row, apply);
             }

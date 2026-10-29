@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -114,6 +116,42 @@ public class FlowableNodeConfigService extends BaseService<FlowableNodeConfig, F
     /** 自定义 SQL：按 sort, id 升序 */
     public List<FlowableNodeConfig> getNodeConfigList(FlowableNodeConfig entity) {
         return mapper.getNodeConfigList(entity);
+    }
+
+    // 按设计编码批量查询节点配置，入参为空返回空列表
+    public List<FlowableNodeConfig> selectByDesignCodes(Collection<String> designCodes) {
+        if (designCodes == null || designCodes.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return mapper.selectByDesignCodes(designCodes);
+    }
+
+    /**
+     * 处理人展示文本纯计算重载，节点配置由调用方批量查询后传入：
+     * 引擎受理人优先；USER/ROLE/DEPT 取节点配置值，STARTER 取发起人，nodeKey 缺失/配置缺失/类型未知时 '-'
+     */
+    public String calcAssigneeText(String nodeKey, String assignee, String startUserId, List<FlowableNodeConfig> nodes) {
+        if (assignee != null && !assignee.isEmpty()) {
+            return assignee;
+        }
+        if (nodeKey == null || nodeKey.isEmpty() || nodes == null || nodes.isEmpty()) {
+            return "-";
+        }
+        FlowableNodeConfig node = nodes.stream()
+                .filter(n -> nodeKey.equals(n.getNodeKey())).findFirst().orElse(null);
+        if (node == null || node.getAssigneeType() == null || node.getAssigneeType().isEmpty()) {
+            return "-";
+        }
+        switch (node.getAssigneeType()) {
+            case "USER":
+            case "ROLE":
+            case "DEPT":
+                return node.getAssigneeValue() != null && !node.getAssigneeValue().isEmpty() ? node.getAssigneeValue() : "-";
+            case "STARTER":
+                return startUserId != null ? startUserId : "-";
+            default:
+                return "-";
+        }
     }
 
     private List<FlowableNodeConfig> parseNodes(String xmlContent) {

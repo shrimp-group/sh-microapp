@@ -17,4 +17,19 @@
             sort ASC, id ASC
     </select>
 
+    <select id="selectByDesignCodes" resultType="com.wkclz.micro.flowable.bean.entity.FlowableNodeConfig">
+        SELECT
+            *
+        FROM
+            flowable_node_config
+        WHERE
+            deleted = 0
+            AND design_code IN
+            <foreach collection="designCodes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        ORDER BY
+            sort ASC, id ASC
+    </select>
+
 </mapper>

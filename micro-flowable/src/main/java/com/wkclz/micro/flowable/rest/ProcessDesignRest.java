@@ -165,8 +165,9 @@ public class ProcessDesignRest {
         }
         ProcessDeployReq deployReq = new ProcessDeployReq();
         deployReq.setName(design.getDesignCode() + ".bpmn20.xml");
-        // process id/name 已在保存时归一化，直接推送存量 XML
-        deployReq.setXmlContent(design.getXmlContent());
+        // process id/name 已在保存时归一化；部署前将分类编码写入 targetNamespace，
+        // 引擎 ProcessDefinition.category 取自该属性（DeploymentBuilder.category 仅写部署表），保证定义查询分类正确
+        deployReq.setXmlContent(designService.normalizeCategory(design.getXmlContent(), design.getCategory()));
         deployReq.setCategory(design.getCategory());
 
         R<ProcessDeployResp> result = flowableClient.getDeploy().deploy(deployReq);

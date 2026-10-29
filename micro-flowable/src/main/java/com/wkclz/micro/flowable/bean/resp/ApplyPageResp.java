@@ -23,4 +23,8 @@ public class ApplyPageResp extends EntityResp {
     private String startUserId;
     @Schema(description = "状态")
     private String status;
+    @Schema(description = "当前审批节点，非运行中为空")
+    private String currentNodeName;
+    @Schema(description = "当前审批人，非运行中为空")
+    private String currentAssignee;
 }

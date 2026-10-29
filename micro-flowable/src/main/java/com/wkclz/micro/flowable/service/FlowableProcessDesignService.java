@@ -69,4 +69,44 @@ public class FlowableProcessDesignService extends BaseService<FlowableProcessDes
         }
         return xmlContent.substring(0, tagMatcher.start()) + newTag + xmlContent.substring(tagMatcher.end());
     }
+
+    /** definitions 标签（兼容 bpmn:/bpmn2: 等命名空间前缀） */
+    private static final Pattern DEFINITIONS_TAG_PATTERN =
+            Pattern.compile("<(?:[A-Za-z][\\w.-]*:)?definitions\\b[^>]*>", Pattern.CASE_INSENSITIVE);
+    private static final Pattern DEFINITIONS_NAME_PATTERN =
+            Pattern.compile("<(?:[A-Za-z][\\w.-]*:)?definitions\\b", Pattern.CASE_INSENSITIVE);
+    private static final Pattern TARGET_NAMESPACE_PATTERN = Pattern.compile("(\\btargetNamespace=\")([^\"]*)(\")");
+
+    /**
+     * 部署前将分类编码写入 definitions targetNamespace：
+     * 引擎解析 BPMN 时 ProcessDefinition.category 固定取自 targetNamespace（DeploymentBuilder.category 仅写部署表），
+     * 改写后流程定义查询/分类过滤与设计分类一致；仅改写部署副本，不回写设计表（分类单一事实源为设计表 category 列）；
+     * 分类为空时原样返回（保持原命名空间）；重复调用幂等。
+     */
+    public String normalizeCategory(String xmlContent, String category) {
+        if (xmlContent == null || xmlContent.isEmpty() || category == null || category.isEmpty()) {
+            log.info("分类为空或 XML 为空，跳过 targetNamespace 改写");
+            return xmlContent;
+        }
+        log.info("改写 BPMN targetNamespace 为分类编码: category={}", category);
+        Matcher tagMatcher = DEFINITIONS_TAG_PATTERN.matcher(xmlContent);
+        if (!tagMatcher.find()) {
+            log.error("BPMN XML 缺少 definitions 节点: category={}", category);
+            throw ValidationException.of("BPMN XML 缺少 definitions 节点");
+        }
+        String tag = tagMatcher.group();
+        String safeCategory = category.replace("\"", "&quot;");
+        String newTag;
+        Matcher nsMatcher = TARGET_NAMESPACE_PATTERN.matcher(tag);
+        if (nsMatcher.find()) {
+            newTag = tag.substring(0, nsMatcher.start(2)) + safeCategory + tag.substring(nsMatcher.end(2));
+        } else {
+            // 无 targetNamespace 属性时补插在 definitions 标签名后
+            Matcher nameMatcher = DEFINITIONS_NAME_PATTERN.matcher(tag);
+            nameMatcher.find();
+            int insertAt = nameMatcher.end();
+            newTag = tag.substring(0, insertAt) + " targetNamespace=\"" + safeCategory + "\"" + tag.substring(insertAt);
+        }
+        return xmlContent.substring(0, tagMatcher.start()) + newTag + xmlContent.substring(tagMatcher.end());
+    }
 }

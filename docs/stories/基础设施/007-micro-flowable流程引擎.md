@@ -223,6 +223,8 @@ flowchart TD
 - **唯一索引**：无
 - **普通索引**：`idx_apply_id (apply_id, deleted)`、`idx_proc_ins_id (proc_ins_id, deleted)`、`idx_approver (approver_id, deleted)`
 
+> 审批意见落库（通过/驳回/转办/委派/认领）时写入 `node_key`/`node_name`（由任务详情回填，任务不存在时为空），审批时间线据此展示动作发生节点。
+
 #### 3.3.5 flowable_error_log（异常日志）
 
 | 字段 | 类型 | 必填 | 说明 |
@@ -293,16 +295,17 @@ flowchart TD
 | 端点 | 方法 | 入参 | 出参 | 说明 |
 |------|------|------|------|------|
 | `/apply/create` | POST | `ApplyCreateReq`（designCode/businessType/businessSummary/businessData/variables） | `ApplyCreateResp`（applyCode/procInsId） | 创建申请单 + 调 `client.start` 启动流程，回填 proc_ins_id |
-| `/apply/page` | GET | `ApplyPageReq`（businessType/status/分页） | `PageData<ApplyPageResp>` | 我的申请列表（按当前用户过滤） |
-| `/apply/info` | GET | `IdReq` | `ApplyInfoResp`（含申请数据 + 流程实例信息） | 申请详情 |
+| `/apply/page` | GET | `ApplyPageReq`（businessType/status/分页） | `PageData<ApplyPageResp>`（含 currentNodeName/currentAssignee） | 我的申请列表（按当前用户过滤；RUNNING 实例批量查询活动任务回填当前审批节点/审批人） |
+| `/apply/info` | GET | `IdReq` | `ApplyInfoResp`（含申请数据 + 流程实例信息 + currentNodeName/currentAssignee） | 申请详情（RUNNING 实例回填当前审批节点/审批人） |
 
-#### 4.2.2 待办与已办（透传 client）
+#### 4.2.2 待办与已办（透传 client + 业务附加）
 
 | 端点 | 方法 | 入参 | 出参 | 说明 |
 |------|------|------|------|------|
-| `/task/todo/page` | GET | `TaskPageReq` | `PageData<TaskPageResp>` | 透传 `TaskClient#todoPage` |
-| `/task/done/page` | GET | `TaskPageReq` | `PageData<TaskPageResp>` | 透传 `TaskClient#donePage` |
-| `/task/info` | GET | `IdReq` | `TaskResp` | 透传 `TaskClient#info` |
+| `/task/todo/page` | GET | `TaskPageReq` | `PageData<TaskPageResp>` | 透传 `TaskClient#todoPage` + 批量回填业务类型/摘要与处理人展示文本（assigneeText） |
+| `/task/done/page` | GET | `TaskPageReq` | `PageData<TaskPageResp>` | 透传 `TaskClient#donePage` + 批量回填业务类型/摘要与处理人展示文本（assigneeText） |
+| `/task/info` | GET | `IdReq` | `TaskResp`（含 taskDefinitionKey） | 透传 `TaskClient#info` |
+| `/task/active/list` | POST | `ProcInsIdsReq`（processInstanceIds: List<String>，非空） | `List<InstanceActiveTaskResp>`（按实例组装：processInstanceId/currentNodeName/tasks: List<ActiveTaskResp>） | 批量查询活动任务（按实例组装）：currentNodeName 为该实例全部活动任务名称以「、」连接（server 侧组装）；tasks 为任务明细（taskDefinitionKey/taskName/assignee），供业务侧计算审批人。server `TaskRest` 增补端点（`/flowable/task/active/list`），client `TaskClient#activeTaskList`；micro-flowable 内部调用用于 apply 当前节点回填，不对外暴露 |
 
 #### 4.2.3 审批流转
 
@@ -331,6 +334,8 @@ flowchart TD
 | 端点 | 方法 | 入参 | 出参 | 说明 |
 |------|------|------|------|------|
 | `/approval/list` | GET | `ApprovalListReq`（procInsId/applyId） | `List<ApprovalResp>` | 某流程实例的审批意见时间线 |
+
+> **分层附加原则**：与业务系统无关的引擎信息（定义名、businessKey、活动任务组装等）由 flowable-server 批量查询组装后返回；与业务系统相关的信息（业务类型/摘要回填、按节点配置计算审批人）由 micro-flowable 附加。micro-flowable 侧均使用批量查询（IN，`deleted=0`）：`FlowableApplyService#selectByApplyCodes`、`FlowableNodeConfigService#selectByDesignCodes`；审批人文本由 `calcAssigneeText` 纯计算重载生成（节点配置由调用方批量传入），避免逐行单查。
 
 ### 4.3 异常监控接口（前缀 `/micro-flowable/error`）
 

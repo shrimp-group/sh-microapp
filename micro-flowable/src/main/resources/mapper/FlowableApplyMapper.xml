@@ -21,4 +21,14 @@
             id DESC
     </select>
 
+    <select id="selectByApplyCodes" resultType="com.wkclz.micro.flowable.bean.entity.FlowableApply">
+        SELECT
+            *
+        FROM
+            flowable_apply
+        WHERE
+            deleted = 0
+            AND apply_code IN (<foreach collection="applyCodes" item="item" separator=",">#{item} </foreach>)
+    </select>
+
 </mapper>

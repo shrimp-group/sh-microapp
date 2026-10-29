@@ -29,9 +29,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Tag(name = "5.业务端-任务审批", description = "待办/已办/审批流转/审批意见")
 @RestController
@@ -85,8 +86,9 @@ public class FlowableTaskRest {
     @Transactional(rollbackFor = Exception.class)
     public R<Integer> complete(@Valid @RequestBody TaskCompleteReq req) {
         log.info("完成任务: taskId={}", req.getTaskId());
+        TaskResp task = getTaskInfo(req.getTaskId());
         R<Integer> result = flowableClient.getTask().complete(req);
-        recordApproval(req.getTaskId(), null, ApprovalAction.APPROVE, req.getComment(), null);
+        recordApproval(req.getTaskId(), null, ApprovalAction.APPROVE, req.getComment(), null, task);
         return result;
     }
 
@@ -95,8 +97,9 @@ public class FlowableTaskRest {
     @Transactional(rollbackFor = Exception.class)
     public R<Integer> claim(@Valid @RequestBody TaskIdReq req) {
         log.info("认领任务: taskId={}", req.getTaskId());
+        TaskResp task = getTaskInfo(req.getTaskId());
         R<Integer> result = flowableClient.getTask().claim(req);
-        recordApproval(req.getTaskId(), null, ApprovalAction.CLAIM, null, null);
+        recordApproval(req.getTaskId(), null, ApprovalAction.CLAIM, null, null, task);
         return result;
     }
 
@@ -126,8 +129,9 @@ public class FlowableTaskRest {
         clientReq.setTaskId(req.getTaskId());
         clientReq.setComment(req.getComment());
         clientReq.setTargetNodeKey(req.getTargetNodeKey());
+        TaskResp task = getTaskInfo(req.getTaskId());
         R<Integer> result = flowableClient.getTask().reject(clientReq);
-        recordApproval(req.getTaskId(), null, ApprovalAction.REJECT, req.getComment(), null);
+        recordApproval(req.getTaskId(), null, ApprovalAction.REJECT, req.getComment(), null, task);
         return result;
     }
 
@@ -140,8 +144,9 @@ public class FlowableTaskRest {
         clientReq.setTaskId(req.getTaskId());
         clientReq.setTargetUserId(req.getTargetUserId());
         clientReq.setComment(req.getComment());
+        TaskResp task = getTaskInfo(req.getTaskId());
         R<Integer> result = flowableClient.getTask().transfer(clientReq);
-        recordApproval(req.getTaskId(), null, ApprovalAction.TRANSFER, req.getComment(), req.getTargetUserId());
+        recordApproval(req.getTaskId(), null, ApprovalAction.TRANSFER, req.getComment(), req.getTargetUserId(), task);
         return result;
     }
 
@@ -154,14 +159,15 @@ public class FlowableTaskRest {
         clientReq.setTaskId(req.getTaskId());
         clientReq.setTargetUserId(req.getTargetUserId());
         clientReq.setComment(req.getComment());
+        TaskResp task = getTaskInfo(req.getTaskId());
         R<Integer> result = flowableClient.getTask().delegate(clientReq);
-        recordApproval(req.getTaskId(), null, ApprovalAction.DELEGATE, req.getComment(), req.getTargetUserId());
+        recordApproval(req.getTaskId(), null, ApprovalAction.DELEGATE, req.getComment(), req.getTargetUserId(), task);
         return result;
     }
 
     /**
-     * 回填任务行业务信息：按申请单号（businessKey）反查申请单回填业务类型/摘要，
-     * 并按审批人类型计算处理人展示文本（引擎受理人优先）
+     * 回填任务行业务信息：申请单号、设计编码各一次批量查询，回填业务类型/摘要，
+     * 处理人展示文本按审批人类型计算（引擎受理人优先）
      */
     private <T> void fillTaskInfo(PageData<T> page, java.util.function.Function<T, String> businessKeyGetter,
                                   java.util.function.Function<T, String> taskDefinitionKeyGetter,
@@ -171,56 +177,36 @@ public class FlowableTaskRest {
         if (page == null || page.getRecords() == null) {
             return;
         }
-        Map<String, List<FlowableNodeConfig>> nodeCache = new HashMap<>();
+        log.info("任务业务信息回填: rows={}", page.getRecords().size());
+        Set<String> applyCodes = page.getRecords().stream()
+                .map(businessKeyGetter)
+                .filter(c -> c != null && !c.isEmpty())
+                .collect(Collectors.toSet());
+        Map<String, FlowableApply> applyMap = applyService.selectByApplyCodes(applyCodes).stream()
+                .collect(Collectors.toMap(FlowableApply::getApplyCode, a -> a, (a, b) -> a));
+        Set<String> designCodes = applyMap.values().stream()
+                .map(FlowableApply::getDesignCode)
+                .filter(c -> c != null && !c.isEmpty())
+                .collect(Collectors.toSet());
+        Map<String, List<FlowableNodeConfig>> nodeMap = nodeConfigService.selectByDesignCodes(designCodes).stream()
+                .filter(n -> n.getDesignCode() != null)
+                .collect(Collectors.groupingBy(FlowableNodeConfig::getDesignCode));
         for (T row : page.getRecords()) {
-            String applyCode = businessKeyGetter.apply(row);
-            if (applyCode == null || applyCode.isEmpty()) {
-                continue;
-            }
-            FlowableApply param = new FlowableApply();
-            param.setApplyCode(applyCode);
-            FlowableApply apply = applyService.selectOneByEntity(param);
+            FlowableApply apply = applyMap.get(businessKeyGetter.apply(row));
             if (apply == null) {
                 continue;
             }
             applySetter.accept(row, apply);
-            assigneeTextSetter.accept(row, calcAssigneeText(apply, taskDefinitionKeyGetter.apply(row), assigneeGetter.apply(row), nodeCache));
-        }
-    }
-
-    /**
-     * 按审批人类型计算处理人展示文本：引擎受理人优先；USER/ROLE/DEPT 取配置值，STARTER 取发起人，其余 '-'
-     */
-    private String calcAssigneeText(FlowableApply apply, String nodeKey, String assignee, Map<String, List<FlowableNodeConfig>> nodeCache) {
-        if (assignee != null && !assignee.isEmpty()) {
-            return assignee;
-        }
-        if (nodeKey == null || nodeKey.isEmpty()) {
-            return "-";
-        }
-        List<FlowableNodeConfig> nodes = nodeCache.computeIfAbsent(apply.getDesignCode(),
-                dc -> nodeConfigService.selectByDesignCode(dc));
-        FlowableNodeConfig node = nodes.stream()
-                .filter(n -> nodeKey.equals(n.getNodeKey())).findFirst().orElse(null);
-        if (node == null || node.getAssigneeType() == null || node.getAssigneeType().isEmpty()) {
-            return "-";
-        }
-        switch (node.getAssigneeType()) {
-            case "USER":
-            case "ROLE":
-            case "DEPT":
-                return node.getAssigneeValue() != null && !node.getAssigneeValue().isEmpty() ? node.getAssigneeValue() : "-";
-            case "STARTER":
-                return apply.getStartUserId() != null ? apply.getStartUserId() : "-";
-            default:
-                return "-";
+            assigneeTextSetter.accept(row, nodeConfigService.calcAssigneeText(
+                    taskDefinitionKeyGetter.apply(row), assigneeGetter.apply(row), apply.getStartUserId(),
+                    nodeMap.get(apply.getDesignCode())));
         }
     }
 
     /**
      * 记录审批意见
      */
-    private void recordApproval(String taskId, String procInsId, ApprovalAction action, String comment, String targetUserId) {
+    private void recordApproval(String taskId, String procInsId, ApprovalAction action, String comment, String targetUserId, TaskResp task) {
         try {
             FlowableApproval approval = new FlowableApproval();
             approval.setTaskId(taskId);
@@ -229,6 +215,10 @@ public class FlowableTaskRest {
             approval.setAction(action.name());
             approval.setComment(comment);
             approval.setTargetUserId(targetUserId);
+            if (task != null) {
+                approval.setNodeKey(task.getTaskDefinitionKey());
+                approval.setNodeName(task.getTaskName());
+            }
             // 通过 taskId 查找关联的 apply
             if (procInsId != null) {
                 FlowableApply applyParam = new FlowableApply();
@@ -241,6 +231,20 @@ public class FlowableTaskRest {
             approvalService.insert(approval);
         } catch (Exception e) {
             log.error("记录审批意见失败: taskId={}, action={}", taskId, action, e);
+        }
+    }
+
+    /**
+     * 查询任务详情用于审批意见落库节点信息，失败或任务不存在时返回 null，不阻断主流程
+     */
+    private TaskResp getTaskInfo(String taskId) {
+        try {
+            TaskIdReq taskIdReq = new TaskIdReq();
+            taskIdReq.setTaskId(taskId);
+            return flowableClient.getTask().info(taskIdReq).getData();
+        } catch (Exception e) {
+            log.error("查询任务详情失败: taskId={}", taskId, e);
+            return null;
         }
     }
 }

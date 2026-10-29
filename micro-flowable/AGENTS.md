@@ -192,5 +192,5 @@ sh:
 4. **BPMN 解析**：保存（创建/修改）时先归一化 process id/name 为 designCode/designName（仅改名未重传 XML 时同步回写存量 XML 的 process name），再解析 XML 自动生成节点配置；更新时仅 XML 变更才解析，并按 nodeKey 差量同步（事务内 insertBatch + updateByIdSelective + deleteByIds，保留人工审批配置），解析失败不阻塞保存（归一化校验失败会阻塞保存）
 5. **乐观锁**：更新操作必须传 `version` 字段
 6. **design_version vs version**：`design_version` 是设计版本号，`version` 是乐观锁字段，注意区分
-7. **流程分类**：`flowable_process_design.category` 存分类编码（`flowable_category.category_code`）；设计分页经 SQL LEFT JOIN 直接返回 `categoryName`，详情按编码单查回填；部署时经 `ProcessDeployReq.category` 透传引擎
+7. **流程分类**：`flowable_process_design.category` 存分类编码（`flowable_category.category_code`）；设计分页经 SQL LEFT JOIN 直接返回 `categoryName`，详情按编码单查回填；部署时经 `FlowableProcessDesignService.normalizeCategory` 将分类编码写入 BPMN `definitions targetNamespace`（引擎 `ProcessDefinition.category` 固定取自该属性，`DeploymentBuilder.category` 仅写部署表），并经 `ProcessDeployReq.category` 透传部署分类，保证定义查询/分类过滤与设计分类一致；仅改写部署副本不回写设计表，分类为空时保持原命名空间
 8. **旧版本清理**：POST /admin/design/remove-old-versions 按 designCode 保留最大 version、删除旧版本部署；入参 cascade 可选：false（默认，保留已完结历史，旧版本存在运行实例时引擎拒绝）/ true（级联删除运行实例与全部历史）；透传 /admin/deploy/remove 固定 cascade=true 维持级联语义
