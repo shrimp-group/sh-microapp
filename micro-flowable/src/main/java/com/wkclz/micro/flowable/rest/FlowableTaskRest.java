@@ -15,6 +15,7 @@ import com.wkclz.micro.flowable.bean.entity.FlowableNodeConfig;
 import com.wkclz.micro.flowable.bean.enums.ApprovalAction;
 import com.wkclz.micro.flowable.bean.req.ApprovalListReq;
 import com.wkclz.micro.flowable.bean.resp.ApprovalResp;
+import com.wkclz.micro.flowable.bean.resp.ApplyPageResp;
 import com.wkclz.micro.flowable.service.FlowableApplyService;
 import com.wkclz.micro.flowable.service.FlowableApprovalService;
 import com.wkclz.micro.flowable.service.FlowableNodeConfigService;
@@ -57,7 +58,7 @@ public class FlowableTaskRest {
         R<PageData<TaskPageResp>> result = flowableClient.getTask().todoPage(req);
         fillTaskInfo(result.getData(), TaskPageResp::getBusinessKey, TaskPageResp::getTaskDefinitionKey,
                 TaskPageResp::getAssignee,
-                (r, a) -> { r.setBusinessType(a.getBusinessType()); r.setBusinessSummary(a.getBusinessSummary()); },
+                (r, a) -> { r.setBusinessType(a.getBusinessType()); r.setBusinessSummary(a.getBusinessSummary()); r.setDefinitionName(a.getDesignName()); },
                 (r, text) -> r.setAssigneeText(text));
         return result;
     }
@@ -70,7 +71,7 @@ public class FlowableTaskRest {
         R<PageData<TaskPageResp>> result = flowableClient.getTask().donePage(req);
         fillTaskInfo(result.getData(), TaskPageResp::getBusinessKey, TaskPageResp::getTaskDefinitionKey,
                 TaskPageResp::getAssignee,
-                (r, a) -> { r.setBusinessType(a.getBusinessType()); r.setBusinessSummary(a.getBusinessSummary()); },
+                (r, a) -> { r.setBusinessType(a.getBusinessType()); r.setBusinessSummary(a.getBusinessSummary()); r.setDefinitionName(a.getDesignName()); },
                 (r, text) -> r.setAssigneeText(text));
         return result;
     }
@@ -78,7 +79,17 @@ public class FlowableTaskRest {
     @Operation(summary = "3.任务审批-详情")
     @GetMapping(Route.TASK_INFO)
     public R<TaskResp> taskInfo(@Valid TaskIdReq req) {
-        return flowableClient.getTask().info(req);
+        R<TaskResp> result = flowableClient.getTask().info(req);
+        TaskResp resp = result.getData();
+        // 引擎任务不直接返回流程定义名称，按申请单号 JOIN 设计表回填 definitionKey / definitionName
+        if (resp != null && resp.getBusinessKey() != null) {
+            ApplyPageResp apply = applyService.selectByApplyCodeWithDesign(resp.getBusinessKey());
+            if (apply != null) {
+                resp.setDefinitionKey(apply.getDesignCode());
+                resp.setDefinitionName(apply.getDesignName());
+            }
+        }
+        return result;
     }
 
     @Operation(summary = "4.任务审批-通过", description = "完成任务（审批通过）")
@@ -172,7 +183,7 @@ public class FlowableTaskRest {
     private <T> void fillTaskInfo(PageData<T> page, java.util.function.Function<T, String> businessKeyGetter,
                                   java.util.function.Function<T, String> taskDefinitionKeyGetter,
                                   java.util.function.Function<T, String> assigneeGetter,
-                                  java.util.function.BiConsumer<T, FlowableApply> applySetter,
+                                  java.util.function.BiConsumer<T, ApplyPageResp> applySetter,
                                   java.util.function.BiConsumer<T, String> assigneeTextSetter) {
         if (page == null || page.getRecords() == null) {
             return;
@@ -182,17 +193,17 @@ public class FlowableTaskRest {
                 .map(businessKeyGetter)
                 .filter(c -> c != null && !c.isEmpty())
                 .collect(Collectors.toSet());
-        Map<String, FlowableApply> applyMap = applyService.selectByApplyCodes(applyCodes).stream()
-                .collect(Collectors.toMap(FlowableApply::getApplyCode, a -> a, (a, b) -> a));
+        Map<String, ApplyPageResp> applyMap = applyService.selectByApplyCodesWithDesign(applyCodes).stream()
+                .collect(Collectors.toMap(ApplyPageResp::getApplyCode, a -> a, (a, b) -> a));
         Set<String> designCodes = applyMap.values().stream()
-                .map(FlowableApply::getDesignCode)
+                .map(ApplyPageResp::getDesignCode)
                 .filter(c -> c != null && !c.isEmpty())
                 .collect(Collectors.toSet());
         Map<String, List<FlowableNodeConfig>> nodeMap = nodeConfigService.selectByDesignCodes(designCodes).stream()
                 .filter(n -> n.getDesignCode() != null)
                 .collect(Collectors.groupingBy(FlowableNodeConfig::getDesignCode));
         for (T row : page.getRecords()) {
-            FlowableApply apply = applyMap.get(businessKeyGetter.apply(row));
+            ApplyPageResp apply = applyMap.get(businessKeyGetter.apply(row));
             if (apply == null) {
                 continue;
             }
