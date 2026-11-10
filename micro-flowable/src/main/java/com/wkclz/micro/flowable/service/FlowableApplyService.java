@@ -2,6 +2,8 @@ package com.wkclz.micro.flowable.service;
 
 import com.wkclz.core.base.PageData;
 import com.wkclz.micro.flowable.bean.entity.FlowableApply;
+import com.wkclz.micro.flowable.bean.resp.ApplyInfoResp;
+import com.wkclz.micro.flowable.bean.resp.ApplyPageResp;
 import com.wkclz.micro.flowable.mapper.FlowableApplyMapper;
 import com.wkclz.mybatis.helper.PageQuery;
 import com.wkclz.mybatis.service.BaseService;
@@ -14,8 +16,12 @@ import java.util.List;
 @Service
 public class FlowableApplyService extends BaseService<FlowableApply, FlowableApplyMapper> {
 
-    public PageData<FlowableApply> getApplyPage(FlowableApply entity) {
+    public PageData<ApplyPageResp> getApplyPage(FlowableApply entity) {
         return PageQuery.page(entity, mapper::getApplyPage);
+    }
+
+    public ApplyInfoResp selectInfoById(Long id) {
+        return mapper.selectInfoById(id);
     }
 
     // 按申请单号批量查询，入参为空返回空列表

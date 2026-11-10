@@ -4,21 +4,37 @@
 
     <select id="getApplyPage"
             parameterType="com.wkclz.micro.flowable.bean.entity.FlowableApply"
-            resultType="com.wkclz.micro.flowable.bean.entity.FlowableApply">
+            resultType="com.wkclz.micro.flowable.bean.resp.ApplyPageResp">
         SELECT
-            *
+            a.*,
+            d.design_name
         FROM
-            flowable_apply
+            flowable_apply a
+        LEFT JOIN
+            flowable_process_design d ON d.design_code = a.design_code AND d.deleted = 0
         WHERE
-            deleted = 0
-            <if test="applyCode != null"> AND apply_code = #{applyCode} </if>
-            <if test="designCode != null"> AND design_code = #{designCode} </if>
-            <if test="businessType != null"> AND business_type = #{businessType} </if>
-            <if test="status != null"> AND status = #{status} </if>
-            <if test="startUserId != null"> AND start_user_id = #{startUserId} </if>
-            <if test="tenantCode != null"> AND tenant_code = #{tenantCode} </if>
+            a.deleted = 0
+            <if test="applyCode != null"> AND a.apply_code = #{applyCode} </if>
+            <if test="designCode != null"> AND a.design_code = #{designCode} </if>
+            <if test="businessType != null"> AND a.business_type = #{businessType} </if>
+            <if test="status != null"> AND a.status = #{status} </if>
+            <if test="startUserId != null"> AND a.start_user_id = #{startUserId} </if>
+            <if test="tenantCode != null"> AND a.tenant_code = #{tenantCode} </if>
         ORDER BY
-            id DESC
+            a.id DESC
+    </select>
+
+    <select id="selectInfoById" resultType="com.wkclz.micro.flowable.bean.resp.ApplyInfoResp">
+        SELECT
+            a.*,
+            d.design_name
+        FROM
+            flowable_apply a
+        LEFT JOIN
+            flowable_process_design d ON d.design_code = a.design_code AND d.deleted = 0
+        WHERE
+            a.deleted = 0
+            AND a.id = #{id}
     </select>
 
     <select id="selectByApplyCodes" resultType="com.wkclz.micro.flowable.bean.entity.FlowableApply">

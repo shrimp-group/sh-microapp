@@ -13,6 +13,8 @@ public class ApplyPageResp extends EntityResp {
     private String applyCode;
     @Schema(description = "设计编码")
     private String designCode;
+    @Schema(description = "流程名称")
+    private String designName;
     @Schema(description = "流程实例 ID")
     private String procInsId;
     @Schema(description = "业务类型")

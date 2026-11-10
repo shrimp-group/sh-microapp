@@ -88,7 +88,7 @@ public class FlowableTaskRest {
         log.info("完成任务: taskId={}", req.getTaskId());
         TaskResp task = getTaskInfo(req.getTaskId());
         R<Integer> result = flowableClient.getTask().complete(req);
-        recordApproval(req.getTaskId(), null, ApprovalAction.APPROVE, req.getComment(), null, task);
+        recordApproval(req.getTaskId(), ApprovalAction.APPROVE, req.getComment(), null, task);
         return result;
     }
 
@@ -99,7 +99,7 @@ public class FlowableTaskRest {
         log.info("认领任务: taskId={}", req.getTaskId());
         TaskResp task = getTaskInfo(req.getTaskId());
         R<Integer> result = flowableClient.getTask().claim(req);
-        recordApproval(req.getTaskId(), null, ApprovalAction.CLAIM, null, null, task);
+        recordApproval(req.getTaskId(), ApprovalAction.CLAIM, null, null, task);
         return result;
     }
 
@@ -131,7 +131,7 @@ public class FlowableTaskRest {
         clientReq.setTargetNodeKey(req.getTargetNodeKey());
         TaskResp task = getTaskInfo(req.getTaskId());
         R<Integer> result = flowableClient.getTask().reject(clientReq);
-        recordApproval(req.getTaskId(), null, ApprovalAction.REJECT, req.getComment(), null, task);
+        recordApproval(req.getTaskId(), ApprovalAction.REJECT, req.getComment(), null, task);
         return result;
     }
 
@@ -146,7 +146,7 @@ public class FlowableTaskRest {
         clientReq.setComment(req.getComment());
         TaskResp task = getTaskInfo(req.getTaskId());
         R<Integer> result = flowableClient.getTask().transfer(clientReq);
-        recordApproval(req.getTaskId(), null, ApprovalAction.TRANSFER, req.getComment(), req.getTargetUserId(), task);
+        recordApproval(req.getTaskId(), ApprovalAction.TRANSFER, req.getComment(), req.getTargetUserId(), task);
         return result;
     }
 
@@ -161,7 +161,7 @@ public class FlowableTaskRest {
         clientReq.setComment(req.getComment());
         TaskResp task = getTaskInfo(req.getTaskId());
         R<Integer> result = flowableClient.getTask().delegate(clientReq);
-        recordApproval(req.getTaskId(), null, ApprovalAction.DELEGATE, req.getComment(), req.getTargetUserId(), task);
+        recordApproval(req.getTaskId(), ApprovalAction.DELEGATE, req.getComment(), req.getTargetUserId(), task);
         return result;
     }
 
@@ -206,8 +206,9 @@ public class FlowableTaskRest {
     /**
      * 记录审批意见
      */
-    private void recordApproval(String taskId, String procInsId, ApprovalAction action, String comment, String targetUserId, TaskResp task) {
+    private void recordApproval(String taskId, ApprovalAction action, String comment, String targetUserId, TaskResp task) {
         try {
+            String procInsId = task != null ? task.getProcessInstanceId() : null;
             FlowableApproval approval = new FlowableApproval();
             approval.setTaskId(taskId);
             approval.setProcInsId(procInsId != null ? procInsId : "");
@@ -219,8 +220,8 @@ public class FlowableTaskRest {
                 approval.setNodeKey(task.getTaskDefinitionKey());
                 approval.setNodeName(task.getTaskName());
             }
-            // 通过 taskId 查找关联的 apply
-            if (procInsId != null) {
+            // 通过 procInsId 查找关联的 apply
+            if (procInsId != null && !procInsId.isEmpty()) {
                 FlowableApply applyParam = new FlowableApply();
                 applyParam.setProcInsId(procInsId);
                 FlowableApply apply = applyService.selectOneByEntity(applyParam);

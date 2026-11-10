@@ -10,15 +10,18 @@ import com.wkclz.flowable.client.bean.resp.InstanceActiveTaskResp;
 import com.wkclz.flowable.client.bean.resp.ProcessInstanceResp;
 import com.wkclz.flowable.client.config.FlowableClient;
 import com.wkclz.micro.flowable.bean.entity.FlowableApply;
+import com.wkclz.micro.flowable.bean.entity.FlowableApproval;
 import com.wkclz.micro.flowable.bean.entity.FlowableNodeConfig;
 import com.wkclz.micro.flowable.bean.entity.FlowableProcessDesign;
 import com.wkclz.micro.flowable.bean.enums.ApplyStatus;
+import com.wkclz.micro.flowable.bean.enums.ApprovalAction;
 import com.wkclz.micro.flowable.bean.req.ApplyCreateReq;
 import com.wkclz.micro.flowable.bean.req.ApplyPageReq;
 import com.wkclz.micro.flowable.bean.resp.ApplyCreateResp;
 import com.wkclz.micro.flowable.bean.resp.ApplyInfoResp;
 import com.wkclz.micro.flowable.bean.resp.ApplyPageResp;
 import com.wkclz.micro.flowable.service.FlowableApplyService;
+import com.wkclz.micro.flowable.service.FlowableApprovalService;
 import com.wkclz.micro.flowable.service.FlowableNodeConfigService;
 import com.wkclz.micro.flowable.service.FlowableProcessDesignService;
 import com.wkclz.redis.helper.RedisIdGenerator;
@@ -58,6 +61,8 @@ public class ApplyRest {
     private FlowableProcessDesignService designService;
     @Autowired
     private FlowableNodeConfigService nodeConfigService;
+    @Autowired
+    private FlowableApprovalService approvalService;
 
     @Operation(summary = "1.流程申请-发起")
     @PostMapping(Route.APPLY_CREATE)
@@ -93,6 +98,8 @@ public class ApplyRest {
         dbApply.setProcDefId(instanceResp.getDefinitionKey());
         applyService.updateByIdSelective(dbApply);
 
+        recordSubmit(apply.getId(), instanceResp.getProcessInstanceId(), userCode);
+
         ApplyCreateResp resp = new ApplyCreateResp();
         resp.setApplyCode(applyCode);
         resp.setProcInsId(instanceResp.getProcessInstanceId());
@@ -104,8 +111,7 @@ public class ApplyRest {
     public R<PageData<ApplyPageResp>> page(@Valid ApplyPageReq req) {
         FlowableApply entity = BeanUtil.cp(req, FlowableApply.class);
         entity.setStartUserId(IdentityContext.getUserCode());
-        PageData<FlowableApply> page = applyService.getApplyPage(entity);
-        PageData<ApplyPageResp> respPage = page.convert(ApplyPageResp.class);
+        PageData<ApplyPageResp> respPage = applyService.getApplyPage(entity);
         fillCurrentNode(respPage.getRecords());
         return R.ok(respPage);
     }
@@ -113,12 +119,11 @@ public class ApplyRest {
     @Operation(summary = "3.流程申请-详情")
     @GetMapping(Route.APPLY_INFO)
     public R<ApplyInfoResp> info(@Valid IdReq req) {
-        FlowableApply apply = applyService.selectById(req.getId());
-        if (apply == null) {
-            log.error("提交申请草稿失败, 申请单不存在: id={}", req.getId());
+        ApplyInfoResp resp = applyService.selectInfoById(req.getId());
+        if (resp == null) {
+            log.error("申请详情不存在: id={}", req.getId());
             throw ValidationException.of("申请单不存在");
         }
-        ApplyInfoResp resp = BeanUtil.cp(apply, ApplyInfoResp.class);
         fillCurrentNode(Collections.singletonList(resp));
         log.info("申请详情回填: id={}, currentNodeName={}, currentAssignee={}", resp.getId(), resp.getCurrentNodeName(), resp.getCurrentAssignee());
         return R.ok(resp);
@@ -177,6 +182,9 @@ public class ApplyRest {
         update.setProcDefId(result.getData().getDefinitionKey());
         update.setStatus(ApplyStatus.RUNNING.name());
         applyService.updateByIdSelective(update);
+
+        recordSubmit(apply.getId(), result.getData().getProcessInstanceId(), userCode);
+
         ApplyCreateResp resp = new ApplyCreateResp();
         resp.setApplyCode(apply.getApplyCode());
         resp.setProcInsId(result.getData().getProcessInstanceId());
@@ -195,6 +203,21 @@ public class ApplyRest {
         apply.setStatus(status);
         applyService.insert(apply);
         return apply;
+    }
+
+    /** 记录流程发起审批意见（发起人、流程实例、节点名固定为"发起"） */
+    private void recordSubmit(Long applyId, String procInsId, String approverId) {
+        try {
+            FlowableApproval approval = new FlowableApproval();
+            approval.setApplyId(applyId);
+            approval.setProcInsId(procInsId);
+            approval.setApproverId(approverId);
+            approval.setAction(ApprovalAction.SUBMIT.name());
+            approval.setNodeName("发起");
+            approvalService.insert(approval);
+        } catch (Exception e) {
+            log.error("记录发起审批意见失败: applyId={}, procInsId={}", applyId, procInsId, e);
+        }
     }
 
     /**
