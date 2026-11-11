@@ -24,12 +24,18 @@ public class FlowableApplyService extends BaseService<FlowableApply, FlowableApp
         return mapper.selectInfoById(id);
     }
 
-    /** 按申请单号查询申请（JOIN 设计表回填 designName） */
-    public ApplyPageResp selectByApplyCodeWithDesign(String applyCode) {
-        if (applyCode == null || applyCode.isEmpty()) {
+    public ApplyPageResp selectByProcInsIdWithDesign(String procInsId) {
+        if (procInsId == null || procInsId.isEmpty()) {
             return null;
         }
-        return mapper.selectByApplyCodeWithDesign(applyCode);
+        return mapper.selectByProcInsIdWithDesign(procInsId);
+    }
+
+    public List<ApplyPageResp> selectByProcInsIdsWithDesign(Collection<String> procInsIds) {
+        if (procInsIds == null || procInsIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return mapper.selectByProcInsIdsWithDesign(procInsIds);
     }
 
     // 按申请单号批量查询，入参为空返回空列表
@@ -38,13 +44,5 @@ public class FlowableApplyService extends BaseService<FlowableApply, FlowableApp
             return Collections.emptyList();
         }
         return mapper.selectByApplyCodes(applyCodes);
-    }
-
-    /** 按申请单号批量查询（JOIN 设计表回填 designName），入参为空返回空列表 */
-    public List<ApplyPageResp> selectByApplyCodesWithDesign(Collection<String> applyCodes) {
-        if (applyCodes == null || applyCodes.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return mapper.selectByApplyCodesWithDesign(applyCodes);
     }
 }

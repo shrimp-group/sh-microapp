@@ -17,12 +17,10 @@ public interface FlowableApplyMapper extends BaseMapper<FlowableApply> {
 
     ApplyInfoResp selectInfoById(@Param("id") Long id);
 
-    /** 按申请单号查询申请（JOIN 设计表回填 designName），用于任务详情回填流程定义信息 */
-    ApplyPageResp selectByApplyCodeWithDesign(@Param("applyCode") String applyCode);
+    ApplyPageResp selectByProcInsIdWithDesign(@Param("procInsId") String procInsId);
+
+    List<ApplyPageResp> selectByProcInsIdsWithDesign(@Param("procInsIds") Collection<String> procInsIds);
 
     List<FlowableApply> selectByApplyCodes(@Param("applyCodes") Collection<String> applyCodes);
-
-    /** 按申请单号批量查询（JOIN 设计表回填 designName），用于任务列表回填流程名称 */
-    List<ApplyPageResp> selectByApplyCodesWithDesign(@Param("applyCodes") Collection<String> applyCodes);
 
 }

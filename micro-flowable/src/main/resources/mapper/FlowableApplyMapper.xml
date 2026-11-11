@@ -37,7 +37,7 @@
             AND a.id = #{id}
     </select>
 
-    <select id="selectByApplyCodeWithDesign" resultType="com.wkclz.micro.flowable.bean.resp.ApplyPageResp">
+    <select id="selectByProcInsIdWithDesign" resultType="com.wkclz.micro.flowable.bean.resp.ApplyPageResp">
         SELECT
             a.*,
             d.design_name
@@ -47,7 +47,20 @@
             flowable_process_design d ON d.design_code = a.design_code AND d.deleted = 0
         WHERE
             a.deleted = 0
-            AND a.apply_code = #{applyCode}
+            AND a.proc_ins_id = #{procInsId}
+    </select>
+
+    <select id="selectByProcInsIdsWithDesign" resultType="com.wkclz.micro.flowable.bean.resp.ApplyPageResp">
+        SELECT
+            a.*,
+            d.design_name
+        FROM
+            flowable_apply a
+        LEFT JOIN
+            flowable_process_design d ON d.design_code = a.design_code AND d.deleted = 0
+        WHERE
+            a.deleted = 0
+            AND a.proc_ins_id IN (<foreach collection="procInsIds" item="item" separator=",">#{item} </foreach>)
     </select>
 
     <select id="selectByApplyCodes" resultType="com.wkclz.micro.flowable.bean.entity.FlowableApply">
@@ -58,19 +71,6 @@
         WHERE
             deleted = 0
             AND apply_code IN (<foreach collection="applyCodes" item="item" separator=",">#{item} </foreach>)
-    </select>
-
-    <select id="selectByApplyCodesWithDesign" resultType="com.wkclz.micro.flowable.bean.resp.ApplyPageResp">
-        SELECT
-            a.*,
-            d.design_name
-        FROM
-            flowable_apply a
-        LEFT JOIN
-            flowable_process_design d ON d.design_code = a.design_code AND d.deleted = 0
-        WHERE
-            a.deleted = 0
-            AND a.apply_code IN (<foreach collection="applyCodes" item="item" separator=",">#{item} </foreach>)
     </select>
 
 </mapper>

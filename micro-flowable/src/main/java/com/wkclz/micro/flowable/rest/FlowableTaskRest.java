@@ -13,6 +13,7 @@ import com.wkclz.micro.flowable.bean.entity.FlowableApply;
 import com.wkclz.micro.flowable.bean.entity.FlowableApproval;
 import com.wkclz.micro.flowable.bean.entity.FlowableNodeConfig;
 import com.wkclz.micro.flowable.bean.enums.ApprovalAction;
+import com.wkclz.micro.flowable.bean.enums.ApplyStatus;
 import com.wkclz.micro.flowable.bean.req.ApprovalListReq;
 import com.wkclz.micro.flowable.bean.resp.ApprovalResp;
 import com.wkclz.micro.flowable.bean.resp.ApplyPageResp;
@@ -56,9 +57,9 @@ public class FlowableTaskRest {
     @GetMapping(Route.TASK_TODO_PAGE)
     public R<PageData<TaskPageResp>> todoPage(@Valid TaskPageReq req) {
         R<PageData<TaskPageResp>> result = flowableClient.getTask().todoPage(req);
-        fillTaskInfo(result.getData(), TaskPageResp::getBusinessKey, TaskPageResp::getTaskDefinitionKey,
+        fillTaskInfo(result.getData(), TaskPageResp::getProcessInstanceId, TaskPageResp::getTaskDefinitionKey,
                 TaskPageResp::getAssignee,
-                (r, a) -> { r.setBusinessType(a.getBusinessType()); r.setBusinessSummary(a.getBusinessSummary()); r.setDefinitionName(a.getDesignName()); },
+                (r, a) -> { r.setBusinessType(a.getBusinessType()); r.setBusinessSummary(a.getBusinessSummary()); r.setDefinitionName(a.getDesignName()); r.setBusinessKey(a.getApplyCode()); },
                 (r, text) -> r.setAssigneeText(text));
         return result;
     }
@@ -69,9 +70,9 @@ public class FlowableTaskRest {
         // 已办固定按当前用户过滤
         req.setAssignee(IdentityContext.getUserCode());
         R<PageData<TaskPageResp>> result = flowableClient.getTask().donePage(req);
-        fillTaskInfo(result.getData(), TaskPageResp::getBusinessKey, TaskPageResp::getTaskDefinitionKey,
+        fillTaskInfo(result.getData(), TaskPageResp::getProcessInstanceId, TaskPageResp::getTaskDefinitionKey,
                 TaskPageResp::getAssignee,
-                (r, a) -> { r.setBusinessType(a.getBusinessType()); r.setBusinessSummary(a.getBusinessSummary()); r.setDefinitionName(a.getDesignName()); },
+                (r, a) -> { r.setBusinessType(a.getBusinessType()); r.setBusinessSummary(a.getBusinessSummary()); r.setDefinitionName(a.getDesignName()); r.setBusinessKey(a.getApplyCode()); },
                 (r, text) -> r.setAssigneeText(text));
         return result;
     }
@@ -81,12 +82,13 @@ public class FlowableTaskRest {
     public R<TaskResp> taskInfo(@Valid TaskIdReq req) {
         R<TaskResp> result = flowableClient.getTask().info(req);
         TaskResp resp = result.getData();
-        // 引擎任务不直接返回流程定义名称，按申请单号 JOIN 设计表回填 definitionKey / definitionName
-        if (resp != null && resp.getBusinessKey() != null) {
-            ApplyPageResp apply = applyService.selectByApplyCodeWithDesign(resp.getBusinessKey());
+        // 引擎任务不直接返回流程定义名称，按流程实例 ID JOIN 设计表回填 definitionKey / definitionName
+        if (resp != null && resp.getProcessInstanceId() != null) {
+            ApplyPageResp apply = applyService.selectByProcInsIdWithDesign(resp.getProcessInstanceId());
             if (apply != null) {
                 resp.setDefinitionKey(apply.getDesignCode());
                 resp.setDefinitionName(apply.getDesignName());
+                resp.setBusinessKey(apply.getApplyCode());
             }
         }
         return result;
@@ -100,6 +102,8 @@ public class FlowableTaskRest {
         TaskResp task = getTaskInfo(req.getTaskId());
         R<Integer> result = flowableClient.getTask().complete(req);
         recordApproval(req.getTaskId(), ApprovalAction.APPROVE, req.getComment(), null, task);
+        // 若完成后流程已无活动任务，说明流程结束，更新申请单状态为已通过
+        updateApplyStatusIfEnded(task != null ? task.getProcessInstanceId() : null, ApplyStatus.APPROVED);
         return result;
     }
 
@@ -177,10 +181,10 @@ public class FlowableTaskRest {
     }
 
     /**
-     * 回填任务行业务信息：申请单号、设计编码各一次批量查询，回填业务类型/摘要，
+     * 回填任务行业务信息：按流程实例 ID 批量反查申请单（JOIN 设计表），回填业务类型/摘要/流程名称，
      * 处理人展示文本按审批人类型计算（引擎受理人优先）
      */
-    private <T> void fillTaskInfo(PageData<T> page, java.util.function.Function<T, String> businessKeyGetter,
+    private <T> void fillTaskInfo(PageData<T> page, java.util.function.Function<T, String> procInsIdGetter,
                                   java.util.function.Function<T, String> taskDefinitionKeyGetter,
                                   java.util.function.Function<T, String> assigneeGetter,
                                   java.util.function.BiConsumer<T, ApplyPageResp> applySetter,
@@ -189,12 +193,12 @@ public class FlowableTaskRest {
             return;
         }
         log.info("任务业务信息回填: rows={}", page.getRecords().size());
-        Set<String> applyCodes = page.getRecords().stream()
-                .map(businessKeyGetter)
+        Set<String> procInsIds = page.getRecords().stream()
+                .map(procInsIdGetter)
                 .filter(c -> c != null && !c.isEmpty())
                 .collect(Collectors.toSet());
-        Map<String, ApplyPageResp> applyMap = applyService.selectByApplyCodesWithDesign(applyCodes).stream()
-                .collect(Collectors.toMap(ApplyPageResp::getApplyCode, a -> a, (a, b) -> a));
+        Map<String, ApplyPageResp> applyMap = applyService.selectByProcInsIdsWithDesign(procInsIds).stream()
+                .collect(Collectors.toMap(ApplyPageResp::getProcInsId, a -> a, (a, b) -> a));
         Set<String> designCodes = applyMap.values().stream()
                 .map(ApplyPageResp::getDesignCode)
                 .filter(c -> c != null && !c.isEmpty())
@@ -203,7 +207,7 @@ public class FlowableTaskRest {
                 .filter(n -> n.getDesignCode() != null)
                 .collect(Collectors.groupingBy(FlowableNodeConfig::getDesignCode));
         for (T row : page.getRecords()) {
-            ApplyPageResp apply = applyMap.get(businessKeyGetter.apply(row));
+            ApplyPageResp apply = applyMap.get(procInsIdGetter.apply(row));
             if (apply == null) {
                 continue;
             }
@@ -257,6 +261,36 @@ public class FlowableTaskRest {
         } catch (Exception e) {
             log.error("查询任务详情失败: taskId={}", taskId, e);
             return null;
+        }
+    }
+
+    /**
+     * 若流程实例已无活动任务，则按指定状态更新申请单（用于审批通过后判断流程是否结束）
+     */
+    private void updateApplyStatusIfEnded(String procInsId, ApplyStatus status) {
+        if (procInsId == null || procInsId.isEmpty()) {
+            return;
+        }
+        try {
+            com.wkclz.flowable.client.bean.req.ProcInsIdsReq activeReq = new com.wkclz.flowable.client.bean.req.ProcInsIdsReq();
+            activeReq.setProcessInstanceIds(java.util.Collections.singletonList(procInsId));
+            List<?> activeTasks = flowableClient.getTask().activeTaskList(activeReq).getData();
+            if (activeTasks != null && !activeTasks.isEmpty()) {
+                return; // 流程仍有活动任务，未结束
+            }
+            FlowableApply applyParam = new FlowableApply();
+            applyParam.setProcInsId(procInsId);
+            FlowableApply apply = applyService.selectOneByEntity(applyParam);
+            if (apply != null) {
+                FlowableApply update = new FlowableApply();
+                update.setId(apply.getId());
+                update.setStatus(status.name());
+                update.setVersion(apply.getVersion());
+                applyService.updateByIdSelective(update);
+                log.info("流程结束，更新申请单状态: applyId={}, status={}", apply.getId(), status);
+            }
+        } catch (Exception e) {
+            log.error("检查流程结束状态失败: procInsId={}", procInsId, e);
         }
     }
 }
