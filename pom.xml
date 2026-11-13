@@ -45,6 +45,7 @@
         <module>micro-report</module>
         <module>micro-autotest</module>
         <module>micro-dbview</module>
+        <module>micro-dag</module>
     </modules>
 
     <dependencies>
