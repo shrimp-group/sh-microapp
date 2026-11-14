@@ -33,7 +33,7 @@
 │  micro-audit   micro-pdf     micro-mask    micro-pay         │
 │  micro-seq     micro-fun     micro-k8s     micro-liteflow    │
 │  micro-rmcheck micro-material micro-wxapp  micro-wxmp        │
-│  micro-autotest micro-report                                 │
+│  micro-autotest micro-report  micro-dag                       │
 └─────────────────────────────────────────────────────────────┘
                               ↓ 依赖
 ┌─────────────────────────────────────────────────────────────┐
@@ -107,6 +107,7 @@
 | `micro-autotest` | 自动化测试 | `/micro-autotest` | REST 接口扫描/自动 Mock/测试执行/报告生成(MD+HTML) |
 | `micro-report` | 报表管理 | `/micro-report` | SQL 报表定义/参数与结果字段管理/动态查询执行/Excel 导出 |
 | `micro-flowable` | 流程引擎 | `/micro-flowable` | 对接 sh-flowable-server（依赖 sh-flowable-client SDK），封装流程定义/流程实例/任务/历史等能力 |
+| `micro-dag` | 业务编排 | `/micro-dag` | DAG 定义/发布、分布式对等调度、失败重试、人工干预治理、图形编排设计器（sh-mdm-ui） |
 
 ---
 
