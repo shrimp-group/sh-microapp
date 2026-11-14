@@ -32,6 +32,15 @@
         WHERE status = 'RUNNING' AND lease_expire_time &lt; #{now} AND deleted = 0
     </update>
 
+    <update id="renewLease">
+        UPDATE dag_node_instance
+        SET lease_expire_time = #{leaseExpireTime}
+        WHERE id = #{id}
+          AND lease_owner = #{leaseOwner}
+          AND status = 'RUNNING'
+          AND deleted = 0
+    </update>
+
     <update id="backfillTraceCode">
         UPDATE dag_instance
         SET trace_code = #{traceCode}

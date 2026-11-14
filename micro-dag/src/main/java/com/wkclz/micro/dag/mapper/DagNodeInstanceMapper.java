@@ -23,6 +23,11 @@ public interface DagNodeInstanceMapper extends BaseMapper<DagNodeInstance> {
     /** 租约过期的 RUNNING 重置为 PENDING（故障转移，乐观锁防原实例回写） */
     int reclaimExpiredLease(@Param("now") LocalDateTime now);
 
+    /** 执行器租约续期：仅当前持有者且仍为 RUNNING 时生效 */
+    int renewLease(@Param("id") Long id,
+                   @Param("leaseOwner") String leaseOwner,
+                   @Param("leaseExpireTime") LocalDateTime leaseExpireTime);
+
     /** 幂等辅助：仅当 trace_code 为空时回填（运行期生成的编码） */
     int backfillTraceCode(@Param("instanceCode") String instanceCode, @Param("traceCode") String traceCode);
 
