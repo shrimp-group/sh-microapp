@@ -1,5 +1,6 @@
 package com.wkclz.micro.dag.service;
 
+import com.wkclz.core.base.PageData;
 import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.dag.bean.dto.DagDefModel;
 import com.wkclz.micro.dag.bean.dto.NodeDef;
@@ -10,12 +11,17 @@ import com.wkclz.micro.dag.bean.enums.BackoffType;
 import com.wkclz.micro.dag.bean.enums.DefinitionStatus;
 import com.wkclz.micro.dag.bean.enums.InstanceStatus;
 import com.wkclz.micro.dag.bean.enums.NodeStatus;
+import com.wkclz.micro.dag.bean.req.InstancePageReq;
 import com.wkclz.micro.dag.bean.req.LaunchReq;
+import com.wkclz.micro.dag.bean.resp.InstanceDagViewResp;
+import com.wkclz.micro.dag.bean.resp.InstanceResp;
+import com.wkclz.micro.dag.bean.resp.NodeInstanceResp;
 import com.wkclz.micro.dag.mapper.DagInstanceMapper;
 import com.wkclz.micro.dag.mapper.DagNodeInstanceMapper;
 import com.wkclz.mybatis.service.BaseService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
@@ -26,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -109,6 +116,78 @@ public class DagInstanceService extends BaseService<DagInstance, DagInstanceMapp
         log.info("micro-dag: 实例发起成功 id={} instanceCode={} dagCode={} nodes={}",
             instance.getId(), instance.getInstanceCode(), def.getDagCode(), nodes.size());
         return instance.getId();
+    }
+
+    /** 实例分页（instanceCode/traceCode/status/dagCode 等值过滤） */
+    public PageData<InstanceResp> page(InstancePageReq req) {
+        log.info("micro-dag: 实例分页 instanceCode={} traceCode={} status={}", req.getInstanceCode(), req.getTraceCode(), req.getStatus());
+        DagInstance query = new DagInstance();
+        query.setInstanceCode(req.getInstanceCode());
+        query.setTraceCode(req.getTraceCode());
+        query.setStatus(req.getStatus());
+        query.setDagCode(req.getDagCode());
+        PageData<DagInstance> page = selectPage(query);
+        List<InstanceResp> list = page.getRecords().stream().map(this::toResp).toList();
+        return PageData.convert(page, list);
+    }
+
+    /** 实例详情 + DAG 节点状态视图（设计器画布/监控共用数据结构） */
+    public InstanceDagViewResp detail(String instanceCode) {
+        log.info("micro-dag: 实例详情 instanceCode={}", instanceCode);
+        DagInstance where = new DagInstance();
+        where.setInstanceCode(instanceCode);
+        DagInstance instance = selectOneByEntity(where);
+        if (instance == null) {
+            throw ValidationException.of("实例不存在: " + instanceCode);
+        }
+        InstanceDagViewResp view = new InstanceDagViewResp();
+        view.setInstance(toResp(instance));
+
+        List<DagNodeInstance> nodes = nodeInstanceMapper.listByInstanceCode(instance.getInstanceCode());
+        DagDefModel dagDef = definitionService.load(instance.getDagCode(), instance.getDagVersion());
+        Map<String, NodeDef> defMap = dagDef.getNodes() == null ? Map.of()
+            : dagDef.getNodes().stream().collect(Collectors.toMap(NodeDef::getCode, n -> n));
+        List<NodeInstanceResp> nodeResps = nodes.stream().map(n -> {
+            NodeInstanceResp r = new NodeInstanceResp();
+            BeanUtils.copyProperties(n, r);
+            NodeDef nd = defMap.get(n.getNodeCode());
+            if (nd != null) {
+                r.setPosX(nd.getPosX());
+                r.setPosY(nd.getPosY());
+            }
+            return r;
+        }).toList();
+        view.setNodes(nodeResps);
+
+        Map<String, Map<String, Object>> outputs = new HashMap<>();
+        for (DagNodeInstance n : nodes) {
+            outputs.put(n.getNodeCode(), parseMap(n.getOutputJson()));
+        }
+        view.setNodeOutputs(outputs);
+        view.setCtx(parseMap(instance.getContextJson()));
+
+        // 画布连线与节点坐标均来自定义快照（posX/posY 已随 NodeInstanceResp 带出）
+        view.setEdges(dagDef.getEdges());
+        return view;
+    }
+
+    private InstanceResp toResp(DagInstance instance) {
+        InstanceResp resp = new InstanceResp();
+        BeanUtils.copyProperties(instance, resp);
+        return resp;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> parseMap(String json) {
+        if (json == null || json.isBlank()) {
+            return Map.of();
+        }
+        try {
+            return OBJECT_MAPPER.readValue(json, Map.class);
+        } catch (Exception e) {
+            log.error("micro-dag: JSON 解析失败 json={}", json, e);
+            return Map.of();
+        }
     }
 
     /** instance_code 生成（模块内实现：时间戳+随机，不依赖 micro-seq） */

@@ -1,5 +1,6 @@
 package com.wkclz.micro.dag.service;
 
+import com.wkclz.core.base.PageData;
 import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.dag.bean.dto.DagDefModel;
 import com.wkclz.micro.dag.bean.dto.EdgeDef;
@@ -7,12 +8,16 @@ import com.wkclz.micro.dag.bean.dto.NodeDef;
 import com.wkclz.micro.dag.bean.entity.DagDefinition;
 import com.wkclz.micro.dag.bean.entity.DagInstance;
 import com.wkclz.micro.dag.bean.entity.DagNodeInstance;
+import com.wkclz.micro.dag.bean.req.InstancePageReq;
 import com.wkclz.micro.dag.bean.req.LaunchReq;
+import com.wkclz.micro.dag.bean.resp.InstanceDagViewResp;
+import com.wkclz.micro.dag.bean.resp.InstanceResp;
 import com.wkclz.micro.dag.mapper.DagInstanceMapper;
 import com.wkclz.micro.dag.mapper.DagNodeInstanceMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
@@ -22,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -119,5 +125,72 @@ class DagInstanceServiceTest {
         when(mapper.selectCountByEntity(any())).thenReturn(0L);
         when(definitionService.selectByEntity(any())).thenReturn(List.of());
         assertThrows(ValidationException.class, () -> service.launch(launchReq()));
+    }
+
+    @Test
+    void page_mapsToResp() {
+        DagInstanceService spyService = Mockito.spy(service);
+        DagInstance inst = new DagInstance();
+        inst.setInstanceCode("INST001");
+        inst.setDagCode("d1");
+        inst.setDagVersion(3);
+        inst.setStatus("RUNNING");
+        doReturn(PageData.of(List.of(inst), 1L, 1L, 10L)).when(spyService).selectPage(any());
+
+        InstancePageReq req = new InstancePageReq();
+        req.setStatus("RUNNING");
+        PageData<InstanceResp> result = spyService.page(req);
+
+        assertEquals(1, result.getRecords().size());
+        assertEquals("INST001", result.getRecords().get(0).getInstanceCode());
+        assertEquals("d1", result.getRecords().get(0).getDagCode());
+        assertEquals(1L, result.getTotal());
+    }
+
+    @Test
+    void detail_assemblesDagView() {
+        DagInstance inst = new DagInstance();
+        inst.setInstanceCode("INST001");
+        inst.setDagCode("d1");
+        inst.setDagVersion(3);
+        inst.setStatus("RUNNING");
+        inst.setContextJson("{\"t\":\"api\"}");
+        when(mapper.selectOneByEntity(any())).thenReturn(inst);
+
+        DagDefModel def = new DagDefModel();
+        NodeDef na = new NodeDef();
+        na.setCode("a");
+        na.setPosX(10);
+        na.setPosY(20);
+        def.setNodes(List.of(na));
+        EdgeDef e = new EdgeDef();
+        e.setFromCode("a");
+        e.setToCode("b");
+        def.setEdges(List.of(e));
+        when(definitionService.load("d1", 3)).thenReturn(def);
+
+        DagNodeInstance nodeA = new DagNodeInstance();
+        nodeA.setInstanceCode("INST001");
+        nodeA.setNodeCode("a");
+        nodeA.setStatus("RUNNING");
+        nodeA.setOutputJson("{\"rows\":1}");
+        when(nodeInstanceMapper.listByInstanceCode("INST001")).thenReturn(List.of(nodeA));
+
+        InstanceDagViewResp view = service.detail("INST001");
+
+        assertEquals("INST001", view.getInstance().getInstanceCode());
+        assertEquals(1, view.getNodes().size());
+        assertEquals("RUNNING", view.getNodes().get(0).getStatus());
+        assertEquals(Integer.valueOf(10), view.getNodes().get(0).getPosX());
+        assertEquals(Integer.valueOf(20), view.getNodes().get(0).getPosY());
+        assertEquals("b", view.getEdges().get(0).getToCode());
+        assertEquals(1, view.getNodeOutputs().get("a").get("rows"));
+        assertEquals("api", view.getCtx().get("t"));
+    }
+
+    @Test
+    void detail_notExist_throws() {
+        when(mapper.selectOneByEntity(any())).thenReturn(null);
+        assertThrows(ValidationException.class, () -> service.detail("INST404"));
     }
 }
