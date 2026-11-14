@@ -55,6 +55,12 @@
         WHERE instance_code = #{instanceCode} AND deleted = 0
     </update>
 
+    <select id="listExpiredLease" resultType="com.wkclz.micro.dag.bean.entity.DagNodeInstance">
+        SELECT id, instance_code, node_code, status, attempt, lease_owner
+        FROM dag_node_instance
+        WHERE status = 'RUNNING' AND lease_expire_time &lt; #{now} AND deleted = 0
+    </select>
+
     <select id="listByInstanceCode" resultType="com.wkclz.micro.dag.bean.entity.DagNodeInstance">
         SELECT id, instance_code, node_code, node_name, status, attempt, handler,
                max_retry, interval_sec, backoff, timeout_ms,

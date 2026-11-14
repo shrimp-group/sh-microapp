@@ -28,6 +28,9 @@ public interface DagNodeInstanceMapper extends BaseMapper<DagNodeInstance> {
                    @Param("leaseOwner") String leaseOwner,
                    @Param("leaseExpireTime") LocalDateTime leaseExpireTime);
 
+    /** 查询租约过期的 RUNNING 节点（回收前先查出以写 LEASE_RECLAIM 日志） */
+    List<DagNodeInstance> listExpiredLease(@Param("now") LocalDateTime now);
+
     /** 幂等辅助：仅当 trace_code 为空时回填（运行期生成的编码） */
     int backfillTraceCode(@Param("instanceCode") String instanceCode, @Param("traceCode") String traceCode);
 
