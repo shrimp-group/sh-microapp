@@ -46,6 +46,20 @@ public class DataFetchHandler implements NodeHandler {
 | dag.worker.threads | CPU*2 | 执行线程池大小 |
 | dag.lease.fixed-ms | 120000 | 租约兜底时长 |
 | dag.channel | auto | auto=事件唤醒+轮询兜底 / db=仅轮询 / pubsub=仅事件 |
+| dag.demo-enabled | false | demo handler 注册开关（见下） |
+
+## Demo Handler（可选）
+
+`handler/demo` 包内置 5 个演示 handler，`dag.demo-enabled=true` 时注册到设计器 handler 列表，默认关闭不注册。
+GraalJS 依赖为 optional，classpath 缺失时 `demo-script-exec` 自动跳过注册（版本须与运行 JDK 匹配，23.x 不兼容 JDK 25）。
+
+| nodeCode | 名称 | 入参 | 输出 |
+|---|---|---|---|
+| demo-log-print | 演示-日志打印 | 任意 | `{echo: 入参}` |
+| demo-delay | 演示-延时 | ms（默认 1000，上限 300000） | `{sleptMs}`；演示协作式中断 |
+| demo-transform | 演示-数据转换 | 任意 | 入参合并 + `processedAt` |
+| demo-http-call | 演示-HTTP调用 | url（必填）、method、headers、body | `{status, body}`（body 截断 2000 字符） |
+| demo-script-exec | 演示-JS脚本 | script（定义 `handle(input)`）、input（缺省为全部入参） | handle 返回对象原样输出，标量包装为 `{result}` |
 
 ## 核心机制速记
 
