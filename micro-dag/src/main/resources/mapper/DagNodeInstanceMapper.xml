@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkclz.micro.dag.mapper.DagNodeInstanceMapper">
+
+    <!-- CAS 领取：version 乐观锁 + 状态前置校验，双保险防重复执行 -->
+    <update id="casClaim">
+        UPDATE dag_node_instance
+        SET status = 'RUNNING',
+            lease_owner = #{leaseOwner},
+            lease_expire_time = #{leaseExpireTime},
+            attempt = attempt + 1,
+            error_msg = NULL,
+            version = version + 1
+        WHERE id = #{id}
+          AND status = 'PENDING'
+          AND deleted = 0
+          AND version = #{version}
+    </update>
+
+    <update id="promoteRetrying">
+        UPDATE dag_node_instance
+        SET status = 'PENDING', next_retry_time = NULL, version = version + 1
+        WHERE status = 'RETRYING' AND next_retry_time &lt;= #{now} AND deleted = 0
+    </update>
+
+    <update id="reclaimExpiredLease">
+        UPDATE dag_node_instance
+        SET status = 'PENDING',
+            lease_owner = NULL,
+            lease_expire_time = NULL,
+            version = version + 1
+        WHERE status = 'RUNNING' AND lease_expire_time &lt; #{now} AND deleted = 0
+    </update>
+
+    <update id="backfillTraceCode">
+        UPDATE dag_instance
+        SET trace_code = #{traceCode}
+        WHERE instance_code = #{instanceCode}
+          AND (trace_code IS NULL OR trace_code = '')
+          AND deleted = 0
+    </update>
+
+    <update id="clearInterruptFlag">
+        UPDATE dag_node_instance
+        SET interrupt_flag = 0
+        WHERE instance_code = #{instanceCode} AND deleted = 0
+    </update>
+
+    <select id="listByInstanceCode" resultType="com.wkclz.micro.dag.bean.entity.DagNodeInstance">
+        SELECT id, instance_code, node_code, node_name, status, attempt, handler,
+               max_retry, interval_sec, backoff, timeout_ms,
+               input_params_json, output_json, lease_owner, lease_expire_time,
+               interrupt_flag, cleanup_flag, error_msg, next_retry_time,
+               skip_reason, stop_reason, version
+        FROM dag_node_instance
+        WHERE instance_code = #{instanceCode} AND deleted = 0
+        ORDER BY id
+    </select>
+
+</mapper>
