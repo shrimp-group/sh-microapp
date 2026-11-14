@@ -94,7 +94,7 @@ public class DagValidator {
         inDegree.forEach((k, v) -> { if (v == 0) { zero.add(k); } });
         int visited = 0;
         while (!zero.isEmpty()) {
-            String cur = zero.remove(zero.size() - 1);
+            String cur = zero.removeLast();
             visited++;
             for (String next : adj.get(cur)) {
                 int left = inDegree.merge(next, -1, Integer::sum);
