@@ -34,6 +34,8 @@ public class FileosSignApiImpl extends AbstractFileosApi implements FileosSignAp
 
     private static final Pattern IMG_SRC_PATTERN = Pattern.compile("<img[^>]+src\\s*=\\s*['\"]([^'\"]+)['\"][^>]*>");
 
+    private static final Pattern URL_CANDIDATE_PATTERN = Pattern.compile("https?://[^\\s\"'<>\\\\,]+");
+
     @Autowired
     private ImageProcessHelper imageProcessHelper;
 
@@ -224,6 +226,29 @@ public class FileosSignApiImpl extends AbstractFileosApi implements FileosSignAp
     }
 
     @Override
+    public String signContentPlus(String content) {
+        log.info("signContentPlus, content len: {}", StringUtils.length(content));
+        if (StringUtils.isBlank(content)) {
+            return content;
+        }
+        // 富文本场景委托 signContent
+        if (content.contains("<img")) {
+            return signContent(content);
+        }
+        // 提取 URL 候选：覆盖逗号分隔 URL 与 JSON 对象转字符串场景
+        List<String> urls = extractUrlCandidates(content);
+        if (CollectionUtils.isNotEmpty(urls)) {
+            List<String> signs = sign(urls);
+            return replaceUrls(content, urls, signs);
+        }
+        // 无 URL 且含逗号：按逗号分隔 fileId 处理
+        if (content.contains(",")) {
+            return sign(content);
+        }
+        return content;
+    }
+
+    @Override
     public <P, R, V> void sign(P entity, Function<P, R> getter, BiConsumer<P, V> setter) {
         R fileId = getter.apply(entity);
         if (!(fileId instanceof String)) {
@@ -263,6 +288,15 @@ public class FileosSignApiImpl extends AbstractFileosApi implements FileosSignAp
         Matcher matcher = IMG_SRC_PATTERN.matcher(text);
         while (matcher.find()) {
             urls.add(matcher.group(1));
+        }
+        return urls;
+    }
+
+    private List<String> extractUrlCandidates(String text) {
+        List<String> urls = new ArrayList<>();
+        Matcher matcher = URL_CANDIDATE_PATTERN.matcher(text);
+        while (matcher.find()) {
+            urls.add(matcher.group());
         }
         return urls;
     }
