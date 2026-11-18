@@ -11,7 +11,8 @@ public interface Route {
     String PREFIX = "/micro-dag";
 
     // 定义
-    String DEFINITION_SAVE = "/definition/save";
+    String DEFINITION_CREATE = "/definition/create";
+    String DEFINITION_UPDATE = "/definition/update";
     String DEFINITION_PUBLISH = "/definition/publish";
     String DEFINITION_PAGE = "/definition/page";
     String DEFINITION_DETAIL = "/definition/detail";

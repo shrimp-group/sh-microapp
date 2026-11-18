@@ -11,4 +11,7 @@ public class HandlerInfoResp {
 
     @Schema(description = "handler 名称")
     private String name;
+
+    @Schema(description = "节点分类 SYSTEM/DEMO/BUSINESS")
+    private String category;
 }

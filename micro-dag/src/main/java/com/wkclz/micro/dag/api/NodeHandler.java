@@ -1,5 +1,7 @@
 package com.wkclz.micro.dag.api;
 
+import com.wkclz.micro.dag.bean.enums.NodeCategory;
+
 /**
  * 业务节点处理器 SPI：业务方实现并注册为 Spring Bean 即可被编排引用
  */
@@ -11,6 +13,11 @@ public interface NodeHandler {
     /** 节点名称（设计器展示用），默认取 nodeCode */
     default String nodeName() {
         return nodeCode();
+    }
+
+    /** 节点分类：系统节点永久生效，demo 节点受 dag.demo-enabled 限制，业务节点默认 BUSINESS */
+    default NodeCategory category() {
+        return NodeCategory.BUSINESS;
     }
 
     /**

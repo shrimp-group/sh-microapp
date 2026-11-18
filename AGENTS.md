@@ -107,7 +107,7 @@
 | `micro-autotest` | 自动化测试 | `/micro-autotest` | REST 接口扫描/自动 Mock/测试执行/报告生成(MD+HTML) |
 | `micro-report` | 报表管理 | `/micro-report` | SQL 报表定义/参数与结果字段管理/动态查询执行/Excel 导出 |
 | `micro-flowable` | 流程引擎 | `/micro-flowable` | 对接 sh-flowable-server（依赖 sh-flowable-client SDK），封装流程定义/流程实例/任务/历史等能力 |
-| `micro-dag` | 业务编排 | `/micro-dag` | DAG 定义/发布、分布式对等调度、失败重试、人工干预治理、图形编排设计器（sh-mdm-ui） |
+| `micro-dag` | 业务编排 | `/micro-dag` | DAG 定义/发布、分布式对等调度、失败重试、人工干预治理、节点分类（SYSTEM/DEMO/BUSINESS）、系统节点 handler 化（开始/结束/分支/定时器）、开始节点时间驱动（cron 定时发起）、图形编排设计器（sh-mdm-ui） |
 
 ---
 

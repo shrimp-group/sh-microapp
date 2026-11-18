@@ -19,6 +19,7 @@ public class DagProperties {
     private Scheduler scheduler = new Scheduler();
     private Worker worker = new Worker();
     private Lease lease = new Lease();
+    private Trigger trigger = new Trigger();
 
     /** 调度触发通道：auto=事件唤醒+轮询兜底 / db=仅轮询 / pubsub=仅事件唤醒(不推荐) */
     private String channel = "auto";
@@ -41,6 +42,14 @@ public class DagProperties {
     public static class Lease {
         /** 租约兜底时长 ms（与节点 timeoutMs 取小） */
         private long fixedMs = 120000;
+    }
+
+    @Data
+    public static class Trigger {
+        /** 时间驱动触发器开关 */
+        private boolean enabled = true;
+        /** 触发轮询间隔 ms */
+        private long intervalMs = 30000;
     }
 
 }

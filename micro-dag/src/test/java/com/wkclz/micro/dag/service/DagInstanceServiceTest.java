@@ -8,6 +8,7 @@ import com.wkclz.micro.dag.bean.dto.NodeDef;
 import com.wkclz.micro.dag.bean.entity.DagDefinition;
 import com.wkclz.micro.dag.bean.entity.DagInstance;
 import com.wkclz.micro.dag.bean.entity.DagNodeInstance;
+import com.wkclz.micro.dag.bean.enums.NodeType;
 import com.wkclz.micro.dag.bean.req.InstancePageReq;
 import com.wkclz.micro.dag.bean.req.LaunchReq;
 import com.wkclz.micro.dag.bean.resp.InstanceDagViewResp;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.test.util.ReflectionTestUtils;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 import java.util.Map;
@@ -33,6 +35,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class DagInstanceServiceTest {
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private DagInstanceService service;
     private DagInstanceMapper mapper;
@@ -118,6 +122,70 @@ class DagInstanceServiceTest {
     void launch_duplicateTraceCode_throws() {
         when(mapper.selectCountByEntity(any())).thenReturn(1L);
         assertThrows(ValidationException.class, () -> service.launch(launchReq()));
+    }
+
+    @Test
+    void launch_branchNode_snapshotsConditionEdgesIntoInput() {
+        when(mapper.selectCountByEntity(any())).thenReturn(0L);
+        when(definitionService.load("d1", 3)).thenReturn(branchDefModel());
+        LaunchReq req = launchReq();
+        // 实例参数携带与分支目标同名的 key，验证不可覆盖 branches 系统键
+        req.setParams(Map.of("sourceType", "api", "x", "override"));
+
+        service.launch(req);
+
+        ArgumentCaptor<List<DagNodeInstance>> nodeCap = ArgumentCaptor.captor();
+        verify(nodeInstanceMapper).insertBatch(nodeCap.capture());
+        DagNodeInstance br = nodeCap.getValue().stream()
+            .filter(n -> "br".equals(n.getNodeCode())).findFirst().orElseThrow();
+        Map<String, Object> input = parseMap(br.getInputParamsJson());
+        // BRANCH 出边条件按 toCode 快照进输入参数
+        assertEquals("${ctx.sourceType} == 'x'", input.get("x"));
+        assertEquals("${ctx.sourceType} == 'y'", input.get("y"));
+        assertEquals("api", input.get("sourceType"));
+        // 非 BRANCH 节点不携带分支快照，实例参数保持原样
+        DagNodeInstance x = nodeCap.getValue().stream()
+            .filter(n -> "x".equals(n.getNodeCode())).findFirst().orElseThrow();
+        assertEquals("override", parseMap(x.getInputParamsJson()).get("x"));
+    }
+
+    /** 组装 d1 v3 的分支定义：br --条件边--> x / y */
+    private DagDefModel branchDefModel() {
+        NodeDef br = new NodeDef();
+        br.setCode("br");
+        br.setName("br");
+        br.setNodeType(NodeType.BRANCH.getCode());
+        NodeDef x = new NodeDef();
+        x.setCode("x");
+        x.setName("x");
+        x.setHandler("h1");
+        NodeDef y = new NodeDef();
+        y.setCode("y");
+        y.setName("y");
+        y.setHandler("h1");
+        EdgeDef ex = new EdgeDef();
+        ex.setEdgeCode("br->x");
+        ex.setFromCode("br");
+        ex.setToCode("x");
+        ex.setType(EdgeDef.TYPE_CONDITION);
+        ex.setWhenExpr("${ctx.sourceType} == 'x'");
+        EdgeDef ey = new EdgeDef();
+        ey.setEdgeCode("br->y");
+        ey.setFromCode("br");
+        ey.setToCode("y");
+        ey.setType(EdgeDef.TYPE_CONDITION);
+        ey.setWhenExpr("${ctx.sourceType} == 'y'");
+        DagDefModel def = new DagDefModel();
+        def.setDagCode("d1");
+        def.setDagVersion(3);
+        def.setNodes(List.of(br, x, y));
+        def.setEdges(List.of(ex, ey));
+        return def;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> parseMap(String json) {
+        return OBJECT_MAPPER.readValue(json, Map.class);
     }
 
     @Test

@@ -24,6 +24,9 @@ public class DagNode extends BaseEntity {
     @Schema(description = "节点名称")
     private String nodeName;
 
+    @Schema(description = "节点类型 NORMAL/START/END/BRANCH")
+    private String nodeType;
+
     @Schema(description = "NodeHandler 编码")
     private String handler;
 

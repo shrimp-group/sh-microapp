@@ -31,6 +31,21 @@
             <groupId>com.wkclz.framework</groupId>
             <artifactId>sh-redis</artifactId>
         </dependency>
+        <!-- GraalJS（可选）：仅 demo-script-exec 使用，宿主应用未引入时该 handler 自动跳过注册。
+             版本须与运行 JDK 匹配（23.x 不兼容 JDK 25） -->
+        <dependency>
+            <groupId>org.graalvm.polyglot</groupId>
+            <artifactId>polyglot</artifactId>
+            <version>25.0.1</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.graalvm.polyglot</groupId>
+            <artifactId>js</artifactId>
+            <version>25.0.1</version>
+            <type>pom</type>
+            <optional>true</optional>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

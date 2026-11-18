@@ -1,6 +1,7 @@
 package com.wkclz.micro.dag.api;
 
 import com.wkclz.core.exception.ValidationException;
+import com.wkclz.micro.dag.bean.enums.NodeCategory;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -34,5 +35,10 @@ class NodeHandlerRegistryTest {
         NodeHandlerRegistry registry = new NodeHandlerRegistry(List.of(new DummyHandler("a"), new DummyHandler("b")));
         assertEquals("a", registry.get("a").nodeCode());
         assertEquals(2, registry.codes().size());
+    }
+
+    @Test
+    void category_defaultsToBusiness() {
+        assertEquals(NodeCategory.BUSINESS, new DummyHandler("a").category());
     }
 }

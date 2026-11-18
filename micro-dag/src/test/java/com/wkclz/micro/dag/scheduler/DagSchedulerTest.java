@@ -1,14 +1,18 @@
 package com.wkclz.micro.dag.scheduler;
 
 import com.wkclz.micro.dag.bean.dto.DagDefModel;
+import com.wkclz.micro.dag.bean.dto.NodeDef;
 import com.wkclz.micro.dag.bean.entity.DagInstance;
 import com.wkclz.micro.dag.bean.entity.DagNodeInstance;
 import com.wkclz.micro.dag.bean.enums.ExecutionEvent;
+import com.wkclz.micro.dag.bean.enums.NodeType;
+import com.wkclz.micro.dag.bean.enums.SystemHandler;
 import com.wkclz.micro.dag.config.DagProperties;
 import com.wkclz.micro.dag.core.DagReadyCalculator;
 import com.wkclz.micro.dag.mapper.DagInstanceMapper;
 import com.wkclz.micro.dag.mapper.DagNodeInstanceMapper;
 import com.wkclz.micro.dag.service.DagDefinitionService;
+import com.wkclz.micro.dag.service.DagEngineService;
 import com.wkclz.micro.dag.service.DagExecutionLogService;
 import com.wkclz.micro.dag.worker.DagWorkerExecutor;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,6 +45,7 @@ class DagSchedulerTest {
     private DagExecutionLogService logService;
     private DagReadyCalculator readyCalculator;
     private DagWorkerExecutor worker;
+    private DagEngineService engineService;
     private DagProperties properties;
     private DagScheduler scheduler;
 
@@ -52,9 +57,10 @@ class DagSchedulerTest {
         logService = mock(DagExecutionLogService.class);
         readyCalculator = mock(DagReadyCalculator.class);
         worker = mock(DagWorkerExecutor.class);
+        engineService = mock(DagEngineService.class);
         properties = new DagProperties();
         scheduler = new DagScheduler(instanceMapper, nodeMapper, definitionService, logService,
-            readyCalculator, worker, properties);
+            readyCalculator, worker, engineService, properties);
     }
 
     @Test
@@ -115,6 +121,56 @@ class DagSchedulerTest {
     }
 
     @Test
+    void scan_specialNodeWithoutHandler_directSuccessWithoutWorker() {
+        DagInstance instance = instance();
+        DagNodeInstance node = node("A", null);
+        node.setHandler(null);   // 存量兼容：START/END/BRANCH 未配置 handler 时保持直达成功
+        when(instanceMapper.listRunning()).thenReturn(List.of(instance));
+        when(nodeMapper.listByInstanceCode(INSTANCE_CODE)).thenReturn(List.of(node));
+        when(readyCalculator.readyNodes(any(), any(), any(), any())).thenReturn(Set.of("A"));
+        when(nodeMapper.casClaim(any(), any(), anyString(), any())).thenReturn(1);
+        DagDefModel def = new DagDefModel();
+        NodeDef startNode = new NodeDef();
+        startNode.setCode("A");
+        startNode.setNodeType(NodeType.START.getCode());
+        def.setNodes(List.of(startNode));
+        when(definitionService.load(any(), any())).thenReturn(def);
+
+        scheduler.scan();
+
+        // 特殊节点且 handler 为空：不投 worker，直达成功回调
+        verify(worker, never()).submit(any(), any());
+        verify(engineService).onSuccess(eq(INSTANCE_CODE), eq("A"), any());
+        verify(logService).log(eq(INSTANCE_CODE), eq("A"), eq(1), eq(ExecutionEvent.CLAIM), isNull(), anyString());
+    }
+
+    @Test
+    void scan_specialNodeWithHandler_submitsToWorker() {
+        DagInstance instance = instance();
+        DagNodeInstance node = node("A", null);
+        when(instanceMapper.listRunning()).thenReturn(List.of(instance));
+        when(nodeMapper.listByInstanceCode(INSTANCE_CODE)).thenReturn(List.of(node));
+        when(readyCalculator.readyNodes(any(), any(), any(), any())).thenReturn(Set.of("A"));
+        when(nodeMapper.casClaim(any(), any(), anyString(), any())).thenReturn(1);
+        DagDefModel def = new DagDefModel();
+        NodeDef startNode = new NodeDef();
+        startNode.setCode("A");
+        startNode.setNodeType(NodeType.START.getCode());
+        startNode.setHandler(SystemHandler.START.getCode());   // 特殊节点配置了系统 handler，统一走 worker 执行链路
+        def.setNodes(List.of(startNode));
+        when(definitionService.load(any(), any())).thenReturn(def);
+
+        scheduler.scan();
+
+        // 特殊节点带 handler：提交 worker 由 handler 执行，不再直达成功
+        ArgumentCaptor<DagNodeInstance> captor = ArgumentCaptor.forClass(DagNodeInstance.class);
+        verify(worker).submit(captor.capture(), eq(instance));
+        assertEquals("A", captor.getValue().getNodeCode());
+        verify(engineService, never()).onSuccess(any(), any(), any());
+        verify(logService).log(eq(INSTANCE_CODE), eq("A"), eq(1), eq(ExecutionEvent.CLAIM), isNull(), anyString());
+    }
+
+    @Test
     void scan_claimFailed_skipsSubmit() {
         DagInstance instance = instance();
         DagNodeInstance node = node("A", null);
@@ -126,6 +182,7 @@ class DagSchedulerTest {
         scheduler.scan();
 
         verify(worker, never()).submit(any(), any());
+        verify(engineService, never()).onSuccess(any(), any(), any());
         verify(logService, never()).log(any(), any(), any(), any(), any(), any());
     }
 

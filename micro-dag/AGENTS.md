@@ -4,7 +4,8 @@
 
 嵌入式轻量分布式 DAG 编排引擎：流程定义/发布、实例发起、分布式对等调度（CAS 领取 + 租约故障转移）、
 失败自动重试（FIXED/EXPONENTIAL 退避）、人工干预治理（中断/改参/跳过/重置/重跑/从节点重跑/终止）、
-重跑清理钩子、唯一跟踪编码回填、自研分支表达式引擎。
+重跑清理钩子、唯一跟踪编码回填、自研分支表达式引擎、节点分类（SYSTEM/DEMO/BUSINESS）、
+系统节点 handler 化（开始/结束/分支/定时器）、开始节点时间驱动（cron 定时自动发起实例）。
 
 设计文档：`docs/superpowers/specs/2026-11-14-micro-dag-design.md`
 
@@ -19,7 +20,8 @@
 </dependency>
 ```
 
-2. 实现 NodeHandler 并注册为 Spring Bean：
+2. 实现 NodeHandler 并注册为 Spring Bean（默认分类 BUSINESS，无需额外标注；demo handler 标 DEMO，
+   系统 handler 标 SYSTEM）：
 
 ```java
 @Component
@@ -33,8 +35,8 @@ public class DataFetchHandler implements NodeHandler {
 }
 ```
 
-3. 执行建表脚本 `sql/dag_init.sql`，然后调用 `POST /micro-dag/definition/save` + `/definition/publish`
-   创建流程，`POST /micro-dag/instance/launch` 发起实例。
+3. 执行建表脚本 `sql/dag_init.sql`，然后调用 `POST /micro-dag/definition/create`（后端生成 dagCode）+ `/definition/publish`
+   创建流程，`POST /micro-dag/definition/update` 编辑 DRAFT 草稿，`POST /micro-dag/instance/launch` 发起实例。
 
 ## 配置项（dag.*）
 
@@ -47,10 +49,38 @@ public class DataFetchHandler implements NodeHandler {
 | dag.lease.fixed-ms | 120000 | 租约兜底时长 |
 | dag.channel | auto | auto=事件唤醒+轮询兜底 / db=仅轮询 / pubsub=仅事件 |
 | dag.demo-enabled | false | demo handler 注册开关（见下） |
+| dag.trigger.enabled | true | START 节点时间驱动触发器开关 |
+| dag.trigger.interval-ms | 30000 | 时间驱动触发器轮询间隔 |
+
+## 系统 Handler（内置，永久生效）
+
+`handler/system` 包内置 4 个系统 handler，无条件注册（不受 dag.demo-enabled 影响），category=SYSTEM。
+START/END/BRANCH 节点统一走 worker 执行链路；存量定义（特殊节点无 handler）由调度器直达成功兼容。
+
+| nodeCode | 名称 | 说明 | 入参 | 输出 |
+|---|---|---|---|---|
+| system-start | 系统-开始节点 | 透传入参供下游 `${out.<node>.*}` 引用；支持时间驱动 | 节点 params | 入参透传 |
+| system-end | 系统-结束节点 | 直接成功 | 任意 | `{}` |
+| system-branch | 系统-分支节点 | 出边条件求值明细（launch 时 branches 快照进 inputParams；下游就绪判断逻辑不变） | branches（toCode→whenExpr，launch 自动写入） | `{branches: {toCode: bool}, selected: [toCode]}` |
+| system-timer | 系统-定时器 | 等待到点后成功（分片 sleep + 协作式中断），全局定时器节点无需业务实现 | delayMs（0~86400000）/ delayUntil（ISO-8601） | `{waitedMs, targetTime}` |
+
+### 开始节点时间驱动
+
+START 节点 params 配置触发方式（缺省 MANUAL 手动 launch）：
+
+```json
+{"triggerType": "TIMER", "cron": "0 0 2 * * *", "triggerParams": {"bizKey": "value"}}
+```
+
+- `DagTriggerScheduler` 轮询 PUBLISHED 定义（dag.trigger.interval-ms），cron（Spring 6 域）到点自动 launch 实例
+- 幂等：traceCode = `TIMER-{dagCode}-v{version}-{触发时间}`，同一触发点仅发起一个实例；Redis 锁防集群竞争
+- 语义：停机期间错过的历史槽位不补触发，仅补触发最近一个到期槽位；触发状态内存态，重启自动重建
+- `dag.enabled=false` 或 `dag.trigger.enabled=false` 时触发器不运行，手动 launch 不受影响
+- 校验：triggerType=TIMER 时 cron 必填且可解析（DagValidator）
 
 ## Demo Handler（可选）
 
-`handler/demo` 包内置 5 个演示 handler，`dag.demo-enabled=true` 时注册到设计器 handler 列表，默认关闭不注册。
+`handler/demo` 包内置 5 个演示 handler（category=DEMO），`dag.demo-enabled=true` 时注册到设计器 handler 列表，默认关闭不注册（业务接入时不注册 demo 节点）。
 GraalJS 依赖为 optional，classpath 缺失时 `demo-script-exec` 自动跳过注册（版本须与运行 JDK 匹配，23.x 不兼容 JDK 25）。
 
 | nodeCode | 名称 | 入参 | 输出 |
@@ -68,9 +98,18 @@ GraalJS 依赖为 optional，classpath 缺失时 `demo-script-exec` 自动跳过
 - 故障转移：租约过期（lease_expire_time < now）→ 重置 PENDING 重派
 - 重试：失败且 attempt ≤ maxRetry → RETRYING + next_retry_time，到期由调度提升
 - 分支：上游完成后对出边求值（`${ctx.*}` / `${out.<node>.*}` + 比较 + and/or），不满足级联 SKIPPED
+- 特殊节点直达：仅 START/END/BRANCH 且 handler 为空（存量兼容）领取后直达成功；有 handler 一律走 worker
+- 节点分类：SYSTEM 永久生效 / DEMO 受 dag.demo-enabled 限制 / BUSINESS 业务接入默认
 - 清理钩子：重跑目标 attempt > 0 → cleanup_flag=1 → 执行前先调 handler.cleanup
 
 ## API 一览（前缀 /micro-dag，详见 rest/Route.java）
 
-定义 save/publish/page/detail/copy · handler/list · expression/preview ·
+定义 create/update/publish/page/detail/copy · handler/list · expression/preview ·
 实例 launch/page/detail/terminate/rerun-from · 节点 detail/interrupt/params/skip/reset/rerun
+
+## 前端（独立工程 sh-dag-ui，appCode=dag）
+
+- DagDefinitionList：流程定义分页列表（查询/新建/设计/复制/发布），设计动作经全屏弹窗内嵌设计器
+- DagDesigner：纯设计器（左 handler 面板 / 中画布 / 右属性面板），保存/发布/自动布局
+- DagGraph：X6 画布封装——节点左右端口磁吸连线（仅 out→in）、mousedown 即选中、
+  拖动坐标实时回写 def、拖入与连线均为增量操作（不做全量 render，避免坐标回跳重排）

@@ -3,7 +3,9 @@ package com.wkclz.micro.dag.rest;
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.base.R;
 import com.wkclz.micro.dag.bean.entity.DagDefinition;
-import com.wkclz.micro.dag.bean.req.DefinitionSaveReq;
+import com.wkclz.micro.dag.bean.req.DefinitionCreateReq;
+import com.wkclz.micro.dag.bean.req.DefinitionUpdateReq;
+import com.wkclz.micro.dag.bean.resp.DefinitionCreateResp;
 import com.wkclz.micro.dag.bean.resp.DefinitionResp;
 import com.wkclz.micro.dag.service.DagDefinitionService;
 import lombok.extern.slf4j.Slf4j;
@@ -23,10 +25,16 @@ public class DagDefinitionRest {
     @Autowired
     private DagDefinitionService service;
 
-    @PostMapping(Route.DEFINITION_SAVE)
-    public R<Long> save(@RequestBody DefinitionSaveReq req) {
-        log.info("micro-dag: 保存定义 dagCode={} id={}", req.getDagCode(), req.getId());
-        return R.ok(service.saveDraft(req));
+    @PostMapping(Route.DEFINITION_CREATE)
+    public R<DefinitionCreateResp> create(@RequestBody DefinitionCreateReq req) {
+        log.info("micro-dag: 创建定义 dagName={}", req.getDagName());
+        return R.ok(service.create(req));
+    }
+
+    @PostMapping(Route.DEFINITION_UPDATE)
+    public R<Long> update(@RequestBody DefinitionUpdateReq req) {
+        log.info("micro-dag: 更新定义 id={} dagName={}", req.getId(), req.getDagName());
+        return R.ok(service.update(req));
     }
 
     @PostMapping(Route.DEFINITION_PUBLISH)

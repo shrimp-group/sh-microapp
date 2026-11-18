@@ -8,13 +8,10 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class DefinitionSaveReq {
+public class DefinitionUpdateReq {
 
-    @Schema(description = "定义 id，新建传空")
+    @Schema(description = "定义 id")
     private Long id;
-
-    @Schema(description = "流程编码")
-    private String dagCode;
 
     @Schema(description = "流程名称")
     private String dagName;

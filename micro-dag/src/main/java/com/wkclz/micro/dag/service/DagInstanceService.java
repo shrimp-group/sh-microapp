@@ -3,6 +3,7 @@ package com.wkclz.micro.dag.service;
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.dag.bean.dto.DagDefModel;
+import com.wkclz.micro.dag.bean.dto.EdgeDef;
 import com.wkclz.micro.dag.bean.dto.NodeDef;
 import com.wkclz.micro.dag.bean.entity.DagDefinition;
 import com.wkclz.micro.dag.bean.entity.DagInstance;
@@ -11,6 +12,7 @@ import com.wkclz.micro.dag.bean.enums.BackoffType;
 import com.wkclz.micro.dag.bean.enums.DefinitionStatus;
 import com.wkclz.micro.dag.bean.enums.InstanceStatus;
 import com.wkclz.micro.dag.bean.enums.NodeStatus;
+import com.wkclz.micro.dag.bean.enums.NodeType;
 import com.wkclz.micro.dag.bean.req.InstancePageReq;
 import com.wkclz.micro.dag.bean.req.LaunchReq;
 import com.wkclz.micro.dag.bean.resp.InstanceDagViewResp;
@@ -100,12 +102,23 @@ public class DagInstanceService extends BaseService<DagInstance, DagInstanceMapp
             n.setIntervalSec(nd.getIntervalSec() == null ? 0 : nd.getIntervalSec());
             n.setBackoff(nd.getBackoff() == null ? BackoffType.FIXED.name() : nd.getBackoff());
             n.setTimeoutMs(nd.getTimeoutMs());
+            // BRANCH 节点：将出边条件（key=toCode，value=whenExpr）快照进输入参数，
+            // 供 system-branch 求值与实例明细展示；branches 最后合并，实例参数不可覆盖分支系统键
+            Map<String, Object> branches = new HashMap<>();
+            if (NodeType.BRANCH.getCode().equals(nd.getNodeType()) && dagDef.getEdges() != null) {
+                dagDef.getEdges().stream()
+                    .filter(e -> nd.getCode().equals(e.getFromCode()) && EdgeDef.TYPE_CONDITION.equals(e.getType()))
+                    .forEach(e -> branches.put(e.getToCode(), e.getWhenExpr()));
+            }
             Map<String, Object> merged = new HashMap<>();
             if (nd.getParams() != null) {
                 merged.putAll(nd.getParams());
             }
             if (req.getParams() != null) {
                 merged.putAll(req.getParams());
+            }
+            if (!branches.isEmpty()) {
+                merged.putAll(branches);
             }
             n.setInputParamsJson(toJson(merged));
             n.setInterruptFlag(0);

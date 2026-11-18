@@ -5,14 +5,17 @@ import com.wkclz.micro.dag.bean.entity.DagInstance;
 import com.wkclz.micro.dag.bean.entity.DagNodeInstance;
 import com.wkclz.micro.dag.bean.enums.ExecutionEvent;
 import com.wkclz.micro.dag.bean.enums.NodeStatus;
+import com.wkclz.micro.dag.bean.enums.NodeType;
 import com.wkclz.micro.dag.config.DagProperties;
 import com.wkclz.micro.dag.core.DagReadyCalculator;
 import com.wkclz.micro.dag.mapper.DagInstanceMapper;
 import com.wkclz.micro.dag.mapper.DagNodeInstanceMapper;
 import com.wkclz.micro.dag.service.DagDefinitionService;
+import com.wkclz.micro.dag.service.DagEngineService;
 import com.wkclz.micro.dag.service.DagExecutionLogService;
 import com.wkclz.micro.dag.worker.DagWorkerExecutor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -44,12 +47,13 @@ public class DagScheduler {
     private final DagExecutionLogService logService;
     private final DagReadyCalculator readyCalculator;
     private final DagWorkerExecutor worker;
+    private final DagEngineService engineService;
     private final DagProperties properties;
 
     public DagScheduler(DagInstanceMapper instanceMapper, DagNodeInstanceMapper nodeMapper,
                         DagDefinitionService definitionService, DagExecutionLogService logService,
                         DagReadyCalculator readyCalculator, DagWorkerExecutor worker,
-                        DagProperties properties) {
+                        DagEngineService engineService, DagProperties properties) {
         log.info("micro-dag: 初始化调度器 worker={} channel={}", WORKER_ID, properties.getChannel());
         this.instanceMapper = instanceMapper;
         this.nodeMapper = nodeMapper;
@@ -57,6 +61,7 @@ public class DagScheduler {
         this.logService = logService;
         this.readyCalculator = readyCalculator;
         this.worker = worker;
+        this.engineService = engineService;
         this.properties = properties;
     }
 
@@ -138,12 +143,30 @@ public class DagScheduler {
                 node.setAttempt(node.getAttempt() == null ? 1 : node.getAttempt() + 1);
                 logService.log(node.getInstanceCode(), node.getNodeCode(), node.getAttempt(),
                     ExecutionEvent.CLAIM, null, WORKER_ID);
-                worker.submit(node, instance);
+                if (isPassthroughNode(def, node.getNodeCode())) {
+                    // 存量兼容：START/END/BRANCH 且未配置 handler 的节点，领取后直达成功，由引擎级联推进下游；
+                    // 配置了 handler 的节点（含 system-* 与业务 handler）一律走 worker 执行链路
+                    engineService.onSuccess(instance.getInstanceCode(), node.getNodeCode(), Map.of());
+                } else {
+                    worker.submit(node, instance);
+                }
             }
         }
         if (claimed > 0) {
             log.info("micro-dag: 本轮领取 instanceCode={} claimed={}", instance.getInstanceCode(), claimed);
         }
+    }
+
+    /** 判断定义中该节点是否为直达成功节点（START/END/BRANCH 且 handler 为空的存量兼容）；定义缺失该节点时按 NORMAL 走 worker */
+    private boolean isPassthroughNode(DagDefModel def, String nodeCode) {
+        if (def == null || def.getNodes() == null) {
+            return false;
+        }
+        return def.getNodes().stream()
+            .filter(n -> n.getCode().equals(nodeCode))
+            .findFirst()
+            .map(n -> NodeType.specialOf(n.getNodeType()) != null && StringUtils.isBlank(n.getHandler()))
+            .orElse(false);
     }
 
     /** 租约时长与 DagWorkerExecutor.leaseDuration 保持同一规则 */

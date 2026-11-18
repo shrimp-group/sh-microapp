@@ -3,6 +3,7 @@ package com.wkclz.micro.dag.handler.demo;
 import com.wkclz.micro.dag.api.NodeContext;
 import com.wkclz.micro.dag.api.NodeHandler;
 import com.wkclz.micro.dag.api.NodeResult;
+import com.wkclz.micro.dag.bean.enums.NodeCategory;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
@@ -21,6 +22,11 @@ public class LogPrintHandler implements NodeHandler {
     @Override
     public String nodeName() {
         return "演示-日志打印";
+    }
+
+    @Override
+    public NodeCategory category() {
+        return NodeCategory.DEMO;
     }
 
     @Override

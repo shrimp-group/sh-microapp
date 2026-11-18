@@ -35,6 +35,7 @@ public class DagMetaRest {
                 HandlerInfoResp resp = new HandlerInfoResp();
                 resp.setCode(h.nodeCode());
                 resp.setName(h.nodeName());
+                resp.setCategory(h.category().name());
                 return resp;
             })
             .toList();

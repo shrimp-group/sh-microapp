@@ -3,7 +3,11 @@ package com.wkclz.micro.dag.core;
 import com.wkclz.micro.dag.bean.dto.DagDefModel;
 import com.wkclz.micro.dag.bean.dto.EdgeDef;
 import com.wkclz.micro.dag.bean.dto.NodeDef;
+import com.wkclz.micro.dag.bean.enums.NodeType;
+import com.wkclz.micro.dag.bean.enums.SystemHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -54,8 +58,11 @@ public class DagValidator {
         if (!errors.isEmpty()) {
             return errors;
         }
-        // 3. handler 必须已注册
+        // 3. handler 必须已注册（特殊节点 handler 为空时免 handler 直达成功；带 handler 的特殊节点仍需已注册）
         for (NodeDef n : def.getNodes()) {
+            if (NodeType.specialOf(n.getNodeType()) != null && StringUtils.isBlank(n.getHandler())) {
+                continue;
+            }
             if (n.getHandler() == null || !registeredHandlers.contains(n.getHandler())) {
                 errors.add("节点 " + n.getCode() + " 的 handler 未注册：" + n.getHandler());
             }
@@ -105,6 +112,75 @@ public class DagValidator {
             List<String> cycleNodes = new ArrayList<>();
             inDegree.forEach((k, v) -> { if (v > 0) { cycleNodes.add(k); } });
             errors.add("定义存在环，涉及节点：" + cycleNodes);
+        }
+        // 6. 特殊节点（START/END/BRANCH）：nodeType 合法性 + 拓扑约束
+        for (NodeDef n : def.getNodes()) {
+            NodeType type = NodeType.ofCode(n.getNodeType());
+            if (n.getNodeType() != null && type == null) {
+                errors.add("节点 " + n.getCode() + " 的 nodeType 非法：" + n.getNodeType());
+                continue;
+            }
+            List<EdgeDef> outs = edges.stream().filter(e -> n.getCode().equals(e.getFromCode())).toList();
+            List<EdgeDef> ins = edges.stream().filter(e -> n.getCode().equals(e.getToCode())).toList();
+            switch (type == null ? NodeType.NORMAL : type) {
+                case START -> {
+                    if (!ins.isEmpty()) { errors.add("开始节点不能有入边：" + n.getCode()); }
+                    if (outs.isEmpty()) { errors.add("开始节点必须连出下游：" + n.getCode()); }
+                }
+                case END -> {
+                    if (!outs.isEmpty()) { errors.add("结束节点不能连出下游：" + n.getCode()); }
+                }
+                case BRANCH -> {
+                    if (outs.isEmpty()) { errors.add("分支节点必须连出下游：" + n.getCode()); }
+                    if (!outs.stream().allMatch(e -> EdgeDef.TYPE_CONDITION.equals(e.getType()))) {
+                        errors.add("分支节点的出边必须为条件分支：" + n.getCode());
+                    }
+                }
+                case NORMAL -> { }
+            }
+        }
+        // 7. nodeType 与 handler 匹配（START↔system-start、END↔system-end、BRANCH↔system-branch、system-timer 仅限 NORMAL）
+        for (NodeDef n : def.getNodes()) {
+            // 非法 nodeType 已在规则 6 报错，此处按缺省 NORMAL 处理避免 NPE
+            NodeType t = NodeType.ofCode(n.getNodeType());
+            String type = (t == null ? NodeType.NORMAL : t).getCode();
+            String handler = n.getHandler();
+            if (StringUtils.isBlank(handler)) {
+                continue;
+            }
+            SystemHandler sh = SystemHandler.of(handler);
+            if (sh != null) {
+                if (!sh.getNodeType().getCode().equals(type)) {
+                    errors.add("节点 " + n.getCode() + " 的 nodeType 与 handler 不匹配：" + handler + " 仅限 " + sh.getNodeType().getCode() + " 节点");
+                }
+                continue;
+            }
+            NodeType sn = NodeType.specialOf(type);
+            if (sn != null) {
+                errors.add("节点 " + n.getCode() + " 的 nodeType 与 handler 不匹配：" + sn.getCode() + " 节点不能使用 " + handler);
+            }
+        }
+        // 8. START 时间驱动：params.triggerType=TIMER 时 cron 必填且可解析（Spring 6 域 cron）
+        for (NodeDef n : def.getNodes()) {
+            String type = n.getNodeType() == null ? NodeType.NORMAL.getCode() : n.getNodeType();
+            if (!NodeType.START.getCode().equals(type) || n.getParams() == null || n.getParams().isEmpty()) {
+                continue;
+            }
+            Object triggerType = n.getParams().get("triggerType");
+            if (triggerType == null || !"TIMER".equalsIgnoreCase(String.valueOf(triggerType))) {
+                continue;
+            }
+            Object cron = n.getParams().get("cron");
+            if (cron == null || String.valueOf(cron).isBlank()) {
+                errors.add("节点 " + n.getCode() + " 的触发 cron 必填");
+                continue;
+            }
+            try {
+                CronExpression.parse(String.valueOf(cron));
+            } catch (IllegalArgumentException e) {
+                log.error("DagValidator: cron 解析失败 nodeCode={} cron={}", n.getCode(), cron, e);
+                errors.add("节点 " + n.getCode() + " 的触发 cron 非法：" + e.getMessage());
+            }
         }
         log.info("DagValidator.validate done errors={}", errors);
         return errors;

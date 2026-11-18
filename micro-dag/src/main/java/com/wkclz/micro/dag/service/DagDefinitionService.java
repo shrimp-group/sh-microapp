@@ -10,13 +10,17 @@ import com.wkclz.micro.dag.bean.entity.DagDefinition;
 import com.wkclz.micro.dag.bean.entity.DagEdge;
 import com.wkclz.micro.dag.bean.entity.DagNode;
 import com.wkclz.micro.dag.bean.enums.DefinitionStatus;
-import com.wkclz.micro.dag.bean.req.DefinitionSaveReq;
+import com.wkclz.micro.dag.bean.enums.NodeType;
+import com.wkclz.micro.dag.bean.req.DefinitionCreateReq;
+import com.wkclz.micro.dag.bean.req.DefinitionUpdateReq;
+import com.wkclz.micro.dag.bean.resp.DefinitionCreateResp;
 import com.wkclz.micro.dag.bean.resp.DefinitionResp;
 import com.wkclz.micro.dag.core.DagValidator;
 import com.wkclz.micro.dag.mapper.DagDefinitionMapper;
 import com.wkclz.micro.dag.mapper.DagEdgeMapper;
 import com.wkclz.micro.dag.mapper.DagNodeMapper;
 import com.wkclz.mybatis.service.BaseService;
+import com.wkclz.redis.helper.RedisIdGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -37,13 +41,16 @@ public class DagDefinitionService extends BaseService<DagDefinition, DagDefiniti
     private final NodeHandlerRegistry registry;
     private final DagNodeMapper nodeMapper;
     private final DagEdgeMapper edgeMapper;
+    private final RedisIdGenerator idGenerator;
 
     public DagDefinitionService(DagValidator validator, NodeHandlerRegistry registry,
-                                DagNodeMapper nodeMapper, DagEdgeMapper edgeMapper) {
+                                DagNodeMapper nodeMapper, DagEdgeMapper edgeMapper,
+                                RedisIdGenerator idGenerator) {
         this.validator = validator;
         this.registry = registry;
         this.nodeMapper = nodeMapper;
         this.edgeMapper = edgeMapper;
+        this.idGenerator = idGenerator;
     }
 
     /** 按版本查 dag_node/dag_edge 组装 DagDefModel（定义详情/引擎装配共用入口），定义不存在抛 ValidationException */
@@ -81,6 +88,7 @@ public class DagDefinitionService extends BaseService<DagDefinition, DagDefiniti
         NodeDef n = new NodeDef();
         n.setCode(row.getNodeCode());
         n.setName(row.getNodeName());
+        n.setNodeType(row.getNodeType());
         n.setHandler(row.getHandler());
         n.setTimeoutMs(row.getTimeoutMs());
         n.setMaxRetry(row.getMaxRetry());
@@ -102,67 +110,74 @@ public class DagDefinitionService extends BaseService<DagDefinition, DagDefiniti
         return e;
     }
 
+    /** 创建定义草稿：后端生成 dagCode（dag_ 前缀 + Base32），返回新定义 id 与 dagCode */
     @Transactional
-    public Long saveDraft(DefinitionSaveReq req) {
-        log.info("micro-dag: 保存定义草稿 dagCode={} id={}", req.getDagCode(), req.getId());
-        if (StringUtils.isBlank(req.getDagCode()) || StringUtils.isBlank(req.getDagName())) {
-            throw ValidationException.of("dagCode / dagName 不能为空");
+    public DefinitionCreateResp create(DefinitionCreateReq req) {
+        log.info("micro-dag: 创建定义 dagName={}", req.getDagName());
+        if (StringUtils.isBlank(req.getDagName())) {
+            throw ValidationException.of("dagName 不能为空");
         }
-        DagDefModel def = new DagDefModel();
-        def.setDagCode(req.getDagCode());
-        def.setDagName(req.getDagName());
-        def.setNodes(req.getNodes() == null ? List.of() : req.getNodes());
-        def.setEdges(req.getEdges() == null ? List.of() : req.getEdges());
-        List<String> errors = validator.validate(def, registry.codes());
-        if (!errors.isEmpty()) {
-            throw ValidationException.of("定义校验失败: " + String.join("; ", errors));
-        }
+        DagDefModel def = buildAndValidateDef(req.getDagName(), req.getNodes(), req.getEdges());
 
-        DagDefinition entity;
-        if (req.getId() == null) {
-            entity = new DagDefinition();
-            entity.setDagVersion(0);
-            entity.setStatus(DefinitionStatus.DRAFT.name());
-        } else {
-            entity = selectById(req.getId());
-            if (entity == null) {
-                throw ValidationException.of("定义不存在: " + req.getId());
-            }
-            if (!DefinitionStatus.DRAFT.name().equals(entity.getStatus())) {
-                throw ValidationException.of("仅 DRAFT 定义可编辑，已发布定义请复制为新版本");
-            }
-        }
-        entity.setDagCode(req.getDagCode());
+        DagDefinition entity = new DagDefinition();
+        entity.setDagCode(idGenerator.generateBase32IdWithPrefix("dag_"));
         entity.setDagName(req.getDagName());
+        entity.setDagVersion(0);
+        entity.setStatus(DefinitionStatus.DRAFT.name());
+        insert(entity);
+        rebuildNodesAndEdges(entity, def);
+        log.info("micro-dag: 定义创建成功 id={} dagCode={}", entity.getId(), entity.getDagCode());
+
+        DefinitionCreateResp resp = new DefinitionCreateResp();
+        resp.setId(entity.getId());
+        resp.setDagCode(entity.getDagCode());
+        return resp;
+    }
+
+    /** 更新定义草稿：dagCode 沿用库中已有值，仅 DRAFT 可改，返回定义 id */
+    @Transactional
+    public Long update(DefinitionUpdateReq req) {
+        log.info("micro-dag: 更新定义 id={} dagName={}", req.getId(), req.getDagName());
         if (req.getId() == null) {
-            insert(entity);
-        } else {
-            updateById(entity);
+            throw ValidationException.of("id 不能为空");
         }
+        DagDefModel def = buildAndValidateDef(req.getDagName(), req.getNodes(), req.getEdges());
+        DagDefinition entity = selectById(req.getId());
+        if (entity == null) {
+            throw ValidationException.of("定义不存在: " + req.getId());
+        }
+        if (!DefinitionStatus.DRAFT.name().equals(entity.getStatus())) {
+            throw ValidationException.of("仅 DRAFT 定义可编辑，已发布定义请复制为新版本");
+        }
+        entity.setDagName(req.getDagName());
+        updateById(entity);
         rebuildNodesAndEdges(entity, def);
         return entity.getId();
     }
 
+    /** 组装 DagDefModel 并做全量校验，校验失败抛 ValidationException */
+    private DagDefModel buildAndValidateDef(String dagName, List<NodeDef> nodes, List<EdgeDef> edges) {
+        DagDefModel def = new DagDefModel();
+        def.setDagName(dagName);
+        def.setNodes(nodes == null ? List.of() : nodes);
+        def.setEdges(edges == null ? List.of() : edges);
+        List<String> errors = validator.validate(def, registry.codes());
+        if (!errors.isEmpty()) {
+            throw ValidationException.of("定义校验失败: " + String.join("; ", errors));
+        }
+        return def;
+    }
+
     /** 重建该版本的节点/边行（草稿编辑全量覆盖，先删后插） */
     private void rebuildNodesAndEdges(DagDefinition entity, DagDefModel def) {
-        DagNode nodeDel = new DagNode();
-        nodeDel.setDagCode(entity.getDagCode());
-        nodeDel.setDagVersion(entity.getDagVersion());
-        for (DagNode old : nodeMapper.selectByEntity(nodeDel)) {
-            nodeMapper.deleteById(old.getId());
-        }
-        DagEdge edgeDel = new DagEdge();
-        edgeDel.setDagCode(entity.getDagCode());
-        edgeDel.setDagVersion(entity.getDagVersion());
-        for (DagEdge old : edgeMapper.selectByEntity(edgeDel)) {
-            edgeMapper.deleteById(old.getId());
-        }
+        deleteNodesAndEdges(entity.getDagCode(), entity.getDagVersion());
         for (NodeDef n : def.getNodes()) {
             DagNode row = new DagNode();
             row.setDagCode(entity.getDagCode());
             row.setDagVersion(entity.getDagVersion());
             row.setNodeCode(n.getCode());
             row.setNodeName(n.getName());
+            row.setNodeType(n.getNodeType() == null ? NodeType.NORMAL.getCode() : n.getNodeType());
             row.setHandler(n.getHandler());
             row.setTimeoutMs(n.getTimeoutMs());
             row.setMaxRetry(n.getMaxRetry());
@@ -186,7 +201,23 @@ public class DagDefinitionService extends BaseService<DagDefinition, DagDefiniti
         }
     }
 
-    /** 发布：全量校验 + 起始节点检查 + 版本递增，返回发布版本号 */
+    /** 删除指定版本的节点/边行（版本重挂与草稿覆盖共用） */
+    private void deleteNodesAndEdges(String dagCode, Integer dagVersion) {
+        DagNode nodeDel = new DagNode();
+        nodeDel.setDagCode(dagCode);
+        nodeDel.setDagVersion(dagVersion);
+        for (DagNode old : nodeMapper.selectByEntity(nodeDel)) {
+            nodeMapper.deleteById(old.getId());
+        }
+        DagEdge edgeDel = new DagEdge();
+        edgeDel.setDagCode(dagCode);
+        edgeDel.setDagVersion(dagVersion);
+        for (DagEdge old : edgeMapper.selectByEntity(edgeDel)) {
+            edgeMapper.deleteById(old.getId());
+        }
+    }
+
+    /** 发布：全量校验 + 起始节点检查 + 版本递增，节点/边行随版本重挂，返回发布版本号 */
     @Transactional
     public Integer publish(Long id) {
         log.info("micro-dag: 发布定义 id={}", id);
@@ -213,9 +244,12 @@ public class DagDefinitionService extends BaseService<DagDefinition, DagDefiniti
         int maxVersion = selectByEntity(query).stream()
             .mapToInt(d -> d.getDagVersion() == null ? 0 : d.getDagVersion())
             .max().orElse(0);
+        // 节点/边行仍挂在旧版本上：先删旧版本行，版本号提升后按新版本重建，保证 load 新版本可查
+        deleteNodesAndEdges(entity.getDagCode(), entity.getDagVersion());
         entity.setDagVersion(maxVersion + 1);
         entity.setStatus(DefinitionStatus.PUBLISHED.name());
         updateById(entity);
+        rebuildNodesAndEdges(entity, def);
         log.info("micro-dag: 定义发布成功 dagCode={} version={}", entity.getDagCode(), entity.getDagVersion());
         return entity.getDagVersion();
     }

@@ -4,6 +4,7 @@ import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.dag.api.NodeContext;
 import com.wkclz.micro.dag.api.NodeHandler;
 import com.wkclz.micro.dag.api.NodeResult;
+import com.wkclz.micro.dag.bean.enums.NodeCategory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +34,11 @@ public class HttpCallHandler implements NodeHandler {
     @Override
     public String nodeName() {
         return "演示-HTTP调用";
+    }
+
+    @Override
+    public NodeCategory category() {
+        return NodeCategory.DEMO;
     }
 
     @Override
