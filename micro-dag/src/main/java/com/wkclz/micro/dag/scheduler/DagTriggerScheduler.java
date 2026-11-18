@@ -58,7 +58,7 @@ public class DagTriggerScheduler {
 
     @Scheduled(fixedDelayString = "${dag.trigger.interval-ms:30000}")
     public void tick() {
-        log.info("micro-dag: 触发器扫描开始");
+        log.debug("micro-dag: 触发器扫描开始");
         if (!properties.getTrigger().isEnabled()) {
             return;
         }

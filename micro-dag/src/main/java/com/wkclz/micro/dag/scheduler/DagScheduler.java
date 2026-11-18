@@ -76,7 +76,7 @@ public class DagScheduler {
 
     /** 事件唤醒通道（DagWakeupListener 调用）；db-only 模式忽略事件 */
     public void wakeUp() {
-        log.info("micro-dag: 收到调度唤醒");
+        log.debug("micro-dag: 收到调度唤醒");
         if ("db".equalsIgnoreCase(properties.getChannel())) {
             return;
         }
@@ -84,7 +84,7 @@ public class DagScheduler {
     }
 
     synchronized void scan() {
-        log.info("micro-dag: 调度扫描开始");
+        log.debug("micro-dag: 调度扫描开始");
         LocalDateTime now = LocalDateTime.now();
         nodeMapper.promoteRetrying(now);
         reclaimExpired(now);
@@ -96,7 +96,7 @@ public class DagScheduler {
                 log.error("micro-dag: 实例调度异常 instanceCode={}", instance.getInstanceCode(), e);
             }
         }
-        log.info("micro-dag: 调度扫描结束 runningInstances={}", runningInstances.size());
+        log.debug("micro-dag: 调度扫描结束 runningInstances={}", runningInstances.size());
     }
 
     private void reclaimExpired(LocalDateTime now) {
