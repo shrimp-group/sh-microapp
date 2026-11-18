@@ -66,7 +66,7 @@
                max_retry, interval_sec, backoff, timeout_ms,
                input_params_json, output_json, lease_owner, lease_expire_time,
                interrupt_flag, cleanup_flag, error_msg, next_retry_time,
-               skip_reason, stop_reason, version
+               skip_reason, stop_reason, sort, remark, version
         FROM dag_node_instance
         WHERE instance_code = #{instanceCode} AND deleted = 0
         ORDER BY id
