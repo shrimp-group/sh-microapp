@@ -253,6 +253,10 @@ signApi.sign(users, User::getAvatarUrl, User::setAvatarUrl);
 
 // 富文本内容签名（自动提取 img src 并替换）
 signApi.signContent(htmlContent);
+
+// 通用内容签名：富文本 / 逗号分隔（URL 或 fileId）/ JSON 对象转字符串中的图片签名，
+// 签名失败的片段原样保留
+signApi.signContentPlus(content);
 ```
 
 ### 使用 API — 下载
