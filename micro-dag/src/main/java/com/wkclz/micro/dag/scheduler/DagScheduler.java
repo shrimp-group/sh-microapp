@@ -172,7 +172,8 @@ public class DagScheduler {
     /** 租约时长与 DagWorkerExecutor.leaseDuration 保持同一规则 */
     private long leaseDuration(DagNodeInstance node) {
         long fixedMs = properties.getLease().getFixedMs();
-        if (node.getTimeoutMs() == null) {
+        // timeout_ms<=0 与 null 同义：不限时，租约用兜底时长（与 DagWorkerExecutor.leaseDuration 同规则）
+        if (node.getTimeoutMs() == null || node.getTimeoutMs() <= 0) {
             return fixedMs;
         }
         return Math.max(fixedMs, node.getTimeoutMs() + LEASE_MARGIN_MS);

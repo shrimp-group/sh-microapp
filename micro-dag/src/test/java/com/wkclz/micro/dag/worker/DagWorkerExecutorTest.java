@@ -96,6 +96,38 @@ class DagWorkerExecutorTest {
     }
 
     @Test
+    void submit_timeoutZero_treatedAsUnlimited_onSuccessDispatched() throws Exception {
+        // timeout_ms=0 语义为"不限时"（与实体注释一致），不应触发 0ms 立即超时
+        when(handler.execute(any())).thenAnswer(inv -> {
+            Thread.sleep(300);
+            return NodeResult.ok();
+        });
+
+        executor.submit(node(0L, 0), instance());
+
+        verify(engine, timeout(VERIFY_TIMEOUT_MS)).onSuccess(eq(INSTANCE_CODE), eq(NODE_CODE), any());
+        verify(engine, never()).onFailure(anyString(), anyString(), any(), anyString());
+    }
+
+    @Test
+    void submit_callbackThrows_exceptionSwallowedAndExecutorSurvives() throws Exception {
+        // 回调链路（含事务提交）抛出的未分类异常必须兜底记录，且不影响执行器继续工作
+        Mockito.doThrow(new RuntimeException("commit fail")).doNothing()
+            .when(engine).onSuccess(anyString(), anyString(), any());
+        when(handler.execute(any())).thenReturn(NodeResult.ok());
+
+        executor.submit(node(null, 0), instance());
+
+        // finally 唤醒 + 任务登记清理照常执行
+        Mockito.verify(publisher, timeout(VERIFY_TIMEOUT_MS)).wakeUp();
+        awaitRemoved();
+
+        // 执行器仍可接续提交新任务并正常回调
+        executor.submit(node(null, 0), instance());
+        Mockito.verify(engine, timeout(VERIFY_TIMEOUT_MS).times(2)).onSuccess(eq(INSTANCE_CODE), eq(NODE_CODE), any());
+    }
+
+    @Test
     void submit_cleanupHookRunsBeforeExecute() throws Exception {
         when(handler.execute(any())).thenReturn(NodeResult.ok());
 
@@ -103,7 +135,7 @@ class DagWorkerExecutorTest {
 
         InOrder inOrder = inOrder(handler);
         inOrder.verify(handler, timeout(VERIFY_TIMEOUT_MS)).cleanup(any(NodeContext.class));
-        inOrder.verify(handler).execute(any(NodeContext.class));
+        inOrder.verify(handler, timeout(VERIFY_TIMEOUT_MS)).execute(any(NodeContext.class));
         verify(logService, timeout(VERIFY_TIMEOUT_MS)).log(eq(INSTANCE_CODE), eq(NODE_CODE), eq(1),
             eq(ExecutionEvent.CLEANUP), isNull(), anyString());
         verify(nodeMapper, timeout(VERIFY_TIMEOUT_MS)).updateById(any());

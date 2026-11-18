@@ -120,7 +120,8 @@ public class DagWorkerExecutor {
         }, leaseMs / 3, leaseMs / 3, TimeUnit.MILLISECONDS);
         try {
             Long timeoutMs = node.getTimeoutMs();
-            NodeResult result = timeoutMs == null ? future.get() : future.get(timeoutMs, TimeUnit.MILLISECONDS);
+            // timeout_ms=0 与 null 同义：不限时（0ms 立即超时会导致节点永远无法成功）
+            NodeResult result = (timeoutMs == null || timeoutMs <= 0) ? future.get() : future.get(timeoutMs, TimeUnit.MILLISECONDS);
             if (interruptedFlags.remove(runKey(node)) != null) {
                 engine.onInterrupted(node.getInstanceCode(), node.getNodeCode());
                 return;
@@ -151,6 +152,9 @@ public class DagWorkerExecutor {
             } else {
                 engine.onFailure(node.getInstanceCode(), node.getNodeCode(), ExecutionEvent.FAIL, stackSummary(cause));
             }
+        } catch (Exception e) {
+            // 兜底：回调链路（含事务提交）抛出的未分类异常不能静默吞掉，否则节点卡 RUNNING 等租约回收形成死循环
+            log.error("micro-dag: 节点回调派发异常 instanceCode={} node={}", node.getInstanceCode(), node.getNodeCode(), e);
         } finally {
             futures.remove(runKey(node));
             renewal.cancel(false);
@@ -184,7 +188,8 @@ public class DagWorkerExecutor {
      */
     private long leaseDuration(DagNodeInstance node) {
         long fixedMs = properties.getLease().getFixedMs();
-        if (node.getTimeoutMs() == null) {
+        // timeout_ms<=0 与 null 同义：不限时，租约用兜底时长
+        if (node.getTimeoutMs() == null || node.getTimeoutMs() <= 0) {
             return fixedMs;
         }
         return Math.max(fixedMs, node.getTimeoutMs() + LEASE_MARGIN_MS);
