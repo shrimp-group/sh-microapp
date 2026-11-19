@@ -115,6 +115,42 @@ class DagReadyCalculatorTest {
     }
 
     @Test
+    void shouldNotSkipWhenUpstreamUndetermined() {
+        // a -> b -> c 全普通边：a SUCCESS、b 尚 PENDING，c 的上游未定 → 不得级联跳过
+        NodeDef a = new NodeDef(); a.setCode("a"); a.setHandler("h-a");
+        NodeDef b = new NodeDef(); b.setCode("b"); b.setHandler("h-b");
+        NodeDef c = new NodeDef(); c.setCode("c"); c.setHandler("h-c");
+        EdgeDef ab = new EdgeDef(); ab.setFromCode("a"); ab.setToCode("b");
+        EdgeDef bc = new EdgeDef(); bc.setFromCode("b"); bc.setToCode("c");
+        DagDefModel def = new DagDefModel();
+        def.setNodes(List.of(a, b, c));
+        def.setEdges(List.of(ab, bc));
+        Map<String, NodeStatus> all = new HashMap<>();
+        all.put("a", NodeStatus.SUCCESS);
+        all.put("b", NodeStatus.PENDING);
+        all.put("c", NodeStatus.PENDING);
+        assertEquals(Set.of(), calc.cascadeSkips(def, all, Map.of(), Map.of()));
+    }
+
+    @Test
+    void shouldSkipWhenUpstreamFailed() {
+        // a FAILED → b 普通边确定性不满足 → b SKIPPED，c 链式 SKIPPED
+        NodeDef a = new NodeDef(); a.setCode("a"); a.setHandler("h-a");
+        NodeDef b = new NodeDef(); b.setCode("b"); b.setHandler("h-b");
+        NodeDef c = new NodeDef(); c.setCode("c"); c.setHandler("h-c");
+        EdgeDef ab = new EdgeDef(); ab.setFromCode("a"); ab.setToCode("b");
+        EdgeDef bc = new EdgeDef(); bc.setFromCode("b"); bc.setToCode("c");
+        DagDefModel def = new DagDefModel();
+        def.setNodes(List.of(a, b, c));
+        def.setEdges(List.of(ab, bc));
+        Map<String, NodeStatus> all = new HashMap<>();
+        all.put("a", NodeStatus.FAILED);
+        all.put("b", NodeStatus.PENDING);
+        all.put("c", NodeStatus.PENDING);
+        assertEquals(Set.of("b", "c"), calc.cascadeSkips(def, all, Map.of(), Map.of()));
+    }
+
+    @Test
     void shouldComputeInstanceTerminal() {
         Map<String, NodeStatus> all = new HashMap<>();
         all.put("a", NodeStatus.SUCCESS);

@@ -66,7 +66,8 @@ public class DagReadyCalculator {
 
     /**
      * 计算需要级联置 SKIPPED 的节点：
-     * 全部入边均"不满足"（上游非 satisfiesDownstream，或条件边求值 false，或上游本身被级联跳过）
+     * 全部入边均确定性不满足（上游 FAILED/MANUAL_STOPPED、上游链式 SKIPPED、条件边求值 false）；
+     * 上游为 PENDING/RUNNING/RETRYING 属未定状态，不参与跳过判定
      */
     public Set<String> cascadeSkips(DagDefModel def, Map<String, NodeStatus> statusMap,
                                     Map<String, Object> ctx, Map<String, Map<String, Object>> nodeOutputs) {
@@ -83,6 +84,7 @@ public class DagReadyCalculator {
                 continue; // 起始节点不跳过
             }
             boolean anySatisfied = false;
+            boolean anyUndetermined = false;
             for (EdgeDef in : ins) {
                 NodeStatus up = statusMap.get(in.getFromCode());
                 if (skipped.contains(in.getFromCode())) {
@@ -98,9 +100,12 @@ public class DagReadyCalculator {
                         anySatisfied = true;
                         break;
                     }
+                } else if (up == NodeStatus.PENDING || up == NodeStatus.RUNNING || up == NodeStatus.RETRYING) {
+                    anyUndetermined = true; // 上游未定，暂不跳过
                 }
+                // FAILED / MANUAL_STOPPED / 上游缺失 → 该边确定性不满足
             }
-            if (!anySatisfied) {
+            if (!anySatisfied && !anyUndetermined) {
                 skipped.add(code);
                 queue.addAll(adjacentTargets(def, code)); // 下游重新评估
             }

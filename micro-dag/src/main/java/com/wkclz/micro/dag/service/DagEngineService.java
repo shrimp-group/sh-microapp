@@ -72,9 +72,12 @@ public class DagEngineService extends BaseService<DagNodeInstance, DagNodeInstan
         advance(node.getInstanceCode());
     }
 
-    /** 节点失败回调：attempt ≤ maxRetry → RETRYING，否则 FAILED */
+    /**
+     * 节点失败回调：attempt ≤ maxRetry → RETRYING，否则 FAILED。
+     * output 非空时写入 output_json（FAILED 与 RETRYING 均写）；null 不覆盖保持原字段
+     */
     @Transactional
-    public void onFailure(String instanceCode, String nodeCode, ExecutionEvent failEvent, String errorMsg) {
+    public void onFailure(String instanceCode, String nodeCode, ExecutionEvent failEvent, String errorMsg, Map<String, Object> output) {
         log.info("micro-dag: 节点失败回调 instanceCode={} nodeCode={} event={}", instanceCode, nodeCode, failEvent);
         DagNodeInstance node = mustRunning(instanceCode, nodeCode);
         if (node == null) {
@@ -82,6 +85,9 @@ public class DagEngineService extends BaseService<DagNodeInstance, DagNodeInstan
         }
         int attempt = node.getAttempt() == null ? 1 : node.getAttempt();
         String err = truncate(errorMsg);
+        if (output != null) {
+            node.setOutputJson(toJson(output));
+        }
         if (attempt <= (node.getMaxRetry() == null ? 0 : node.getMaxRetry())) {
             LocalDateTime next = retryCalculator.nextRetryTime(
                 BackoffType.valueOf(node.getBackoff()), attempt,

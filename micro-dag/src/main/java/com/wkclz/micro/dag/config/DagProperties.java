@@ -20,6 +20,7 @@ public class DagProperties {
     private Worker worker = new Worker();
     private Lease lease = new Lease();
     private Trigger trigger = new Trigger();
+    private Log log = new Log();
 
     /** 调度触发通道：auto=事件唤醒+轮询兜底 / db=仅轮询 / pubsub=仅事件唤醒(不推荐) */
     private String channel = "auto";
@@ -50,6 +51,15 @@ public class DagProperties {
         private boolean enabled = true;
         /** 触发轮询间隔 ms */
         private long intervalMs = 30000;
+    }
+
+    /** 过程日志上报配置 */
+    @Data
+    public static class Log {
+        /** 单节点过程日志缓冲上限（字符数），超出丢弃并标记截断 */
+        private int maxChars = 8000;
+        /** 过程日志定时落库间隔 ms */
+        private long flushIntervalMs = 3000;
     }
 
 }

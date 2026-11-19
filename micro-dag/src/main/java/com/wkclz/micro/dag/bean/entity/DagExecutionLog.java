@@ -21,11 +21,14 @@ public class DagExecutionLog extends BaseEntity {
     @Schema(description = "第几次执行")
     private Integer attempt;
 
-    @Schema(description = "CLAIM/SUCCESS/FAIL/TIMEOUT/INTERRUPT/RETRY_SCHEDULED/LEASE_RECLAIM/SKIP/RESET/CLEANUP")
+    @Schema(description = "CLAIM/SUCCESS/FAIL/TIMEOUT/INTERRUPT/RETRY_SCHEDULED/LEASE_RECLAIM/SKIP/RESET/CLEANUP/NODE_LOG")
     private String event;
 
     @Schema(description = "详情(异常栈摘要/参数快照)")
     private String detailJson;
+
+    @Schema(description = "过程日志内容(NODE_LOG)")
+    private String logText;
 
     @Schema(description = "执行机器标识")
     private String worker;

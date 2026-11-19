@@ -45,13 +45,18 @@ import java.util.concurrent.TimeoutException;
 public class DagWorkerExecutor {
 
     private static final long LEASE_MARGIN_MS = 30_000;
+    /** 过程日志截断标记（终态兜底落库时追加） */
+    private static final String TRUNCATED_MARK = "...[truncated]";
 
     private final ThreadPoolExecutor pool;
     private final ThreadPoolExecutor supervisorPool;
     private final ScheduledThreadPoolExecutor leasePool;
+    private final ScheduledThreadPoolExecutor flushPool;
     /** 运行任务登记表，键为 instanceCode:nodeCode（跨机广播按此键定位本机任务） */
     private final ConcurrentHashMap<String, Future<?>> futures = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Boolean> interruptedFlags = new ConcurrentHashMap<>();
+    /** 运行任务的过程日志上下文登记表，键同 futures（flusher 定时 drain 落库） */
+    private final ConcurrentHashMap<String, NodeContext> reportCtxs = new ConcurrentHashMap<>();
     private final String workerId = ManagementFactory.getRuntimeMXBean().getName();
 
     private final NodeHandlerRegistry registry;
@@ -78,21 +83,28 @@ public class DagWorkerExecutor {
             new LinkedBlockingQueue<>(), namedFactory("dag-supervisor"));
         this.leasePool = new ScheduledThreadPoolExecutor(1, namedFactory("dag-lease"));
         this.leasePool.setMaximumPoolSize(1);
+        // 独立单线程 flusher：与租约续期隔离，DB 慢不拖累续期
+        long flushMs = properties.getLog().getFlushIntervalMs();
+        this.flushPool = new ScheduledThreadPoolExecutor(1, namedFactory("dag-log-flusher"));
+        this.flushPool.scheduleAtFixedRate(this::flushAll, flushMs, flushMs, TimeUnit.MILLISECONDS);
+        log.info("micro-dag: 过程日志 flusher 已启动 intervalMs={}", flushMs);
     }
 
     /** 调度器 CAS 领取成功后调用（在调度线程返回前仅做提交，不阻塞） */
     public void submit(DagNodeInstance node, DagInstance instance) {
         log.info("micro-dag: 提交执行 instanceCode={} node={} attempt={} worker={}",
             node.getInstanceCode(), node.getNodeCode(), node.getAttempt(), workerId);
-        CompletableFuture<NodeResult> future = CompletableFuture.supplyAsync(() -> execute(node, instance), pool);
+        // ctx 前置构建并登记，供 flusher 运行中上报过程日志
+        NodeContext ctx = buildContext(node, instance);
+        CompletableFuture<NodeResult> future = CompletableFuture.supplyAsync(() -> execute(node, instance, ctx), pool);
         futures.put(runKey(node), future);
+        reportCtxs.put(runKey(node), ctx);
         supervisorPool.submit(() -> supervise(node, future));
     }
 
-    /** 工作线程内执行：清理钩子（如置位）→ handler.execute */
-    private NodeResult execute(DagNodeInstance node, DagInstance instance) {
+    /** 工作线程内执行：清理钩子（如置位）→ handler.execute（ctx 由 submit 预构建并登记上报） */
+    private NodeResult execute(DagNodeInstance node, DagInstance instance, NodeContext ctx) {
         NodeHandler handler = registry.get(node.getHandler());
-        NodeContext ctx = buildContext(node, instance);
         if (node.getCleanupFlag() != null && node.getCleanupFlag() == 1) {
             log.info("micro-dag: 执行清理钩子 instanceCode={} node={}", node.getInstanceCode(), node.getNodeCode());
             handler.cleanup(ctx);
@@ -108,7 +120,7 @@ public class DagWorkerExecutor {
         }
     }
 
-    /** 监督线程：租约续期 + 超时控制 + 结果派发（成功/超时/中断/失败四路） */
+    /** 监督线程：租约续期 + 超时控制 + 结果派发（成功/显式失败/超时/中断/失败五路） */
     private void supervise(DagNodeInstance node, CompletableFuture<NodeResult> future) {
         long leaseMs = leaseDuration(node);
         ScheduledFuture<?> renewal = leasePool.scheduleAtFixedRate(() -> {
@@ -126,6 +138,12 @@ public class DagWorkerExecutor {
                 engine.onInterrupted(node.getInstanceCode(), node.getNodeCode());
                 return;
             }
+            if (!result.isSuccess()) {
+                // handler 显式失败（NodeResult.fail）：output 有则随事件写入 output_json
+                engine.onFailure(node.getInstanceCode(), node.getNodeCode(),
+                    ExecutionEvent.FAIL, failMsg(result), result.getOutput());
+                return;
+            }
             if (StringUtils.isNotBlank(result.getTraceCode())
                 && nodeMapper.backfillTraceCode(node.getInstanceCode(), result.getTraceCode()) == 1) {
                 log.info("micro-dag: traceCode 回填 instanceCode={} traceCode={}", node.getInstanceCode(), result.getTraceCode());
@@ -133,7 +151,8 @@ public class DagWorkerExecutor {
             engine.onSuccess(node.getInstanceCode(), node.getNodeCode(), result.getOutput());
         } catch (TimeoutException e) {
             future.cancel(true);
-            engine.onFailure(node.getInstanceCode(), node.getNodeCode(), ExecutionEvent.TIMEOUT, "timeout after " + node.getTimeoutMs() + "ms");
+            engine.onFailure(node.getInstanceCode(), node.getNodeCode(),
+                ExecutionEvent.TIMEOUT, "timeout after " + node.getTimeoutMs() + "ms", null);
         } catch (CancellationException e) {
             // interrupt() 会 cancel CompletableFuture，get 抛 CancellationException（工作线程本身无法被强杀，靠标记协作退出）
             if (interruptedFlags.remove(runKey(node)) != null) {
@@ -150,13 +169,16 @@ public class DagWorkerExecutor {
             if (cause instanceof InterruptedException || interruptedFlags.remove(runKey(node)) != null) {
                 engine.onInterrupted(node.getInstanceCode(), node.getNodeCode());
             } else {
-                engine.onFailure(node.getInstanceCode(), node.getNodeCode(), ExecutionEvent.FAIL, stackSummary(cause));
+                engine.onFailure(node.getInstanceCode(), node.getNodeCode(), ExecutionEvent.FAIL, stackSummary(cause), null);
             }
         } catch (Exception e) {
             // 兜底：回调链路（含事务提交）抛出的未分类异常不能静默吞掉，否则节点卡 RUNNING 等租约回收形成死循环
             log.error("micro-dag: 节点回调派发异常 instanceCode={} node={}", node.getInstanceCode(), node.getNodeCode(), e);
         } finally {
             futures.remove(runKey(node));
+            // 终态兜底：drain 剩余过程日志（含截断标记），再移除登记
+            flushCtx(node);
+            reportCtxs.remove(runKey(node));
             renewal.cancel(false);
             publisher.wakeUp();
         }
@@ -198,12 +220,48 @@ public class DagWorkerExecutor {
     private NodeContext buildContext(DagNodeInstance node, DagInstance instance) {
         return new NodeContext(node.getInstanceCode(), node.getNodeCode(), instance.getTraceCode(),
             node.getAttempt() == null ? 1 : node.getAttempt(),
-            node.getInputParamsJson(), () -> interruptedFlags.containsKey(runKey(node)));
+            node.getInputParamsJson(), () -> interruptedFlags.containsKey(runKey(node)),
+            properties.getLog().getMaxChars());
+    }
+
+    /** 定时落库：扫描本机运行中任务的过程日志缓冲，非空即写 NODE_LOG 记录 */
+    private void flushAll() {
+        for (NodeContext ctx : reportCtxs.values()) {
+            flush(ctx, false);
+        }
+    }
+
+    /** 终态兜底落库：drain 剩余缓冲；曾截断时补截断标记，保证截断可感知 */
+    private void flushCtx(DagNodeInstance node) {
+        NodeContext ctx = reportCtxs.get(runKey(node));
+        if (ctx != null) {
+            flush(ctx, true);
+        }
+    }
+
+    /** drain 单个上下文日志缓冲并落库（drainLog 原子取走，周期与兜底并发不重不漏）；withMark 仅兜底为 true */
+    private void flush(NodeContext ctx, boolean withMark) {
+        String content = ctx.drainLog();
+        if (withMark && ctx.isTruncated()) {
+            content = StringUtils.isBlank(content) ? TRUNCATED_MARK : content + "\n" + TRUNCATED_MARK;
+        }
+        if (StringUtils.isNotBlank(content)) {
+            logService.log(ctx.getInstanceCode(), ctx.getNodeCode(), ctx.getAttempt(),
+                ExecutionEvent.NODE_LOG, null, content, workerId);
+        }
     }
 
     /** 运行任务登记键：instanceCode:nodeCode */
     private String runKey(DagNodeInstance node) {
         return node.getInstanceCode() + ":" + node.getNodeCode();
+    }
+
+    /** 显式失败的失败消息：output 含 String 类型 msg 键则取该值，否则缺省文案 */
+    private String failMsg(NodeResult result) {
+        if (result.getOutput() != null && result.getOutput().get("msg") instanceof String msg) {
+            return msg;
+        }
+        return "handler 返回失败";
     }
 
     private String stackSummary(Throwable cause) {

@@ -10,6 +10,7 @@ import com.wkclz.micro.dag.core.DagRetryCalculator;
 import com.wkclz.micro.dag.mapper.DagNodeInstanceMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -72,10 +73,75 @@ class DagEngineServiceTest {
         node.setIntervalSec(30);
         when(nodeMapper.selectOneByEntity(any())).thenReturn(node);
 
-        engine.onFailure(INSTANCE_CODE, NODE_CODE, ExecutionEvent.FAIL, "boom");
+        engine.onFailure(INSTANCE_CODE, NODE_CODE, ExecutionEvent.FAIL, "boom", null);
 
         Mockito.verify(nodeMapper).updateById(any());
         Mockito.verify(instanceService, Mockito.never()).updateById(any());
+    }
+
+    @Test
+    void onFailure_explicitOutput_writtenOnRetryingPath() {
+        // 显式失败未耗尽重试 → RETRYING，output 仍写入 output_json
+        DagNodeInstance node = new DagNodeInstance();
+        node.setId(1L);
+        node.setInstanceCode(INSTANCE_CODE);
+        node.setNodeCode(NODE_CODE);
+        node.setStatus("RUNNING");
+        node.setAttempt(1);
+        node.setMaxRetry(2);
+        node.setBackoff("FIXED");
+        node.setIntervalSec(30);
+        when(nodeMapper.selectOneByEntity(any())).thenReturn(node);
+
+        engine.onFailure(INSTANCE_CODE, NODE_CODE, ExecutionEvent.FAIL, "boom", Map.of("msg", "业务校验失败"));
+
+        ArgumentCaptor<DagNodeInstance> captor = ArgumentCaptor.forClass(DagNodeInstance.class);
+        Mockito.verify(nodeMapper).updateById(captor.capture());
+        assertEquals("RETRYING", captor.getValue().getStatus());
+        assertEquals("{\"msg\":\"业务校验失败\"}", captor.getValue().getOutputJson());
+    }
+
+    @Test
+    void onFailure_explicitOutput_writtenOnFailedPath() {
+        // 重试耗尽 → FAILED，output 仍写入 output_json
+        DagNodeInstance node = new DagNodeInstance();
+        node.setId(1L);
+        node.setInstanceCode(INSTANCE_CODE);
+        node.setNodeCode(NODE_CODE);
+        node.setStatus("RUNNING");
+        node.setAttempt(3);
+        node.setMaxRetry(2);
+        node.setBackoff("FIXED");
+        node.setIntervalSec(30);
+        when(nodeMapper.selectOneByEntity(any())).thenReturn(node);
+
+        engine.onFailure(INSTANCE_CODE, NODE_CODE, ExecutionEvent.FAIL, "boom", Map.of("k", "v"));
+
+        ArgumentCaptor<DagNodeInstance> captor = ArgumentCaptor.forClass(DagNodeInstance.class);
+        Mockito.verify(nodeMapper).updateById(captor.capture());
+        assertEquals("FAILED", captor.getValue().getStatus());
+        assertEquals("{\"k\":\"v\"}", captor.getValue().getOutputJson());
+    }
+
+    @Test
+    void onFailure_nullOutput_keepsOriginalOutputJson() {
+        // output 为 null 不覆盖原字段（TIMEOUT/异常路径语义）
+        DagNodeInstance node = new DagNodeInstance();
+        node.setId(1L);
+        node.setInstanceCode(INSTANCE_CODE);
+        node.setNodeCode(NODE_CODE);
+        node.setStatus("RUNNING");
+        node.setAttempt(3);
+        node.setMaxRetry(2);
+        node.setBackoff("FIXED");
+        node.setOutputJson("{\"prev\":1}");
+        when(nodeMapper.selectOneByEntity(any())).thenReturn(node);
+
+        engine.onFailure(INSTANCE_CODE, NODE_CODE, ExecutionEvent.TIMEOUT, "timeout", null);
+
+        ArgumentCaptor<DagNodeInstance> captor = ArgumentCaptor.forClass(DagNodeInstance.class);
+        Mockito.verify(nodeMapper).updateById(captor.capture());
+        assertEquals("{\"prev\":1}", captor.getValue().getOutputJson());
     }
 
     @Test

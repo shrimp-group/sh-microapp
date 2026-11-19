@@ -20,6 +20,9 @@ public class ExecutionLogResp {
     @Schema(description = "详情 JSON")
     private String detailJson;
 
+    @Schema(description = "过程日志内容(NODE_LOG)")
+    private String logText;
+
     @Schema(description = "执行机器")
     private String worker;
 

@@ -3,7 +3,7 @@
 <mapper namespace="com.wkclz.micro.dag.mapper.DagExecutionLogMapper">
 
     <select id="listByNode" resultType="com.wkclz.micro.dag.bean.entity.DagExecutionLog">
-        SELECT id, instance_code, node_code, attempt, event, detail_json, worker, create_time
+        SELECT id, instance_code, node_code, attempt, event, detail_json, log_text, worker, create_time
         FROM dag_execution_log
         WHERE instance_code = #{instanceCode} AND node_code = #{nodeCode} AND deleted = 0
         ORDER BY id

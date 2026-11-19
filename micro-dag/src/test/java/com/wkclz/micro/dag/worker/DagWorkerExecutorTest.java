@@ -14,6 +14,7 @@ import com.wkclz.micro.dag.service.DagEngineService;
 import com.wkclz.micro.dag.service.DagExecutionLogService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
@@ -24,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
@@ -92,7 +94,7 @@ class DagWorkerExecutorTest {
         executor.submit(node(300L, 0), instance());
 
         verify(engine, timeout(VERIFY_TIMEOUT_MS)).onFailure(eq(INSTANCE_CODE), eq(NODE_CODE),
-            eq(ExecutionEvent.TIMEOUT), contains("300"));
+            eq(ExecutionEvent.TIMEOUT), contains("300"), isNull());
     }
 
     @Test
@@ -106,7 +108,7 @@ class DagWorkerExecutorTest {
         executor.submit(node(0L, 0), instance());
 
         verify(engine, timeout(VERIFY_TIMEOUT_MS)).onSuccess(eq(INSTANCE_CODE), eq(NODE_CODE), any());
-        verify(engine, never()).onFailure(anyString(), anyString(), any(), anyString());
+        verify(engine, never()).onFailure(anyString(), anyString(), any(), anyString(), any());
     }
 
     @Test
@@ -149,8 +151,33 @@ class DagWorkerExecutorTest {
         executor.submit(node(null, 0), instance());
 
         verify(engine, timeout(VERIFY_TIMEOUT_MS)).onFailure(eq(INSTANCE_CODE), eq(NODE_CODE),
-            eq(ExecutionEvent.FAIL), contains("boom"));
+            eq(ExecutionEvent.FAIL), contains("boom"), isNull());
         Mockito.verify(publisher, timeout(VERIFY_TIMEOUT_MS)).wakeUp();
+    }
+
+    @Test
+    void submit_explicitFailResult_onFailureDispatchedWithOutput() throws Exception {
+        // NodeResult.fail 显式失败：output.msg 作为失败消息，output 随事件派发
+        when(handler.execute(any())).thenReturn(NodeResult.fail(Map.of("msg", "余额不足", "rows", 0)));
+
+        executor.submit(node(null, 0), instance());
+
+        verify(engine, timeout(VERIFY_TIMEOUT_MS)).onFailure(eq(INSTANCE_CODE), eq(NODE_CODE),
+            eq(ExecutionEvent.FAIL), eq("余额不足"), eq(Map.of("msg", "余额不足", "rows", 0)));
+        verify(engine, never()).onSuccess(anyString(), anyString(), any());
+        awaitRemoved();
+    }
+
+    @Test
+    void submit_explicitFailResultWithoutMsg_defaultFailMsg() throws Exception {
+        // NodeResult.fail() 无 output：缺省失败文案
+        when(handler.execute(any())).thenReturn(NodeResult.fail());
+
+        executor.submit(node(null, 0), instance());
+
+        verify(engine, timeout(VERIFY_TIMEOUT_MS)).onFailure(eq(INSTANCE_CODE), eq(NODE_CODE),
+            eq(ExecutionEvent.FAIL), eq("handler 返回失败"), isNull());
+        awaitRemoved();
     }
 
     @Test
@@ -213,6 +240,105 @@ class DagWorkerExecutorTest {
 
         verify(nodeMapper, timeout(VERIFY_TIMEOUT_MS).atLeastOnce()).renewLease(eq(1L), anyString(), any());
         verify(engine, timeout(VERIFY_TIMEOUT_MS)).onSuccess(eq(INSTANCE_CODE), eq(NODE_CODE), any());
+        awaitRemoved();
+    }
+
+    @Test
+    void submit_runningLogs_flushedPeriodically() throws Exception {
+        // 运行中过程日志由 flusher 按固定间隔批量落库（NODE_LOG，无 detail_json）
+        DagProperties properties = new DagProperties();
+        properties.getLog().setFlushIntervalMs(100);
+        executor = new DagWorkerExecutor(registry, nodeMapper, engine, logService, publisher, properties);
+        when(handler.execute(any())).thenAnswer(inv -> {
+            NodeContext ctx = inv.getArgument(0);
+            ctx.log("step-1");
+            ctx.log("step-2");
+            Thread.sleep(300);
+            return NodeResult.ok();
+        });
+
+        executor.submit(node(null, 0), instance());
+
+        verify(logService, timeout(VERIFY_TIMEOUT_MS)).log(eq(INSTANCE_CODE), eq(NODE_CODE), eq(1),
+            eq(ExecutionEvent.NODE_LOG), isNull(), contains("step-1"), anyString());
+        verify(logService, timeout(VERIFY_TIMEOUT_MS)).log(eq(INSTANCE_CODE), eq(NODE_CODE), eq(1),
+            eq(ExecutionEvent.NODE_LOG), isNull(), contains("step-2"), anyString());
+        awaitRemoved();
+    }
+
+    @Test
+    void submit_emptyBuffer_flusherSkips() throws Exception {
+        // 空缓冲跳过：flusher 多轮扫描但不产生任何 NODE_LOG 记录
+        DagProperties properties = new DagProperties();
+        properties.getLog().setFlushIntervalMs(100);
+        executor = new DagWorkerExecutor(registry, nodeMapper, engine, logService, publisher, properties);
+        when(handler.execute(any())).thenAnswer(inv -> {
+            Thread.sleep(300);
+            return NodeResult.ok();
+        });
+
+        executor.submit(node(null, 0), instance());
+
+        awaitRemoved();
+        Mockito.verify(logService, never()).log(anyString(), anyString(), anyInt(),
+            eq(ExecutionEvent.NODE_LOG), any(), any(), anyString());
+    }
+
+    @Test
+    void submit_finalFlush_writesPendingLog() throws Exception {
+        // 终态兜底 flush：flusher 间隔远大于执行时长，剩余缓冲由 supervise finally 兜底落库
+        DagProperties properties = new DagProperties();
+        properties.getLog().setFlushIntervalMs(60000);
+        executor = new DagWorkerExecutor(registry, nodeMapper, engine, logService, publisher, properties);
+        when(handler.execute(any())).thenAnswer(inv -> {
+            ((NodeContext) inv.getArgument(0)).log("final-line");
+            return NodeResult.ok();
+        });
+
+        executor.submit(node(null, 0), instance());
+
+        verify(logService, timeout(VERIFY_TIMEOUT_MS)).log(eq(INSTANCE_CODE), eq(NODE_CODE), eq(1),
+            eq(ExecutionEvent.NODE_LOG), isNull(), eq("final-line"), anyString());
+        awaitRemoved();
+    }
+
+    @Test
+    void submit_neverReported_finalFlushWritesNothing() throws Exception {
+        // 未上报不落库：handler 全程不 log，终态兜底也不写 NODE_LOG
+        DagProperties properties = new DagProperties();
+        properties.getLog().setFlushIntervalMs(60000);
+        executor = new DagWorkerExecutor(registry, nodeMapper, engine, logService, publisher, properties);
+        when(handler.execute(any())).thenReturn(NodeResult.ok());
+
+        executor.submit(node(null, 0), instance());
+
+        awaitRemoved();
+        Mockito.verify(logService, never()).log(anyString(), anyString(), anyInt(),
+            eq(ExecutionEvent.NODE_LOG), any(), any(), anyString());
+    }
+
+    @Test
+    void submit_logOverflow_finalFlushAppendsTruncatedMark() throws Exception {
+        // 超限丢弃：缓冲内容不超上限，兜底 flush 追加截断标记
+        DagProperties properties = new DagProperties();
+        properties.getLog().setFlushIntervalMs(60000);
+        properties.getLog().setMaxChars(50);
+        executor = new DagWorkerExecutor(registry, nodeMapper, engine, logService, publisher, properties);
+        when(handler.execute(any())).thenAnswer(inv -> {
+            NodeContext ctx = inv.getArgument(0);
+            ctx.log("a".repeat(30));
+            ctx.log("b".repeat(30)); // 累计 60 > 50：整条丢弃并置 truncated
+            return NodeResult.ok();
+        });
+
+        executor.submit(node(null, 0), instance());
+
+        ArgumentCaptor<String> content = ArgumentCaptor.forClass(String.class);
+        verify(logService, timeout(VERIFY_TIMEOUT_MS)).log(eq(INSTANCE_CODE), eq(NODE_CODE), eq(1),
+            eq(ExecutionEvent.NODE_LOG), isNull(), content.capture(), anyString());
+        assertTrue(content.getValue().startsWith("a".repeat(30)));
+        assertTrue(content.getValue().endsWith("...[truncated]"));
+        assertTrue(content.getValue().length() <= 50 + "\n...[truncated]".length());
         awaitRemoved();
     }
 

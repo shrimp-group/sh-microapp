@@ -18,6 +18,7 @@ public enum ExecutionEvent {
     SKIP("跳过"),
     RESET("重置"),
     CLEANUP("清理"),
+    NODE_LOG("过程日志"),
     ;
 
     /** 中文含义 */

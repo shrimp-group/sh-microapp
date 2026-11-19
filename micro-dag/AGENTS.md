@@ -51,6 +51,8 @@ public class DataFetchHandler implements NodeHandler {
 | dag.demo-enabled | false | demo handler 注册开关（见下） |
 | dag.trigger.enabled | true | START 节点时间驱动触发器开关 |
 | dag.trigger.interval-ms | 30000 | 时间驱动触发器轮询间隔 |
+| dag.log.max-chars | 8000 | 单节点过程日志缓冲上限（字符数），超出丢弃并标记截断 |
+| dag.log.flush-interval-ms | 3000 | 过程日志定时落库间隔 |
 
 ## 系统 Handler（内置，永久生效）
 
@@ -97,10 +99,14 @@ GraalJS 依赖为 optional，classpath 缺失时 `demo-script-exec` 自动跳过
 - 就绪领取唯一入口：DagScheduler.scan() 的 casClaim，防重复执行
 - 故障转移：租约过期（lease_expire_time < now）→ 重置 PENDING 重派
 - 重试：失败且 attempt ≤ maxRetry → RETRYING + next_retry_time，到期由调度提升
-- 分支：上游完成后对出边求值（`${ctx.*}` / `${out.<node>.*}` + 比较 + and/or），不满足级联 SKIPPED
+- 分支：上游完成后对出边求值（`${ctx.*}` / `${out.<node>.*}` + 比较 + and/or），不满足级联 SKIPPED；级联跳过仅在上游全部确定性不满足（FAILED/MANUAL_STOPPED/链式 SKIPPED/条件求值 false）时触发，上游 PENDING/RUNNING/RETRYING 属未定状态不参与跳过
 - 特殊节点直达：仅 START/END/BRANCH 且 handler 为空（存量兼容）领取后直达成功；有 handler 一律走 worker
 - 节点分类：SYSTEM 永久生效 / DEMO 受 dag.demo-enabled 限制 / BUSINESS 业务接入默认
 - 清理钩子：重跑目标 attempt > 0 → cleanup_flag=1 → 执行前先调 handler.cleanup
+- 显式失败：handler 返回 NodeResult.fail(output) → 派发 FAIL（output 含 String 类型 msg 键时作为失败消息；output 写入 output_json，RETRYING/FAILED 均写）
+- 过程日志：handler 调 ctx.log(message) 内存缓冲（线程安全，上限 dag.log.max-chars，超限丢弃并置 truncated）；
+  flusher 单线程按 dag.log.flush-interval-ms 扫描落库 NODE_LOG 事件（log_text 独立字段，无 detail_json），节点终态 finally 兜底 flush 一次并补 `...[truncated]` 标记
+- DDL 迁移（存量库升级时执行，新建库直接用最新表定义）：`ALTER TABLE dag_execution_log MODIFY detail_json JSON;` `ALTER TABLE dag_execution_log ADD COLUMN log_text TEXT COMMENT '过程日志内容(NODE_LOG 专用)';`（迁移前校验存量 detail_json 均为合法 JSON，详见 docs/tasks/micro-dag/02-data-layer.md）
 
 ## API 一览（前缀 /micro-dag，详见 rest/Route.java）
 
@@ -110,6 +116,12 @@ GraalJS 依赖为 optional，classpath 缺失时 `demo-script-exec` 自动跳过
 ## 前端（独立工程 sh-dag-ui，appCode=dag）
 
 - DagDefinitionList：流程定义分页列表（查询/新建/设计/复制/发布），设计动作经全屏弹窗内嵌设计器
-- DagDesigner：纯设计器（左 handler 面板 / 中画布 / 右属性面板），保存/发布/自动布局
+- DagDesigner：纯设计器（左信息栏[编码/必填名称] / 左 handler 面板 / 中画布[自动布局悬浮] / 右属性面板），保存/发布/关闭为全局按钮固定右下角
+- DagInstanceList：实例分页列表（查询/发起/详情/终止），状态中文展示，不做定时刷新（关闭详情弹窗后刷新），详情动作经全屏弹窗内嵌详情组件
 - DagGraph：X6 画布封装——节点左右端口磁吸连线（仅 out→in）、mousedown 即选中、
-  拖动坐标实时回写 def、拖入与连线均为增量操作（不做全量 render，避免坐标回跳重排）
+  拖动坐标实时回写 def、拖入与连线均为增量操作（不做全量 render，避免坐标回跳重排）、
+  readonly 模式节点本体保持类型配色，执行状态经右上角标圆点（状态色）+ 第二行中文状态文字呈现
+- DagInstanceDetail：实例详情（全屏 dialog 内嵌组件，支持 instanceCode prop + route query 兜底）——实例/节点状态中文、
+  节点七态色板着色 + 画布状态图例、点击节点经 el-popover 气泡展示概要与干预操作（中断/跳过/重置/重跑），
+  执行记录时间线由气泡入口打开 NodeDetailDrawer 弹窗查看（事件枚举中文）
+- NodeDetailDrawer：执行记录时间线弹窗（仅承载 logs，事件枚举中文展示，由气泡入口打开）
