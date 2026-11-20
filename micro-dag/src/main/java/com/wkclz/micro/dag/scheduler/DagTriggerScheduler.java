@@ -102,14 +102,13 @@ public class DagTriggerScheduler {
         return versions;
     }
 
-    /** 状态缺失或 dagVersion 变化时重建（取第一个 TIMER 触发的 START 节点）；无 TIMER 触发则移除状态 */
+    /** 状态缺失或 dagVersion 变化时重建（取第一个 TIMER 触发的 START 节点）；无 TIMER 触发则写入 cron=null 的占位状态（负缓存） */
     private void refreshState(String dagCode, Integer dagVersion, LocalDateTime now) {
         TriggerState old = states.get(dagCode);
         if (old != null && old.getDagVersion().equals(dagVersion)) {
             return;
         }
         log.info("micro-dag: 重建触发状态 dagCode={} dagVersion={}", dagCode, dagVersion);
-        states.remove(dagCode);
         DagDefModel def;
         try {
             def = definitionService.load(dagCode, dagVersion);
@@ -142,7 +141,11 @@ public class DagTriggerScheduler {
                 log.error("micro-dag: cron 非法 dagCode={} dagVersion={} cron={}", dagCode, dagVersion, cronValue, e);
             }
         }
-        log.info("micro-dag: 定义无可用 TIMER 触发 dagCode={} dagVersion={}", dagCode, dagVersion);
+        // 无 TIMER 触发：写入 cron=null 占位状态，避免每轮重复加载定义
+        TriggerState empty = new TriggerState();
+        empty.setDagVersion(dagVersion);
+        states.put(dagCode, empty);
+        log.debug("micro-dag: 定义无可用 TIMER 触发 dagCode={} dagVersion={}", dagCode, dagVersion);
     }
 
     /** START 节点 params 中的 triggerParams，缺失为空 Map */
