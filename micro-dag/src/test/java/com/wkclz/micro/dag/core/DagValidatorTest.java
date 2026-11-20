@@ -1,21 +1,28 @@
 package com.wkclz.micro.dag.core;
 
+import com.wkclz.micro.dag.api.NodeContext;
+import com.wkclz.micro.dag.api.NodeHandler;
+import com.wkclz.micro.dag.api.NodeHandlerRegistry;
+import com.wkclz.micro.dag.api.NodeResult;
 import com.wkclz.micro.dag.bean.dto.DagDefModel;
 import com.wkclz.micro.dag.bean.dto.EdgeDef;
 import com.wkclz.micro.dag.bean.dto.NodeDef;
 import com.wkclz.micro.dag.bean.enums.NodeType;
 import com.wkclz.micro.dag.bean.enums.SystemHandler;
+import com.wkclz.micro.dag.handler.system.SystemStartHandler;
+import com.wkclz.micro.dag.handler.system.SystemTimerHandler;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * 定义校验器单测：环检测 / 悬空依赖 / 条件边缺 when / nodeCode 格式 / 重复编码 / 特殊节点（START/END/BRANCH）
+ * / nodeType-handler 匹配 / START 时间驱动 cron / 节点参数 schema 校验
  */
 class DagValidatorTest {
 
@@ -51,6 +58,24 @@ class DagValidatorTest {
         return e;
     }
 
+    /** 匿名 handler：仅为注册占位，无执行语义 */
+    private NodeHandler handlerOf(String code) {
+        return new NodeHandler() {
+            @Override
+            public String nodeCode() { return code; }
+            @Override
+            public NodeResult execute(NodeContext ctx) {
+                return NodeResult.ok(Map.of());
+            }
+        };
+    }
+
+    /** 按编码集合构建注册表，替代原 Set<String> 入参 */
+    private NodeHandlerRegistry registry(String... codes) {
+        return new NodeHandlerRegistry(
+            Arrays.stream(codes).map(this::handlerOf).toList());
+    }
+
     @Test
     void shouldPassValidDag() {
         DagDefModel def = new DagDefModel();
@@ -58,7 +83,7 @@ class DagValidatorTest {
         def.setDagVersion(1);
         def.setNodes(List.of(node("a"), node("b")));
         def.setEdges(List.of(edge("a", "b")));
-        assertTrue(validator.validate(def, Set.of("h-a", "h-b")).isEmpty());
+        assertTrue(validator.validate(def, registry("h-a", "h-b")).isEmpty());
     }
 
     @Test
@@ -68,7 +93,7 @@ class DagValidatorTest {
         def.setDagVersion(1);
         def.setNodes(List.of(node("a"), node("b"), node("c")));
         def.setEdges(List.of(edge("a", "b"), edge("b", "c"), edge("c", "a")));
-        List<String> errors = validator.validate(def, Set.of("h-a", "h-b", "h-c"));
+        List<String> errors = validator.validate(def, registry("h-a", "h-b", "h-c"));
         assertEquals(1, errors.size());
         assertTrue(errors.get(0).contains("环"));
     }
@@ -80,7 +105,7 @@ class DagValidatorTest {
         def.setDagVersion(1);
         def.setNodes(List.of(node("a")));
         def.setEdges(List.of(edge("ghost", "a")));
-        List<String> errors = validator.validate(def, Set.of("h-a"));
+        List<String> errors = validator.validate(def, registry("h-a"));
         assertEquals(1, errors.size());
         assertTrue(errors.get(0).contains("ghost"));
     }
@@ -94,7 +119,7 @@ class DagValidatorTest {
         EdgeDef e = edge("a", "b");
         e.setType(EdgeDef.TYPE_CONDITION);
         def.setEdges(List.of(e));
-        List<String> errors = validator.validate(def, Set.of("h-a", "h-b"));
+        List<String> errors = validator.validate(def, registry("h-a", "h-b"));
         assertEquals(1, errors.size());
         assertTrue(errors.get(0).contains("when"));
     }
@@ -106,7 +131,7 @@ class DagValidatorTest {
         def.setDagVersion(1);
         def.setNodes(List.of(node("a")));
         def.setEdges(List.of());
-        List<String> errors = validator.validate(def, Set.of("h-other"));
+        List<String> errors = validator.validate(def, registry("h-other"));
         assertEquals(1, errors.size());
         assertTrue(errors.get(0).contains("h-a"));
     }
@@ -118,7 +143,7 @@ class DagValidatorTest {
         def.setDagVersion(1);
         def.setNodes(List.of(node("a"), node("A")));   // 唯一化按小写比较，A 与 a 冲突
         def.setEdges(List.of());
-        List<String> errors = validator.validate(def, Set.of("h-a"));
+        List<String> errors = validator.validate(def, registry("h-a"));
         assertEquals(1, errors.size());
         assertTrue(errors.get(0).contains("重复"));
     }
@@ -131,7 +156,7 @@ class DagValidatorTest {
         NodeDef n = node("Bad_Code");                  // 只允许 [a-z0-9-]
         def.setNodes(List.of(n));
         def.setEdges(List.of());
-        List<String> errors = validator.validate(def, Set.of("h-Bad_Code"));
+        List<String> errors = validator.validate(def, registry("h-Bad_Code"));
         assertEquals(1, errors.size());
         assertTrue(errors.get(0).contains("Bad_Code"));
     }
@@ -143,7 +168,7 @@ class DagValidatorTest {
         def.setDagVersion(1);
         def.setNodes(List.of(specialNode("start", NodeType.START.getCode()), node("a")));
         def.setEdges(List.of(edge("start", "a")));
-        assertTrue(validator.validate(def, Set.of("h-a")).isEmpty());
+        assertTrue(validator.validate(def, registry("h-a")).isEmpty());
     }
 
     @Test
@@ -153,7 +178,7 @@ class DagValidatorTest {
         def.setDagVersion(1);
         def.setNodes(List.of(specialNode("start", NodeType.START.getCode()), node("x"), node("y")));
         def.setEdges(List.of(edge("x", "start"), edge("start", "y")));
-        List<String> errors = validator.validate(def, Set.of("h-x", "h-y"));
+        List<String> errors = validator.validate(def, registry("h-x", "h-y"));
         assertEquals(1, errors.size());
         assertTrue(errors.get(0).contains("开始节点不能有入边"));
     }
@@ -165,7 +190,7 @@ class DagValidatorTest {
         def.setDagVersion(1);
         def.setNodes(List.of(specialNode("start", NodeType.START.getCode()), node("a")));
         def.setEdges(List.of());
-        List<String> errors = validator.validate(def, Set.of("h-a"));
+        List<String> errors = validator.validate(def, registry("h-a"));
         assertEquals(1, errors.size());
         assertTrue(errors.get(0).contains("开始节点必须连出下游"));
     }
@@ -177,7 +202,7 @@ class DagValidatorTest {
         def.setDagVersion(1);
         def.setNodes(List.of(node("a"), node("b"), specialNode("end", NodeType.END.getCode())));
         def.setEdges(List.of(edge("a", "end"), edge("end", "b")));
-        List<String> errors = validator.validate(def, Set.of("h-a", "h-b"));
+        List<String> errors = validator.validate(def, registry("h-a", "h-b"));
         assertEquals(1, errors.size());
         assertTrue(errors.get(0).contains("结束节点不能连出下游"));
     }
@@ -189,7 +214,7 @@ class DagValidatorTest {
         def.setDagVersion(1);
         def.setNodes(List.of(specialNode("br", NodeType.BRANCH.getCode()), node("a"), node("b")));
         def.setEdges(List.of(edge("br", "a"), conditionEdge("br", "b")));
-        List<String> errors = validator.validate(def, Set.of("h-a", "h-b"));
+        List<String> errors = validator.validate(def, registry("h-a", "h-b"));
         assertEquals(1, errors.size());
         assertTrue(errors.get(0).contains("分支节点的出边必须为条件分支"));
     }
@@ -201,7 +226,7 @@ class DagValidatorTest {
         def.setDagVersion(1);
         def.setNodes(List.of(specialNode("br", NodeType.BRANCH.getCode()), node("a"), node("b")));
         def.setEdges(List.of(conditionEdge("br", "a"), conditionEdge("br", "b")));
-        assertTrue(validator.validate(def, Set.of("h-a", "h-b")).isEmpty());
+        assertTrue(validator.validate(def, registry("h-a", "h-b")).isEmpty());
     }
 
     @Test
@@ -213,7 +238,7 @@ class DagValidatorTest {
         n.setNodeType("FOO");
         def.setNodes(List.of(n));
         def.setEdges(List.of());
-        List<String> errors = validator.validate(def, Set.of("h-a"));
+        List<String> errors = validator.validate(def, registry("h-a"));
         assertEquals(1, errors.size());
         assertTrue(errors.get(0).contains("nodeType 非法"));
     }
@@ -229,7 +254,7 @@ class DagValidatorTest {
         start.setHandler(SystemHandler.START.getCode());
         def.setNodes(List.of(start, node("a")));
         def.setEdges(List.of(edge("start", "a")));
-        assertTrue(validator.validate(def, Set.of("h-a", SystemHandler.START.getCode())).isEmpty());
+        assertTrue(validator.validate(def, registry("h-a", SystemHandler.START.getCode())).isEmpty());
     }
 
     @Test
@@ -241,7 +266,7 @@ class DagValidatorTest {
         start.setHandler(SystemHandler.END.getCode());
         def.setNodes(List.of(start, node("a")));
         def.setEdges(List.of(edge("start", "a")));
-        List<String> errors = validator.validate(def, Set.of("h-a", SystemHandler.END.getCode()));
+        List<String> errors = validator.validate(def, registry("h-a", SystemHandler.END.getCode()));
         assertEquals(1, errors.size());
         assertTrue(errors.get(0).contains("nodeType 与 handler 不匹配"));
     }
@@ -255,7 +280,7 @@ class DagValidatorTest {
         br.setHandler(SystemHandler.BRANCH.getCode());
         def.setNodes(List.of(br, node("a"), node("b")));
         def.setEdges(List.of(conditionEdge("br", "a"), conditionEdge("br", "b")));
-        assertTrue(validator.validate(def, Set.of("h-a", "h-b", SystemHandler.BRANCH.getCode())).isEmpty());
+        assertTrue(validator.validate(def, registry("h-a", "h-b", SystemHandler.BRANCH.getCode())).isEmpty());
     }
 
     @Test
@@ -267,7 +292,7 @@ class DagValidatorTest {
         t.setHandler(SystemHandler.TIMER.getCode());
         def.setNodes(List.of(t));
         def.setEdges(List.of());
-        assertTrue(validator.validate(def, Set.of(SystemHandler.TIMER.getCode())).isEmpty());
+        assertTrue(validator.validate(def, registry(SystemHandler.TIMER.getCode())).isEmpty());
     }
 
     @Test
@@ -279,7 +304,7 @@ class DagValidatorTest {
         start.setHandler(SystemHandler.TIMER.getCode());   // system-timer 仅限 NORMAL 节点
         def.setNodes(List.of(start, node("a")));
         def.setEdges(List.of(edge("start", "a")));
-        List<String> errors = validator.validate(def, Set.of("h-a", SystemHandler.TIMER.getCode()));
+        List<String> errors = validator.validate(def, registry("h-a", SystemHandler.TIMER.getCode()));
         assertEquals(1, errors.size());
         assertTrue(errors.get(0).contains("nodeType 与 handler 不匹配"));
     }
@@ -293,7 +318,7 @@ class DagValidatorTest {
         n.setHandler(SystemHandler.START.getCode());       // NORMAL 节点不能使用 system-start
         def.setNodes(List.of(n));
         def.setEdges(List.of());
-        List<String> errors = validator.validate(def, Set.of(SystemHandler.START.getCode()));
+        List<String> errors = validator.validate(def, registry(SystemHandler.START.getCode()));
         assertEquals(1, errors.size());
         assertTrue(errors.get(0).contains("nodeType 与 handler 不匹配"));
     }
@@ -307,7 +332,7 @@ class DagValidatorTest {
         start.setHandler("ghost-handler");         // 特殊节点带 handler 也需已注册
         def.setNodes(List.of(start, node("a")));
         def.setEdges(List.of(edge("start", "a")));
-        List<String> errors = validator.validate(def, Set.of("h-a"));
+        List<String> errors = validator.validate(def, registry("h-a"));
         assertEquals(2, errors.size());
         assertTrue(errors.stream().anyMatch(e -> e.contains("未注册")));
         assertTrue(errors.stream().anyMatch(e -> e.contains("nodeType 与 handler 不匹配")));
@@ -324,7 +349,7 @@ class DagValidatorTest {
         start.setParams(Map.of("triggerType", "TIMER"));
         def.setNodes(List.of(start, node("a")));
         def.setEdges(List.of(edge("start", "a")));
-        List<String> errors = validator.validate(def, Set.of("h-a"));
+        List<String> errors = validator.validate(def, registry("h-a"));
         assertEquals(1, errors.size());
         assertTrue(errors.get(0).contains("cron 必填"));
     }
@@ -338,7 +363,7 @@ class DagValidatorTest {
         start.setParams(Map.of("triggerType", "timer", "cron", "* * * *"));   // 触发类型忽略大小写；cron 域数不足
         def.setNodes(List.of(start, node("a")));
         def.setEdges(List.of(edge("start", "a")));
-        List<String> errors = validator.validate(def, Set.of("h-a"));
+        List<String> errors = validator.validate(def, registry("h-a"));
         assertEquals(1, errors.size());
         assertTrue(errors.get(0).contains("触发 cron 非法"));
     }
@@ -352,7 +377,7 @@ class DagValidatorTest {
         start.setParams(Map.of("triggerType", "TIMER", "cron", "0 0 2 * * *"));
         def.setNodes(List.of(start, node("a")));
         def.setEdges(List.of(edge("start", "a")));
-        assertTrue(validator.validate(def, Set.of("h-a")).isEmpty());
+        assertTrue(validator.validate(def, registry("h-a")).isEmpty());
     }
 
     @Test
@@ -364,6 +389,118 @@ class DagValidatorTest {
         n.setParams(Map.of("triggerType", "TIMER", "cron", "* * * *"));   // 非 START 节点不做 TIMER cron 校验
         def.setNodes(List.of(n));
         def.setEdges(List.of());
-        assertTrue(validator.validate(def, Set.of("h-a")).isEmpty());
+        assertTrue(validator.validate(def, registry("h-a")).isEmpty());
+    }
+
+    // ===== 第 8 项：节点参数 schema 校验 =====
+
+    /** 含系统 handler 的注册表 */
+    private NodeHandlerRegistry systemRegistry() {
+        return new NodeHandlerRegistry(
+            List.of(new SystemStartHandler(), new SystemTimerHandler(), handlerOf("h-a")));
+    }
+
+    @Test
+    void shouldRejectMissingCronWhenTriggerTypeTimer() {
+        DagDefModel def = new DagDefModel();
+        def.setDagCode("d1");
+        def.setDagVersion(1);
+        NodeDef start = specialNode("start", NodeType.START.getCode());
+        start.setHandler(SystemHandler.START.getCode());
+        start.setParams(Map.of("triggerType", "TIMER"));
+        def.setNodes(List.of(start, node("a")));
+        def.setEdges(List.of(edge("start", "a")));
+        List<String> errors = validator.validate(def, systemRegistry());
+        assertEquals(1, errors.size());
+        assertTrue(errors.get(0).contains("必填"));
+    }
+
+    @Test
+    void shouldRejectBadCronViaSchema() {
+        DagDefModel def = new DagDefModel();
+        def.setDagCode("d1");
+        def.setDagVersion(1);
+        NodeDef start = specialNode("start", NodeType.START.getCode());
+        start.setHandler(SystemHandler.START.getCode());
+        start.setParams(Map.of("triggerType", "TIMER", "cron", "* * * *"));   // cron 域数不足
+        def.setNodes(List.of(start, node("a")));
+        def.setEdges(List.of(edge("start", "a")));
+        List<String> errors = validator.validate(def, systemRegistry());
+        assertEquals(1, errors.size());
+        assertTrue(errors.get(0).contains("非法"));
+    }
+
+    @Test
+    void shouldRejectDelayMsOutOfRange() {
+        DagDefModel def = new DagDefModel();
+        def.setDagCode("d1");
+        def.setDagVersion(1);
+        NodeDef t = node("t");
+        t.setHandler(SystemHandler.TIMER.getCode());
+        t.setParams(Map.of("delayMs", 90000000));   // 超出 [0, 86400000]
+        def.setNodes(List.of(t));
+        def.setEdges(List.of());
+        List<String> errors = validator.validate(def, systemRegistry());
+        assertEquals(1, errors.size());
+        assertTrue(errors.get(0).contains("超出范围"));
+    }
+
+    @Test
+    void shouldRejectBadDelayUntil() {
+        DagDefModel def = new DagDefModel();
+        def.setDagCode("d1");
+        def.setDagVersion(1);
+        NodeDef t = node("t");
+        t.setHandler(SystemHandler.TIMER.getCode());
+        t.setParams(Map.of("delayUntil", "not-a-time"));
+        def.setNodes(List.of(t));
+        def.setEdges(List.of());
+        List<String> errors = validator.validate(def, systemRegistry());
+        assertEquals(1, errors.size());
+        assertTrue(errors.get(0).contains("非法"));
+    }
+
+    @Test
+    void shouldRejectNonMapTriggerParams() {
+        DagDefModel def = new DagDefModel();
+        def.setDagCode("d1");
+        def.setDagVersion(1);
+        NodeDef start = specialNode("start", NodeType.START.getCode());
+        start.setHandler(SystemHandler.START.getCode());
+        start.setParams(Map.of("triggerParams", "x"));   // KEY_VALUE 类型须为对象结构
+        def.setNodes(List.of(start, node("a")));
+        def.setEdges(List.of(edge("start", "a")));
+        List<String> errors = validator.validate(def, systemRegistry());
+        assertEquals(1, errors.size());
+        assertTrue(errors.get(0).contains("对象结构"));
+    }
+
+    @Test
+    void shouldRejectIllegalSelectValue() {
+        DagDefModel def = new DagDefModel();
+        def.setDagCode("d1");
+        def.setDagVersion(1);
+        NodeDef start = specialNode("start", NodeType.START.getCode());
+        start.setHandler(SystemHandler.START.getCode());
+        start.setParams(Map.of("triggerType", "XXX"));   // 不在 SELECT 选项中
+        def.setNodes(List.of(start, node("a")));
+        def.setEdges(List.of(edge("start", "a")));
+        List<String> errors = validator.validate(def, systemRegistry());
+        assertEquals(1, errors.size());
+        assertTrue(errors.get(0).contains("取值非法"));
+    }
+
+    @Test
+    void shouldPassFreeParamsNotInSchema() {
+        DagDefModel def = new DagDefModel();
+        def.setDagCode("d1");
+        def.setDagVersion(1);
+        NodeDef t = node("t");
+        t.setHandler(SystemHandler.TIMER.getCode());
+        t.setParams(Map.of("customKey", "自由参数", "delayMs", 500));   // schema 未声明的自由键不拦截
+        def.setNodes(List.of(t));
+        def.setEdges(List.of());
+        List<String> errors = validator.validate(def, systemRegistry());
+        assertTrue(errors.isEmpty());
     }
 }

@@ -1,6 +1,9 @@
 package com.wkclz.micro.dag.api;
 
+import com.wkclz.micro.dag.bean.dto.NodeParamDef;
 import com.wkclz.micro.dag.bean.enums.NodeCategory;
+
+import java.util.List;
 
 /**
  * 业务节点处理器 SPI：业务方实现并注册为 Spring Bean 即可被编排引用
@@ -28,5 +31,10 @@ public interface NodeHandler {
 
     /** 重跑前清理钩子：清理该 traceCode 历史写入的数据 */
     default void cleanup(NodeContext ctx) {
+    }
+
+    /** 节点参数定义：随 handler/list 下发渲染表单，并在保存/发布时参与校验；缺省无参数 */
+    default List<NodeParamDef> paramSchema() {
+        return List.of();
     }
 }

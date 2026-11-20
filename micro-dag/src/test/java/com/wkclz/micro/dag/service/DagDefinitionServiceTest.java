@@ -1,7 +1,10 @@
 package com.wkclz.micro.dag.service;
 
 import com.wkclz.core.exception.ValidationException;
+import com.wkclz.micro.dag.api.NodeContext;
+import com.wkclz.micro.dag.api.NodeHandler;
 import com.wkclz.micro.dag.api.NodeHandlerRegistry;
+import com.wkclz.micro.dag.api.NodeResult;
 import com.wkclz.micro.dag.bean.dto.EdgeDef;
 import com.wkclz.micro.dag.bean.dto.NodeDef;
 import com.wkclz.micro.dag.bean.entity.DagDefinition;
@@ -21,6 +24,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -54,6 +58,13 @@ class DagDefinitionServiceTest {
         registry = mock(NodeHandlerRegistry.class);
         // 含系统 handler（system-start/system-end 永久注册，特殊节点带 handler 时需已注册）
         when(registry.codes()).thenReturn(Set.of("h1", "system-start", "system-end"));
+        // 规则 8 按 handler.paramSchema 校验 params：占位 handler 无 schema，保证既有用例不被参数校验拦截
+        when(registry.get(any(String.class))).thenAnswer(inv -> new NodeHandler() {
+            @Override
+            public String nodeCode() { return String.valueOf(inv.getArgument(0)); }
+            @Override
+            public NodeResult execute(NodeContext ctx) { return NodeResult.ok(Map.of()); }
+        });
         idGenerator = mock(RedisIdGenerator.class);
         when(idGenerator.generateBase32IdWithPrefix("dag_")).thenReturn("dag_test123");
         service = new DagDefinitionService(new DagValidator(), registry, nodeMapper, edgeMapper, idGenerator);

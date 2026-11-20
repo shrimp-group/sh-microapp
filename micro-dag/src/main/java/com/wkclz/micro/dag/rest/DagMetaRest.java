@@ -36,6 +36,7 @@ public class DagMetaRest {
                 resp.setCode(h.nodeCode());
                 resp.setName(h.nodeName());
                 resp.setCategory(h.category().name());
+                resp.setParamSchema(h.paramSchema());
                 return resp;
             })
             .toList();

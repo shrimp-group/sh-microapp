@@ -4,7 +4,9 @@ import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.dag.api.NodeContext;
 import com.wkclz.micro.dag.api.NodeHandler;
 import com.wkclz.micro.dag.api.NodeResult;
+import com.wkclz.micro.dag.bean.dto.NodeParamDef;
 import com.wkclz.micro.dag.bean.enums.NodeCategory;
+import com.wkclz.micro.dag.bean.enums.NodeParamType;
 import com.wkclz.micro.dag.bean.enums.SystemHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -14,6 +16,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -72,6 +75,16 @@ public class SystemTimerHandler implements NodeHandler {
         long waitedMs = waitMs <= 0 ? 0 : Math.min((System.nanoTime() - startNanos) / 1_000_000L, waitMs);
         log.info("system-timer: waited={}ms target={}", waitedMs, target);
         return NodeResult.ok(Map.of("waitedMs", waitedMs, "targetTime", target.toString()));
+    }
+
+    @Override
+    public List<NodeParamDef> paramSchema() {
+        return List.of(
+            NodeParamDef.of("delayMs", "延时(ms)", NodeParamType.NUMBER)
+                .range(0L, MAX_DELAY_MS).help("与到点时间二选一，取较晚者"),
+            NodeParamDef.of("delayUntil", "到点时间", NodeParamType.DATETIME)
+                .placeholder("ISO-8601，如 2026-11-19T12:00:00")
+        );
     }
 
     /** 解析 delayMs：缺省 0，上限 86400000，非法值抛校验异常 */

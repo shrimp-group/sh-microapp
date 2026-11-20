@@ -1,8 +1,10 @@
 package com.wkclz.micro.dag.core;
 
+import com.wkclz.micro.dag.api.NodeHandlerRegistry;
 import com.wkclz.micro.dag.bean.dto.DagDefModel;
 import com.wkclz.micro.dag.bean.dto.EdgeDef;
 import com.wkclz.micro.dag.bean.dto.NodeDef;
+import com.wkclz.micro.dag.bean.dto.NodeParamDef;
 import com.wkclz.micro.dag.bean.enums.NodeType;
 import com.wkclz.micro.dag.bean.enums.SystemHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +12,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,7 +32,7 @@ public class DagValidator {
 
     private static final String CODE_PATTERN = "[a-z0-9-]+";
 
-    public List<String> validate(DagDefModel def, Set<String> registeredHandlers) {
+    public List<String> validate(DagDefModel def, NodeHandlerRegistry registry) {
         log.info("DagValidator.validate dagCode={}", def == null ? null : def.getDagCode());
         List<String> errors = new ArrayList<>();
         if (def == null || def.getNodes() == null || def.getNodes().isEmpty()) {
@@ -63,7 +68,7 @@ public class DagValidator {
             if (NodeType.specialOf(n.getNodeType()) != null && StringUtils.isBlank(n.getHandler())) {
                 continue;
             }
-            if (n.getHandler() == null || !registeredHandlers.contains(n.getHandler())) {
+            if (n.getHandler() == null || !registry.codes().contains(n.getHandler())) {
                 errors.add("节点 " + n.getCode() + " 的 handler 未注册：" + n.getHandler());
             }
         }
@@ -160,29 +165,96 @@ public class DagValidator {
                 errors.add("节点 " + n.getCode() + " 的 nodeType 与 handler 不匹配：" + sn.getCode() + " 节点不能使用 " + handler);
             }
         }
-        // 8. START 时间驱动：params.triggerType=TIMER 时 cron 必填且可解析（Spring 6 域 cron）
+        // 8. 节点参数 schema 校验：按 handler 声明的 paramSchema 校验 params（schema 未声明的自由键不拦截）；
+        //    特殊节点免 handler（存量兼容）时，START 时间驱动 cron 按 nodeType 兜底校验
         for (NodeDef n : def.getNodes()) {
-            String type = n.getNodeType() == null ? NodeType.NORMAL.getCode() : n.getNodeType();
-            if (!NodeType.START.getCode().equals(type) || n.getParams() == null || n.getParams().isEmpty()) {
+            String handler = n.getHandler();
+            if (StringUtils.isBlank(handler) || !registry.codes().contains(handler)) {
+                validateStartTriggerCronFallback(n, errors);
                 continue;
             }
-            Object triggerType = n.getParams().get("triggerType");
-            if (triggerType == null || !"TIMER".equalsIgnoreCase(String.valueOf(triggerType))) {
-                continue;
-            }
-            Object cron = n.getParams().get("cron");
-            if (cron == null || String.valueOf(cron).isBlank()) {
-                errors.add("节点 " + n.getCode() + " 的触发 cron 必填");
-                continue;
-            }
-            try {
-                CronExpression.parse(String.valueOf(cron));
-            } catch (IllegalArgumentException e) {
-                log.error("DagValidator: cron 解析失败 nodeCode={} cron={}", n.getCode(), cron, e);
-                errors.add("节点 " + n.getCode() + " 的触发 cron 非法：" + e.getMessage());
+            List<NodeParamDef> schema = registry.get(handler).paramSchema();
+            Map<String, Object> params = n.getParams() == null ? Map.of() : n.getParams();
+            for (NodeParamDef p : schema) {
+                validateParamDef(n, p, params, errors);
             }
         }
         log.info("DagValidator.validate done errors={}", errors);
         return errors;
+    }
+
+    /** 存量兜底：免 handler 的 START 节点 params.triggerType=TIMER 时 cron 必填且可解析（调度器按 nodeType 消费） */
+    private void validateStartTriggerCronFallback(NodeDef n, List<String> errors) {
+        String type = n.getNodeType() == null ? NodeType.NORMAL.getCode() : n.getNodeType();
+        if (!NodeType.START.getCode().equals(type) || n.getParams() == null || n.getParams().isEmpty()) {
+            return;
+        }
+        Object triggerType = n.getParams().get("triggerType");
+        if (triggerType == null || !"TIMER".equalsIgnoreCase(String.valueOf(triggerType))) {
+            return;
+        }
+        Object cron = n.getParams().get("cron");
+        if (cron == null || String.valueOf(cron).isBlank()) {
+            errors.add("节点 " + n.getCode() + " 的触发 cron 必填");
+            return;
+        }
+        try {
+            CronExpression.parse(String.valueOf(cron));
+        } catch (IllegalArgumentException e) {
+            log.error("DagValidator: cron 解析失败 nodeCode={} cron={}", n.getCode(), cron, e);
+            errors.add("节点 " + n.getCode() + " 的触发 cron 非法：" + e.getMessage());
+        }
+    }
+
+    /** 按 schema 校验单个参数：必填/条件必填/NUMBER 范围/CRON/DATETIME/SELECT 枚举/KEY_VALUE 结构 */
+    private void validateParamDef(NodeDef n, NodeParamDef p, Map<String, Object> params, List<String> errors) {
+        Object v = params.get(p.getKey());
+        boolean blank = v == null || (v instanceof String s && s.isBlank());
+        boolean condRequired = p.getRequiredWhenKey() != null
+            && p.getRequiredWhenValue().equalsIgnoreCase(String.valueOf(params.get(p.getRequiredWhenKey())));
+        if (blank) {
+            if (p.isRequired() || condRequired) {
+                errors.add("节点 " + n.getCode() + " 的参数 " + p.getLabel() + "(" + p.getKey() + ") 必填");
+            }
+            return;
+        }
+        String label = p.getLabel() + "(" + p.getKey() + ")";
+        try {
+            switch (p.getType()) {
+                case NUMBER -> {
+                    long num = v instanceof Number numV ? numV.longValue() : Long.parseLong(String.valueOf(v).trim());
+                    if ((p.getMin() != null && num < p.getMin()) || (p.getMax() != null && num > p.getMax())) {
+                        errors.add("节点 " + n.getCode() + " 的参数 " + label
+                            + " 超出范围[" + p.getMin() + ", " + p.getMax() + "]");
+                    }
+                }
+                case CRON -> CronExpression.parse(String.valueOf(v).trim());
+                case DATETIME -> parseDateTime(String.valueOf(v).trim());
+                case SELECT -> {
+                    if (p.getOptions() != null && !p.getOptions().isEmpty()
+                        && p.getOptions().stream().noneMatch(o -> o.getValue().equalsIgnoreCase(String.valueOf(v)))) {
+                        errors.add("节点 " + n.getCode() + " 的参数 " + label + " 取值非法：" + v);
+                    }
+                }
+                case KEY_VALUE -> {
+                    if (!(v instanceof Map)) {
+                        errors.add("节点 " + n.getCode() + " 的参数 " + label + " 须为对象结构");
+                    }
+                }
+                default -> { /* TEXT/BOOLEAN/JSON 不做强校验 */ }
+            }
+        } catch (Exception e) {
+            log.error("DagValidator: 参数校验失败 nodeCode={} key={} value={}", n.getCode(), p.getKey(), v, e);
+            errors.add("节点 " + n.getCode() + " 的参数 " + label + " 非法：" + e.getMessage());
+        }
+    }
+
+    /** DATETIME 解析：先 LocalDateTime，失败再 Instant（转系统时区） */
+    private void parseDateTime(String v) {
+        try {
+            LocalDateTime.parse(v);
+        } catch (Exception ignored) {
+            LocalDateTime.ofInstant(Instant.parse(v), ZoneId.systemDefault());
+        }
     }
 }

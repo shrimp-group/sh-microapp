@@ -3,7 +3,9 @@ package com.wkclz.micro.dag.handler.system;
 import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.dag.api.NodeContext;
 import com.wkclz.micro.dag.api.NodeResult;
+import com.wkclz.micro.dag.bean.dto.NodeParamDef;
 import com.wkclz.micro.dag.bean.enums.NodeCategory;
+import com.wkclz.micro.dag.bean.enums.NodeParamType;
 import com.wkclz.micro.dag.bean.enums.SystemHandler;
 import com.wkclz.micro.dag.core.DagExpressionEvaluator;
 import org.junit.jupiter.api.Test;
@@ -113,5 +115,37 @@ class SystemHandlersTest {
     void timerInvalidDelayUntilRejected() {
         SystemTimerHandler handler = new SystemTimerHandler();
         assertThrows(ValidationException.class, () -> handler.execute(ctx("{\"delayUntil\":\"not-a-time\"}", null)));
+    }
+
+    // ---------- 参数 schema 声明 ----------
+
+    @Test
+    void startParamSchemaDeclared() {
+        SystemStartHandler handler = new SystemStartHandler();
+        List<NodeParamDef> schema = handler.paramSchema();
+        assertEquals(3, schema.size());
+        NodeParamDef triggerType = schema.get(0);
+        assertEquals("triggerType", triggerType.getKey());
+        assertEquals(NodeParamType.SELECT, triggerType.getType());
+        assertEquals(2, triggerType.getOptions().size());
+        assertEquals("MANUAL", triggerType.getDefaultValue());
+        NodeParamDef cron = schema.get(1);
+        assertEquals("cron", cron.getKey());
+        assertEquals("triggerType", cron.getRequiredWhenKey());
+        assertEquals("TIMER", cron.getRequiredWhenValue());
+        NodeParamDef triggerParams = schema.get(2);
+        assertEquals(NodeParamType.KEY_VALUE, triggerParams.getType());
+    }
+
+    @Test
+    void timerParamSchemaDeclared() {
+        SystemTimerHandler handler = new SystemTimerHandler();
+        List<NodeParamDef> schema = handler.paramSchema();
+        assertEquals(2, schema.size());
+        NodeParamDef delayMs = schema.get(0);
+        assertEquals("delayMs", delayMs.getKey());
+        assertEquals(0L, delayMs.getMin());
+        assertEquals(86400000L, delayMs.getMax());
+        assertEquals(NodeParamType.DATETIME, schema.get(1).getType());
     }
 }

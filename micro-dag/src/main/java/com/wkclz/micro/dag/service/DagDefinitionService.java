@@ -161,7 +161,7 @@ public class DagDefinitionService extends BaseService<DagDefinition, DagDefiniti
         def.setDagName(dagName);
         def.setNodes(nodes == null ? List.of() : nodes);
         def.setEdges(edges == null ? List.of() : edges);
-        List<String> errors = validator.validate(def, registry.codes());
+        List<String> errors = validator.validate(def, registry);
         if (!errors.isEmpty()) {
             throw ValidationException.of("定义校验失败: " + String.join("; ", errors));
         }
@@ -229,7 +229,7 @@ public class DagDefinitionService extends BaseService<DagDefinition, DagDefiniti
             throw ValidationException.of("仅 DRAFT 定义可发布");
         }
         DagDefModel def = load(entity.getDagCode(), entity.getDagVersion());
-        List<String> errors = validator.validate(def, registry.codes());
+        List<String> errors = validator.validate(def, registry);
         if (!errors.isEmpty()) {
             throw ValidationException.of("发布校验失败: " + String.join("; ", errors));
         }
