@@ -37,6 +37,7 @@ public class DataFetchHandler implements NodeHandler {
 
 3. 执行建表脚本 `sql/dag_init.sql`，然后调用 `POST /micro-dag/definition/create`（后端生成 dagCode）+ `/definition/publish`
    创建流程，`POST /micro-dag/definition/update` 编辑 DRAFT 草稿，`POST /micro-dag/instance/launch` 发起实例。
+4. 可选：执行 `sql/dag_demo.sql` 灌入 14 条全场景演示流程（幂等，dag_code 前缀 dag_demo_，配合 `dag.demo-enabled=true` 使用，教程见 docs/living-docs-technical/modules/micro-dag-demo-tutorial.md）
 
 ## 配置项（dag.*）
 
@@ -61,10 +62,10 @@ START/END/BRANCH 节点统一走 worker 执行链路；存量定义（特殊节�
 
 | nodeCode | 名称 | 说明 | 入参 | 输出 |
 |---|---|---|---|---|
-| system-start | 系统-开始节点 | 透传入参供下游 `${out.<node>.*}` 引用；支持时间驱动 | 节点 params | 入参透传 |
+| system-start | 系统-开始节点 | 透传入参供下游 `${out.<node>.*}` 引用；支持时间驱动；参数定义 triggerType/cron/triggerParams | 节点 params | 入参透传 |
 | system-end | 系统-结束节点 | 直接成功 | 任意 | `{}` |
 | system-branch | 系统-分支节点 | 出边条件求值明细（launch 时 branches 快照进 inputParams；下游就绪判断逻辑不变） | branches（toCode→whenExpr，launch 自动写入） | `{branches: {toCode: bool}, selected: [toCode]}` |
-| system-timer | 系统-定时器 | 等待到点后成功（分片 sleep + 协作式中断），全局定时器节点无需业务实现 | delayMs（0~86400000）/ delayUntil（ISO-8601） | `{waitedMs, targetTime}` |
+| system-timer | 系统-定时器 | 等待到点后成功（分片 sleep + 协作式中断），全局定时器节点无需业务实现；参数定义 delayMs/delayUntil | delayMs（0~86400000）/ delayUntil（ISO-8601） | `{waitedMs, targetTime}` |
 
 ### 开始节点时间驱动
 
@@ -82,7 +83,7 @@ START 节点 params 配置触发方式（缺省 MANUAL 手动 launch）：
 
 ## Demo Handler（可选）
 
-`handler/demo` 包内置 5 个演示 handler（category=DEMO），`dag.demo-enabled=true` 时注册到设计器 handler 列表，默认关闭不注册（业务接入时不注册 demo 节点）。
+`handler/demo` 包内置 6 个演示 handler（category=DEMO），`dag.demo-enabled=true` 时注册到设计器 handler 列表，默认关闭不注册（业务接入时不注册 demo 节点）。
 GraalJS 依赖为 optional，classpath 缺失时 `demo-script-exec` 自动跳过注册（版本须与运行 JDK 匹配，23.x 不兼容 JDK 25）。
 
 | nodeCode | 名称 | 入参 | 输出 |
@@ -92,10 +93,12 @@ GraalJS 依赖为 optional，classpath 缺失时 `demo-script-exec` 自动跳过
 | demo-transform | 演示-数据转换 | 任意 | 入参合并 + `processedAt` |
 | demo-http-call | 演示-HTTP调用 | url（必填）、method、headers、body | `{status, body}`（body 截断 2000 字符） |
 | demo-script-exec | 演示-JS脚本 | script（定义 `handle(input)`）、input（缺省为全部入参） | handle 返回对象原样输出，标量包装为 `{result}` |
+| demo-fail | 演示-可控失败 | failTimes（前 N 次失败，缺省 0）、msg | 前 N 次 `{attempt, msg}` 失败，之后 `{attempt, msg: success}` 成功并回填 trace_code；演示显式失败、RETRYING、过程日志(NODE_LOG)、trace 回填 |
 
 ## 核心机制速记
 
 - 状态推进双通道：完成事件即时回调 + 轮询兜底，汇合于 DB CAS，天然幂等
+- 节点参数 schema：NodeHandler.paramSchema() 声明参数定义（NodeParamDef：key/label/type/必填/requiredWhen/范围/选项），随 handler/list 下发，设计器按定义渲染参数表单（表单/JSON 双模式）；DagValidator 保存与发布时按定义校验（必填/范围/CRON/DATETIME/SELECT/KEY_VALUE），schema 未声明的自由键不拦截；免 handler 的 START 节点 cron 校验按 nodeType 兜底
 - 就绪领取唯一入口：DagScheduler.scan() 的 casClaim，防重复执行
 - 故障转移：租约过期（lease_expire_time < now）→ 重置 PENDING 重派
 - 重试：失败且 attempt ≤ maxRetry → RETRYING + next_retry_time，到期由调度提升
