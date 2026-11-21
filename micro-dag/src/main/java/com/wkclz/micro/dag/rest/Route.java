@@ -18,6 +18,17 @@ public interface Route {
     String DEFINITION_DETAIL = "/definition/detail";
     String DEFINITION_COPY = "/definition/copy";
 
+    // 流程
+    String PROCESS_PAGE = "/process/page";
+    String PROCESS_CREATE = "/process/create";
+
+    // 流程版本
+    String PROCESS_VERSION_CREATE = "/process/version/create";
+    String PROCESS_VERSION_UPDATE = "/process/version/update";
+    String PROCESS_VERSION_PUBLISH = "/process/version/publish";
+    String PROCESS_VERSION_DETAIL = "/process/version/detail";
+    String PROCESS_VERSION_LIST = "/process/version/list";
+
     // 元能力
     String HANDLER_LIST = "/handler/list";
     String EXPRESSION_PREVIEW = "/expression/preview";
