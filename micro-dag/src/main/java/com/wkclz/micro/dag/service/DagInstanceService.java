@@ -133,12 +133,16 @@ public class DagInstanceService extends BaseService<DagInstance, DagInstanceMapp
 
     /** 实例分页（instanceCode/traceCode/status/dagCode 等值过滤） */
     public PageData<InstanceResp> page(InstancePageReq req) {
-        log.info("micro-dag: 实例分页 instanceCode={} traceCode={} status={}", req.getInstanceCode(), req.getTraceCode(), req.getStatus());
+        log.info("micro-dag: 实例分页 instanceCode={} traceCode={} status={} current={} size={}",
+                req.getInstanceCode(), req.getTraceCode(), req.getStatus(), req.getCurrent(), req.getSize());
         DagInstance query = new DagInstance();
         query.setInstanceCode(req.getInstanceCode());
         query.setTraceCode(req.getTraceCode());
         query.setStatus(req.getStatus());
         query.setDagCode(req.getDagCode());
+        // 分页参数在 Req 上承载，需复制到查询实体（selectPage 依赖实体的 current/size）
+        query.setCurrent(req.getCurrent());
+        query.setSize(req.getSize());
         PageData<DagInstance> page = selectPage(query);
         List<InstanceResp> list = page.getRecords().stream().map(this::toResp).toList();
         return PageData.convert(page, list);
