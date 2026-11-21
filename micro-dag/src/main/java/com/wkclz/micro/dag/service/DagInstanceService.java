@@ -5,11 +5,11 @@ import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.dag.bean.dto.DagDefModel;
 import com.wkclz.micro.dag.bean.dto.EdgeDef;
 import com.wkclz.micro.dag.bean.dto.NodeDef;
-import com.wkclz.micro.dag.bean.entity.DagDefinition;
+import com.wkclz.micro.dag.bean.entity.DagProcessVersion;
 import com.wkclz.micro.dag.bean.entity.DagInstance;
 import com.wkclz.micro.dag.bean.entity.DagNodeInstance;
 import com.wkclz.micro.dag.bean.enums.BackoffType;
-import com.wkclz.micro.dag.bean.enums.DefinitionStatus;
+import com.wkclz.micro.dag.bean.enums.ProcessStatus;
 import com.wkclz.micro.dag.bean.enums.InstanceStatus;
 import com.wkclz.micro.dag.bean.enums.NodeStatus;
 import com.wkclz.micro.dag.bean.enums.NodeType;
@@ -42,11 +42,11 @@ public class DagInstanceService extends BaseService<DagInstance, DagInstanceMapp
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    private final DagDefinitionService definitionService;
+    private final DagProcessVersionService versionService;
     private final DagNodeInstanceMapper nodeInstanceMapper;
 
-    public DagInstanceService(DagDefinitionService definitionService, DagNodeInstanceMapper nodeInstanceMapper) {
-        this.definitionService = definitionService;
+    public DagInstanceService(DagProcessVersionService versionService, DagNodeInstanceMapper nodeInstanceMapper) {
+        this.versionService = versionService;
         this.nodeInstanceMapper = nodeInstanceMapper;
     }
 
@@ -67,13 +67,13 @@ public class DagInstanceService extends BaseService<DagInstance, DagInstanceMapp
             }
         }
 
-        DagDefinition query = new DagDefinition();
+        DagProcessVersion query = new DagProcessVersion();
         query.setDagCode(req.getDagCode());
-        DagDefinition def = definitionService.selectByEntity(query).stream()
-            .filter(d -> DefinitionStatus.PUBLISHED.name().equals(d.getStatus()))
-            .max(Comparator.comparingInt(DagDefinition::getDagVersion))
+        DagProcessVersion def = versionService.selectByEntity(query).stream()
+            .filter(d -> ProcessStatus.PUBLISHED.name().equals(d.getStatus()))
+            .max(Comparator.comparingInt(DagProcessVersion::getDagVersion))
             .orElseThrow(() -> ValidationException.of("无可用的 PUBLISHED 定义: " + req.getDagCode()));
-        DagDefModel dagDef = definitionService.load(def.getDagCode(), def.getDagVersion());
+        DagDefModel dagDef = versionService.load(def.getDagCode(), def.getDagVersion());
         if (dagDef.getNodes() == null || dagDef.getNodes().isEmpty()) {
             throw ValidationException.of("定义无节点: " + req.getDagCode());
         }
@@ -157,7 +157,7 @@ public class DagInstanceService extends BaseService<DagInstance, DagInstanceMapp
         view.setInstance(toResp(instance));
 
         List<DagNodeInstance> nodes = nodeInstanceMapper.listByInstanceCode(instance.getInstanceCode());
-        DagDefModel dagDef = definitionService.load(instance.getDagCode(), instance.getDagVersion());
+        DagDefModel dagDef = versionService.load(instance.getDagCode(), instance.getDagVersion());
         Map<String, NodeDef> defMap = dagDef.getNodes() == null ? Map.of()
             : dagDef.getNodes().stream().collect(Collectors.toMap(NodeDef::getCode, n -> n));
         List<NodeInstanceResp> nodeResps = nodes.stream().map(n -> {

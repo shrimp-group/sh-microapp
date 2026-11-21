@@ -11,7 +11,7 @@ import com.wkclz.micro.dag.config.DagProperties;
 import com.wkclz.micro.dag.core.DagReadyCalculator;
 import com.wkclz.micro.dag.mapper.DagInstanceMapper;
 import com.wkclz.micro.dag.mapper.DagNodeInstanceMapper;
-import com.wkclz.micro.dag.service.DagDefinitionService;
+import com.wkclz.micro.dag.service.DagProcessVersionService;
 import com.wkclz.micro.dag.service.DagEngineService;
 import com.wkclz.micro.dag.service.DagExecutionLogService;
 import com.wkclz.micro.dag.worker.DagWorkerExecutor;
@@ -41,7 +41,7 @@ class DagSchedulerTest {
 
     private DagInstanceMapper instanceMapper;
     private DagNodeInstanceMapper nodeMapper;
-    private DagDefinitionService definitionService;
+    private DagProcessVersionService versionService;
     private DagExecutionLogService logService;
     private DagReadyCalculator readyCalculator;
     private DagWorkerExecutor worker;
@@ -53,13 +53,13 @@ class DagSchedulerTest {
     void setUp() {
         instanceMapper = mock(DagInstanceMapper.class);
         nodeMapper = mock(DagNodeInstanceMapper.class);
-        definitionService = mock(DagDefinitionService.class);
+        versionService = mock(DagProcessVersionService.class);
         logService = mock(DagExecutionLogService.class);
         readyCalculator = mock(DagReadyCalculator.class);
         worker = mock(DagWorkerExecutor.class);
         engineService = mock(DagEngineService.class);
         properties = new DagProperties();
-        scheduler = new DagScheduler(instanceMapper, nodeMapper, definitionService, logService,
+        scheduler = new DagScheduler(instanceMapper, nodeMapper, versionService, logService,
             readyCalculator, worker, engineService, properties);
     }
 
@@ -134,7 +134,7 @@ class DagSchedulerTest {
         startNode.setCode("A");
         startNode.setNodeType(NodeType.START.getCode());
         def.setNodes(List.of(startNode));
-        when(definitionService.load(any(), any())).thenReturn(def);
+        when(versionService.load(any(), any())).thenReturn(def);
 
         scheduler.scan();
 
@@ -158,7 +158,7 @@ class DagSchedulerTest {
         startNode.setNodeType(NodeType.START.getCode());
         startNode.setHandler(SystemHandler.START.getCode());   // 特殊节点配置了系统 handler，统一走 worker 执行链路
         def.setNodes(List.of(startNode));
-        when(definitionService.load(any(), any())).thenReturn(def);
+        when(versionService.load(any(), any())).thenReturn(def);
 
         scheduler.scan();
 
@@ -246,8 +246,8 @@ class DagSchedulerTest {
         DagNodeInstance node = node("A", null);
         when(instanceMapper.listRunning()).thenReturn(List.of(bad, good));
         when(nodeMapper.listByInstanceCode(anyString())).thenReturn(List.of(node));
-        when(definitionService.load(eq("d1"), any())).thenThrow(new IllegalStateException("boom"));
-        when(definitionService.load(eq("d2"), any())).thenReturn(new DagDefModel());
+        when(versionService.load(eq("d1"), any())).thenThrow(new IllegalStateException("boom"));
+        when(versionService.load(eq("d2"), any())).thenReturn(new DagDefModel());
         when(readyCalculator.readyNodes(any(), any(), any(), any())).thenReturn(Set.of("A"));
         when(nodeMapper.casClaim(any(), any(), anyString(), any())).thenReturn(1);
 

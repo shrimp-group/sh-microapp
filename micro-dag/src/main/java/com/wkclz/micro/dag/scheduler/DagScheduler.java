@@ -10,7 +10,7 @@ import com.wkclz.micro.dag.config.DagProperties;
 import com.wkclz.micro.dag.core.DagReadyCalculator;
 import com.wkclz.micro.dag.mapper.DagInstanceMapper;
 import com.wkclz.micro.dag.mapper.DagNodeInstanceMapper;
-import com.wkclz.micro.dag.service.DagDefinitionService;
+import com.wkclz.micro.dag.service.DagProcessVersionService;
 import com.wkclz.micro.dag.service.DagEngineService;
 import com.wkclz.micro.dag.service.DagExecutionLogService;
 import com.wkclz.micro.dag.worker.DagWorkerExecutor;
@@ -43,7 +43,7 @@ public class DagScheduler {
 
     private final DagInstanceMapper instanceMapper;
     private final DagNodeInstanceMapper nodeMapper;
-    private final DagDefinitionService definitionService;
+    private final DagProcessVersionService versionService;
     private final DagExecutionLogService logService;
     private final DagReadyCalculator readyCalculator;
     private final DagWorkerExecutor worker;
@@ -51,13 +51,13 @@ public class DagScheduler {
     private final DagProperties properties;
 
     public DagScheduler(DagInstanceMapper instanceMapper, DagNodeInstanceMapper nodeMapper,
-                        DagDefinitionService definitionService, DagExecutionLogService logService,
+                        DagProcessVersionService versionService, DagExecutionLogService logService,
                         DagReadyCalculator readyCalculator, DagWorkerExecutor worker,
                         DagEngineService engineService, DagProperties properties) {
         log.info("micro-dag: 初始化调度器 worker={} channel={}", WORKER_ID, properties.getChannel());
         this.instanceMapper = instanceMapper;
         this.nodeMapper = nodeMapper;
-        this.definitionService = definitionService;
+        this.versionService = versionService;
         this.logService = logService;
         this.readyCalculator = readyCalculator;
         this.worker = worker;
@@ -114,7 +114,7 @@ public class DagScheduler {
 
     private void submitReadyNodes(DagInstance instance, LocalDateTime now) {
         List<DagNodeInstance> nodes = nodeMapper.listByInstanceCode(instance.getInstanceCode());
-        DagDefModel def = definitionService.load(instance.getDagCode(), instance.getDagVersion());
+        DagDefModel def = versionService.load(instance.getDagCode(), instance.getDagVersion());
         Map<String, NodeStatus> statusMap = new HashMap<>();
         Map<String, Map<String, Object>> outputs = new HashMap<>();
         for (DagNodeInstance n : nodes) {

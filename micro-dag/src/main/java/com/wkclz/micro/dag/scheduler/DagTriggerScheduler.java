@@ -3,12 +3,12 @@ package com.wkclz.micro.dag.scheduler;
 import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.dag.bean.dto.DagDefModel;
 import com.wkclz.micro.dag.bean.dto.NodeDef;
-import com.wkclz.micro.dag.bean.entity.DagDefinition;
-import com.wkclz.micro.dag.bean.enums.DefinitionStatus;
+import com.wkclz.micro.dag.bean.entity.DagProcessVersion;
+import com.wkclz.micro.dag.bean.enums.ProcessStatus;
 import com.wkclz.micro.dag.bean.enums.NodeType;
 import com.wkclz.micro.dag.bean.req.LaunchReq;
 import com.wkclz.micro.dag.config.DagProperties;
-import com.wkclz.micro.dag.service.DagDefinitionService;
+import com.wkclz.micro.dag.service.DagProcessVersionService;
 import com.wkclz.micro.dag.service.DagInstanceService;
 import com.wkclz.redis.helper.RedisLock;
 import lombok.Data;
@@ -38,7 +38,7 @@ public class DagTriggerScheduler {
     private static final String TRIGGER_TYPE_TIMER = "TIMER";
     private static final DateTimeFormatter FIRE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
-    private final DagDefinitionService definitionService;
+    private final DagProcessVersionService versionService;
     private final DagInstanceService dagInstanceService;
     private final DagProperties properties;
     /** RedisLock 由 sh-redis @Component 装配，无 Redis 环境可能缺失，缺失时触发跳过不崩 */
@@ -47,10 +47,10 @@ public class DagTriggerScheduler {
     /** 内存触发状态：dagCode → 触发状态 */
     private final Map<String, TriggerState> states = new HashMap<>();
 
-    public DagTriggerScheduler(DagDefinitionService definitionService, DagInstanceService dagInstanceService,
+    public DagTriggerScheduler(DagProcessVersionService versionService, DagInstanceService dagInstanceService,
                                DagProperties properties, ObjectProvider<RedisLock> redisLockProvider) {
         log.info("micro-dag: 初始化时间驱动触发器 intervalMs={}", properties.getTrigger().getIntervalMs());
-        this.definitionService = definitionService;
+        this.versionService = versionService;
         this.dagInstanceService = dagInstanceService;
         this.properties = properties;
         this.redisLockProvider = redisLockProvider;
@@ -92,11 +92,11 @@ public class DagTriggerScheduler {
 
     /** PUBLISHED 定义按 dagCode 取最大 dagVersion */
     private Map<String, Integer> publishedMaxVersions() {
-        DagDefinition query = new DagDefinition();
-        query.setStatus(DefinitionStatus.PUBLISHED.name());
-        List<DagDefinition> defs = definitionService.selectByEntity(query);
+        DagProcessVersion query = new DagProcessVersion();
+        query.setStatus(ProcessStatus.PUBLISHED.name());
+        List<DagProcessVersion> defs = versionService.selectByEntity(query);
         Map<String, Integer> versions = new HashMap<>();
-        for (DagDefinition d : defs) {
+        for (DagProcessVersion d : defs) {
             versions.merge(d.getDagCode(), d.getDagVersion() == null ? 0 : d.getDagVersion(), Math::max);
         }
         return versions;
@@ -111,7 +111,7 @@ public class DagTriggerScheduler {
         log.info("micro-dag: 重建触发状态 dagCode={} dagVersion={}", dagCode, dagVersion);
         DagDefModel def;
         try {
-            def = definitionService.load(dagCode, dagVersion);
+            def = versionService.load(dagCode, dagVersion);
         } catch (Exception e) {
             log.error("micro-dag: 触发状态重建失败 dagCode={} dagVersion={}", dagCode, dagVersion, e);
             return;

@@ -31,17 +31,17 @@ import java.util.Set;
 public class DagInterventionService extends BaseService<DagNodeInstance, DagNodeInstanceMapper> {
 
     private final DagInstanceService instanceService;
-    private final DagDefinitionService definitionService;
+    private final DagProcessVersionService versionService;
     private final DagEngineService engine;
     private final DagExecutionLogService logService;
     private final DagRedisPublisher publisher;
 
-    public DagInterventionService(DagInstanceService instanceService, DagDefinitionService definitionService,
+    public DagInterventionService(DagInstanceService instanceService, DagProcessVersionService versionService,
                                   DagEngineService engine, DagExecutionLogService logService,
                                   DagRedisPublisher publisher) {
         log.info("micro-dag: 初始化人工干预服务");
         this.instanceService = instanceService;
-        this.definitionService = definitionService;
+        this.versionService = versionService;
         this.engine = engine;
         this.logService = logService;
         this.publisher = publisher;
@@ -125,7 +125,7 @@ public class DagInterventionService extends BaseService<DagNodeInstance, DagNode
             throw ValidationException.of("实例运行中不可 rerun-from，请先终止");
         }
         log.info("micro-dag: 从指定节点重跑 instanceCode={} nodeCode={}", instanceCode, nodeCode);
-        DagDefModel def = definitionService.load(instance.getDagCode(), instance.getDagVersion());
+        DagDefModel def = versionService.load(instance.getDagCode(), instance.getDagVersion());
         Set<String> downstream = downstreamClosure(def, nodeCode);
         List<DagNodeInstance> nodes = mapper.listByInstanceCode(instanceCode);
         for (DagNodeInstance n : nodes) {

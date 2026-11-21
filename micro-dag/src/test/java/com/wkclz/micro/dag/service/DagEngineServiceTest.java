@@ -32,16 +32,16 @@ class DagEngineServiceTest {
     private DagEngineService engine;
     private DagNodeInstanceMapper nodeMapper;
     private DagInstanceService instanceService;
-    private DagDefinitionService definitionService;
+    private DagProcessVersionService versionService;
 
     @BeforeEach
     void setUp() {
         nodeMapper = mock(DagNodeInstanceMapper.class);
         instanceService = mock(DagInstanceService.class);
-        definitionService = mock(DagDefinitionService.class);
+        versionService = mock(DagProcessVersionService.class);
         DagExecutionLogService logService = mock(DagExecutionLogService.class);
         DagRedisPublisher publisher = mock(DagRedisPublisher.class);
-        engine = new DagEngineService(instanceService, definitionService, logService,
+        engine = new DagEngineService(instanceService, versionService, logService,
             new DagReadyCalculator(new DagExpressionEvaluator()), new DagRetryCalculator(), publisher);
         ReflectionTestUtils.setField(engine, "mapper", nodeMapper);
     }

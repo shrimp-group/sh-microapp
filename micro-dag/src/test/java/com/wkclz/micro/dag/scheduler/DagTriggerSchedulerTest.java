@@ -3,11 +3,11 @@ package com.wkclz.micro.dag.scheduler;
 import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.dag.bean.dto.DagDefModel;
 import com.wkclz.micro.dag.bean.dto.NodeDef;
-import com.wkclz.micro.dag.bean.entity.DagDefinition;
+import com.wkclz.micro.dag.bean.entity.DagProcessVersion;
 import com.wkclz.micro.dag.bean.enums.NodeType;
 import com.wkclz.micro.dag.bean.req.LaunchReq;
 import com.wkclz.micro.dag.config.DagProperties;
-import com.wkclz.micro.dag.service.DagDefinitionService;
+import com.wkclz.micro.dag.service.DagProcessVersionService;
 import com.wkclz.micro.dag.service.DagInstanceService;
 import com.wkclz.redis.helper.RedisLock;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,7 +35,7 @@ class DagTriggerSchedulerTest {
 
     private static final DateTimeFormatter FIRE_TIME = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
-    private DagDefinitionService definitionService;
+    private DagProcessVersionService versionService;
     private DagInstanceService dagInstanceService;
     private DagProperties properties;
     private RedisLock redisLock;
@@ -45,20 +45,20 @@ class DagTriggerSchedulerTest {
     @BeforeEach
     @SuppressWarnings("unchecked")
     void setUp() {
-        definitionService = mock(DagDefinitionService.class);
+        versionService = mock(DagProcessVersionService.class);
         dagInstanceService = mock(DagInstanceService.class);
         properties = new DagProperties();
         redisLock = mock(RedisLock.class);
         when(redisLock.tryLock(anyString(), anyLong(), any())).thenReturn("req-1");
         redisLockProvider = (ObjectProvider<RedisLock>) mock(ObjectProvider.class);
         when(redisLockProvider.getIfAvailable()).thenReturn(redisLock);
-        scheduler = new DagTriggerScheduler(definitionService, dagInstanceService, properties, redisLockProvider);
+        scheduler = new DagTriggerScheduler(versionService, dagInstanceService, properties, redisLockProvider);
     }
 
     @Test
     void tick_timerDue_launchesWithTraceCodeAndParams() {
-        when(definitionService.selectByEntity(any())).thenReturn(List.of(meta("d1", 1)));
-        when(definitionService.load("d1", 1)).thenReturn(timerDef("d1", 1, "* * * * * *"));
+        when(versionService.selectByEntity(any())).thenReturn(List.of(meta("d1", 1)));
+        when(versionService.load("d1", 1)).thenReturn(timerDef("d1", 1, "* * * * * *"));
 
         LocalDateTime t0 = LocalDateTime.now().withNano(0);
         scheduler.scan(t0, redisLock);
@@ -78,12 +78,12 @@ class DagTriggerSchedulerTest {
 
     @Test
     void tick_duplicateTraceCode_idempotentNoThrow() {
-        when(definitionService.selectByEntity(any())).thenReturn(List.of(meta("d1", 1)));
-        when(definitionService.load("d1", 1)).thenReturn(timerDef("d1", 1, "* * * * * *"));
+        when(versionService.selectByEntity(any())).thenReturn(List.of(meta("d1", 1)));
+        when(versionService.load("d1", 1)).thenReturn(timerDef("d1", 1, "* * * * * *"));
         when(dagInstanceService.launch(any())).thenReturn(1L)
             .thenThrow(ValidationException.of("traceCode 已存在: TIMER-d1-v1-x"));
 
-        DagTriggerScheduler peer = new DagTriggerScheduler(definitionService, dagInstanceService, properties, redisLockProvider);
+        DagTriggerScheduler peer = new DagTriggerScheduler(versionService, dagInstanceService, properties, redisLockProvider);
         LocalDateTime t0 = LocalDateTime.now().withNano(0);
         // 模拟集群两节点扫描同一到期槽位：后触发者被 launch 幂等校验拦截，不外抛
         assertDoesNotThrow(() -> {
@@ -98,8 +98,8 @@ class DagTriggerSchedulerTest {
     @Test
     void tick_lockNotAcquired_skipsLaunch() {
         when(redisLock.tryLock(anyString(), anyLong(), any())).thenReturn(null);
-        when(definitionService.selectByEntity(any())).thenReturn(List.of(meta("d1", 1)));
-        when(definitionService.load("d1", 1)).thenReturn(timerDef("d1", 1, "* * * * * *"));
+        when(versionService.selectByEntity(any())).thenReturn(List.of(meta("d1", 1)));
+        when(versionService.load("d1", 1)).thenReturn(timerDef("d1", 1, "* * * * * *"));
 
         LocalDateTime t0 = LocalDateTime.now().withNano(0);
         scheduler.scan(t0, redisLock);
@@ -111,18 +111,18 @@ class DagTriggerSchedulerTest {
 
     @Test
     void tick_versionChanged_rebuildsStateAndReloads() {
-        when(definitionService.selectByEntity(any()))
+        when(versionService.selectByEntity(any()))
             .thenReturn(List.of(meta("d1", 1)))
             .thenReturn(List.of(meta("d1", 1), meta("d1", 2)));
-        when(definitionService.load("d1", 1)).thenReturn(timerDef("d1", 1, "0 0 * * * *"));
-        when(definitionService.load("d1", 2)).thenReturn(timerDef("d1", 2, "0 0 * * * *"));
+        when(versionService.load("d1", 1)).thenReturn(timerDef("d1", 1, "0 0 * * * *"));
+        when(versionService.load("d1", 2)).thenReturn(timerDef("d1", 2, "0 0 * * * *"));
 
         LocalDateTime t0 = LocalDateTime.now().withNano(0);
         scheduler.scan(t0, redisLock);
         scheduler.scan(t0.plusSeconds(5), redisLock);
 
-        verify(definitionService).load("d1", 1);
-        verify(definitionService).load("d1", 2);
+        verify(versionService).load("d1", 1);
+        verify(versionService).load("d1", 2);
     }
 
     @Test
@@ -131,13 +131,13 @@ class DagTriggerSchedulerTest {
 
         scheduler.tick();
 
-        verify(definitionService, never()).selectByEntity(any());
+        verify(versionService, never()).selectByEntity(any());
         verify(dagInstanceService, never()).launch(any());
     }
 
     @Test
     void tick_noTimerTrigger_noLaunch() {
-        when(definitionService.selectByEntity(any())).thenReturn(List.of(meta("d1", 1)));
+        when(versionService.selectByEntity(any())).thenReturn(List.of(meta("d1", 1)));
         NodeDef start = new NodeDef();
         start.setCode("start");
         start.setNodeType(NodeType.START.getCode());
@@ -146,7 +146,7 @@ class DagTriggerSchedulerTest {
         def.setDagCode("d1");
         def.setDagVersion(1);
         def.setNodes(List.of(start));
-        when(definitionService.load("d1", 1)).thenReturn(def);
+        when(versionService.load("d1", 1)).thenReturn(def);
 
         LocalDateTime t0 = LocalDateTime.now().withNano(0);
         scheduler.scan(t0, redisLock);
@@ -155,8 +155,8 @@ class DagTriggerSchedulerTest {
         verify(dagInstanceService, never()).launch(any());
     }
 
-    private DagDefinition meta(String dagCode, int version) {
-        DagDefinition d = new DagDefinition();
+    private DagProcessVersion meta(String dagCode, int version) {
+        DagProcessVersion d = new DagProcessVersion();
         d.setDagCode(dagCode);
         d.setDagVersion(version);
         d.setStatus("PUBLISHED");

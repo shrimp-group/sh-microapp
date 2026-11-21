@@ -33,7 +33,7 @@ class DagInterventionServiceTest {
 
     private DagNodeInstanceMapper mapper;
     private DagInstanceService instanceService;
-    private DagDefinitionService definitionService;
+    private DagProcessVersionService versionService;
     private DagEngineService engine;
     private DagExecutionLogService logService;
     private DagRedisPublisher publisher;
@@ -43,11 +43,11 @@ class DagInterventionServiceTest {
     void setUp() {
         mapper = mock(DagNodeInstanceMapper.class);
         instanceService = mock(DagInstanceService.class);
-        definitionService = mock(DagDefinitionService.class);
+        versionService = mock(DagProcessVersionService.class);
         engine = mock(DagEngineService.class);
         logService = mock(DagExecutionLogService.class);
         publisher = mock(DagRedisPublisher.class);
-        service = new DagInterventionService(instanceService, definitionService, engine, logService, publisher);
+        service = new DagInterventionService(instanceService, versionService, engine, logService, publisher);
         ReflectionTestUtils.setField(service, "mapper", mapper);
     }
 
@@ -179,7 +179,7 @@ class DagInterventionServiceTest {
         when(instanceService.selectOneByEntity(any())).thenReturn(instance("FAILED"));
         DagDefModel def = new DagDefModel();
         def.setEdges(List.of(edge("A", "B"), edge("B", "C")));
-        when(definitionService.load("d1", 1)).thenReturn(def);
+        when(versionService.load("d1", 1)).thenReturn(def);
         DagNodeInstance a = node("A", "SUCCESS", 1);
         DagNodeInstance b = node("B", "SUCCESS", 1);
         DagNodeInstance c = node("C", "FAILED", 1);

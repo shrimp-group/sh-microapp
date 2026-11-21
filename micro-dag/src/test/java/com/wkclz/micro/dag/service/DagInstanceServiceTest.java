@@ -5,7 +5,7 @@ import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.dag.bean.dto.DagDefModel;
 import com.wkclz.micro.dag.bean.dto.EdgeDef;
 import com.wkclz.micro.dag.bean.dto.NodeDef;
-import com.wkclz.micro.dag.bean.entity.DagDefinition;
+import com.wkclz.micro.dag.bean.entity.DagProcessVersion;
 import com.wkclz.micro.dag.bean.entity.DagInstance;
 import com.wkclz.micro.dag.bean.entity.DagNodeInstance;
 import com.wkclz.micro.dag.bean.enums.NodeType;
@@ -41,22 +41,22 @@ class DagInstanceServiceTest {
     private DagInstanceService service;
     private DagInstanceMapper mapper;
     private DagNodeInstanceMapper nodeInstanceMapper;
-    private DagDefinitionService definitionService;
+    private DagProcessVersionService versionService;
 
     @BeforeEach
     void setUp() {
         mapper = mock(DagInstanceMapper.class);
         nodeInstanceMapper = mock(DagNodeInstanceMapper.class);
-        definitionService = mock(DagDefinitionService.class);
-        service = new DagInstanceService(definitionService, nodeInstanceMapper);
+        versionService = mock(DagProcessVersionService.class);
+        service = new DagInstanceService(versionService, nodeInstanceMapper);
         ReflectionTestUtils.setField(service, "mapper", mapper);
 
-        DagDefinition def = new DagDefinition();
+        DagProcessVersion def = new DagProcessVersion();
         def.setDagCode("d1");
         def.setDagVersion(3);
         def.setStatus("PUBLISHED");
-        when(definitionService.selectByEntity(any())).thenReturn(List.of(def));
-        when(definitionService.load("d1", 3)).thenReturn(defModel());
+        when(versionService.selectByEntity(any())).thenReturn(List.of(def));
+        when(versionService.load("d1", 3)).thenReturn(defModel());
     }
 
     /** 组装 d1 v3 的内存定义：a --普通边--> b，a 带重试快照 */
@@ -127,7 +127,7 @@ class DagInstanceServiceTest {
     @Test
     void launch_branchNode_snapshotsConditionEdgesIntoInput() {
         when(mapper.selectCountByEntity(any())).thenReturn(0L);
-        when(definitionService.load("d1", 3)).thenReturn(branchDefModel());
+        when(versionService.load("d1", 3)).thenReturn(branchDefModel());
         LaunchReq req = launchReq();
         // 实例参数携带与分支目标同名的 key，验证不可覆盖 branches 系统键
         req.setParams(Map.of("sourceType", "api", "x", "override"));
@@ -191,7 +191,7 @@ class DagInstanceServiceTest {
     @Test
     void launch_noPublishedDefinition_throws() {
         when(mapper.selectCountByEntity(any())).thenReturn(0L);
-        when(definitionService.selectByEntity(any())).thenReturn(List.of());
+        when(versionService.selectByEntity(any())).thenReturn(List.of());
         assertThrows(ValidationException.class, () -> service.launch(launchReq()));
     }
 
@@ -235,7 +235,7 @@ class DagInstanceServiceTest {
         e.setFromCode("a");
         e.setToCode("b");
         def.setEdges(List.of(e));
-        when(definitionService.load("d1", 3)).thenReturn(def);
+        when(versionService.load("d1", 3)).thenReturn(def);
 
         DagNodeInstance nodeA = new DagNodeInstance();
         nodeA.setInstanceCode("INST001");

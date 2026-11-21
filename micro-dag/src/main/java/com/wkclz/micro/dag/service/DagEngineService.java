@@ -36,17 +36,17 @@ public class DagEngineService extends BaseService<DagNodeInstance, DagNodeInstan
     private static final int MAX_ERROR_LEN = 1000;
 
     private final DagInstanceService instanceService;
-    private final DagDefinitionService definitionService;
+    private final DagProcessVersionService versionService;
     private final DagExecutionLogService logService;
     private final DagReadyCalculator readyCalculator;
     private final DagRetryCalculator retryCalculator;
     private final DagRedisPublisher publisher;
 
-    public DagEngineService(DagInstanceService instanceService, DagDefinitionService definitionService,
+    public DagEngineService(DagInstanceService instanceService, DagProcessVersionService versionService,
                             DagExecutionLogService logService, DagReadyCalculator readyCalculator,
                             DagRetryCalculator retryCalculator, DagRedisPublisher publisher) {
         this.instanceService = instanceService;
-        this.definitionService = definitionService;
+        this.versionService = versionService;
         this.logService = logService;
         this.readyCalculator = readyCalculator;
         this.retryCalculator = retryCalculator;
@@ -193,7 +193,7 @@ public class DagEngineService extends BaseService<DagNodeInstance, DagNodeInstan
 
     /** 加载定义（dagCode + dagVersion 唯一定位，由 dag_node/dag_edge 组装内存模型） */
     private DagDefModel loadDef(DagInstance instance) {
-        return definitionService.load(instance.getDagCode(), instance.getDagVersion());
+        return versionService.load(instance.getDagCode(), instance.getDagVersion());
     }
 
     private String truncate(String msg) {
