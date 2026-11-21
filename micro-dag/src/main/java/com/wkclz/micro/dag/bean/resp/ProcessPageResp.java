@@ -3,7 +3,7 @@ package com.wkclz.micro.dag.bean.resp;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /** 流程分页响应（含版本状态聚合） */
 @Data
@@ -31,5 +31,5 @@ public class ProcessPageResp {
     private Long latestPublishedId;
 
     @Schema(description = "更新时间")
-    private Date updateTime;
+    private LocalDateTime updateTime;
 }
