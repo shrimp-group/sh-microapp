@@ -50,6 +50,7 @@ public class HttpCallHandler implements NodeHandler {
             throw ValidationException.of("demo-http-call 缺少 url 参数");
         }
         HttpMethod httpMethod = resolveMethod(params.getOrDefault("method", "GET").toString());
+        ctx.log(httpMethod + " " + url);
 
         RestClient.RequestBodySpec spec = RestClient.create()
             .method(httpMethod)
@@ -68,6 +69,7 @@ public class HttpCallHandler implements NodeHandler {
         output.put("status", resp.getStatusCode().value());
         output.put("body", truncate(resp.getBody()));
         log.info("demo-http-call: url={} status={}", url, resp.getStatusCode().value());
+        ctx.log("响应 status=" + resp.getStatusCode().value());
         return NodeResult.ok(output);
     }
 

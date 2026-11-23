@@ -38,6 +38,7 @@ public class TransformHandler implements NodeHandler {
         output.put("processedAt", LocalDateTime.now().toString());
         log.info("demo-transform: instance={} node={} in={} out={}",
             ctx.getInstanceCode(), ctx.getNodeCode(), params, output);
+        ctx.log("转换输出: " + output);
         return NodeResult.ok(output);
     }
 }

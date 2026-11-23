@@ -120,7 +120,7 @@ public class DagWorkerExecutor {
         }
     }
 
-    /** 监督线程：租约续期 + 超时控制 + 结果派发（成功/显式失败/超时/中断/失败五路） */
+    /** 监督线程：租约续期 + 超时控制 + 结果派发（成功/显式失败/未就绪/超时/中断/失败六路） */
     private void supervise(DagNodeInstance node, CompletableFuture<NodeResult> future) {
         long leaseMs = leaseDuration(node);
         ScheduledFuture<?> renewal = leasePool.scheduleAtFixedRate(() -> {
@@ -136,6 +136,12 @@ public class DagWorkerExecutor {
             NodeResult result = (timeoutMs == null || timeoutMs <= 0) ? future.get() : future.get(timeoutMs, TimeUnit.MILLISECONDS);
             if (interruptedFlags.remove(runKey(node)) != null) {
                 engine.onInterrupted(node.getInstanceCode(), node.getNodeCode());
+                return;
+            }
+            if (result.isNotReady()) {
+                // handler 未就绪（NodeResult.notReady）：复用失败重试链路，事件区分 NOT_READY，按退避延后重试
+                engine.onFailure(node.getInstanceCode(), node.getNodeCode(),
+                    ExecutionEvent.NOT_READY, notReadyMsg(result), result.getOutput());
                 return;
             }
             if (!result.isSuccess()) {
@@ -245,9 +251,16 @@ public class DagWorkerExecutor {
         if (withMark && ctx.isTruncated()) {
             content = StringUtils.isBlank(content) ? TRUNCATED_MARK : content + "\n" + TRUNCATED_MARK;
         }
-        if (StringUtils.isNotBlank(content)) {
+        if (StringUtils.isBlank(content)) {
+            return;
+        }
+        try {
             logService.log(ctx.getInstanceCode(), ctx.getNodeCode(), ctx.getAttempt(),
                 ExecutionEvent.NODE_LOG, null, content, workerId);
+        } catch (Exception e) {
+            // 落库异常必须在 flush 内消化：flushAll 挂在 scheduleAtFixedRate 上，异常外抛会永久取消 flusher；
+            // 终态兜底 flush 若外抛也会吞掉 finally 后续清理
+            log.error("micro-dag: 过程日志落库失败 instanceCode={} nodeCode={}", ctx.getInstanceCode(), ctx.getNodeCode(), e);
         }
     }
 
@@ -262,6 +275,14 @@ public class DagWorkerExecutor {
             return msg;
         }
         return "handler 返回失败";
+    }
+
+    /** 未就绪消息：output 含 String 类型 msg 键则取该值，否则缺省文案 */
+    private String notReadyMsg(NodeResult result) {
+        if (result.getOutput() != null && result.getOutput().get("msg") instanceof String msg) {
+            return msg;
+        }
+        return "handler 返回未就绪";
     }
 
     private String stackSummary(Throwable cause) {

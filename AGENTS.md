@@ -346,7 +346,6 @@ sh-flowable-client ← micro-flowable (流程引擎对接，外部工程 com.wkc
 5. **Req/Resp 封装**：所有请求参数封装 Req 对象（除非参数只有一个值），所有返回内容封装 Resp 对象（除非返回只有一个值）
 
 ## 质量门禁
-- lint: `mvn checkstyle:check`
 - test: `mvn test`
 - build: `mvn package -DskipTests`
 - typecheck: `mvn compile`

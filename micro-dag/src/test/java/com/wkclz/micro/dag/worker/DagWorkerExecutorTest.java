@@ -181,6 +181,42 @@ class DagWorkerExecutorTest {
     }
 
     @Test
+    void submit_notReadyResult_onFailureDispatchedWithNotReady() throws Exception {
+        // NodeResult.notReady 未就绪：派发 NOT_READY 事件（非 FAIL），output.msg 作为未就绪原因
+        when(handler.execute(any())).thenReturn(NodeResult.notReady(Map.of("msg", "上游数据未落库")));
+
+        executor.submit(node(null, 0), instance());
+
+        verify(engine, timeout(VERIFY_TIMEOUT_MS)).onFailure(eq(INSTANCE_CODE), eq(NODE_CODE),
+            eq(ExecutionEvent.NOT_READY), eq("上游数据未落库"), eq(Map.of("msg", "上游数据未落库")));
+        verify(engine, never()).onSuccess(anyString(), anyString(), any());
+        awaitRemoved();
+    }
+
+    @Test
+    void submit_notReadyResultWithoutOutput_defaultNotReadyMsg() throws Exception {
+        // NodeResult.notReady() 无 output：缺省未就绪文案
+        when(handler.execute(any())).thenReturn(NodeResult.notReady());
+
+        executor.submit(node(null, 0), instance());
+
+        verify(engine, timeout(VERIFY_TIMEOUT_MS)).onFailure(eq(INSTANCE_CODE), eq(NODE_CODE),
+            eq(ExecutionEvent.NOT_READY), eq("handler 返回未就绪"), isNull());
+        awaitRemoved();
+    }
+
+    @Test
+    void notReadyResult_stateFlags() {
+        // notReady 语义：isSuccess() 保持 false（仅 ok 为 true），isNotReady() 为 true
+        NodeResult result = NodeResult.notReady(Map.of("msg", "上游数据未落库"));
+        assertFalse(result.isSuccess());
+        assertTrue(result.isNotReady());
+        assertTrue(NodeResult.notReady().isNotReady());
+        assertFalse(NodeResult.ok().isNotReady());
+        assertFalse(NodeResult.fail().isNotReady());
+    }
+
+    @Test
     void interrupt_runningTask_onInterruptedDispatched() throws Exception {
         // 标记位中断路径：interrupt 置标记并 cancel future，get 抛 CancellationException → onInterrupted
         CountDownLatch release = new CountDownLatch(1);
@@ -339,6 +375,33 @@ class DagWorkerExecutorTest {
         assertTrue(content.getValue().startsWith("a".repeat(30)));
         assertTrue(content.getValue().endsWith("...[truncated]"));
         assertTrue(content.getValue().length() <= 50 + "\n...[truncated]".length());
+        awaitRemoved();
+    }
+
+    @Test
+    void submit_flushInsertThrows_flusherSurvives() throws Exception {
+        // flusher 落库失败不得停摆：scheduleAtFixedRate 任务抛异常会被永久取消，
+        // 落库异常必须在 flush 内部消化，保证后续运行中日志继续按间隔落库（≥3 次 NODE_LOG 调用）
+        DagProperties properties = new DagProperties();
+        properties.getLog().setFlushIntervalMs(100);
+        executor = new DagWorkerExecutor(registry, nodeMapper, engine, logService, publisher, properties);
+        Mockito.doThrow(new RuntimeException("db down")).when(logService).log(
+            anyString(), anyString(), any(), any(), any(), any(), anyString());
+        when(handler.execute(any())).thenAnswer(inv -> {
+            NodeContext ctx = inv.getArgument(0);
+            ctx.log("l1");
+            Thread.sleep(400);
+            ctx.log("l2");
+            Thread.sleep(400);
+            ctx.log("l3");
+            Thread.sleep(400);
+            return NodeResult.ok();
+        });
+
+        executor.submit(node(null, 0), instance());
+
+        verify(logService, timeout(VERIFY_TIMEOUT_MS).atLeast(3)).log(eq(INSTANCE_CODE), eq(NODE_CODE), eq(1),
+            eq(ExecutionEvent.NODE_LOG), isNull(), anyString(), anyString());
         awaitRemoved();
     }
 

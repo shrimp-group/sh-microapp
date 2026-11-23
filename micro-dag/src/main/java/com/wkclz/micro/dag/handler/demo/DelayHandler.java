@@ -39,6 +39,7 @@ public class DelayHandler implements NodeHandler {
     public NodeResult execute(NodeContext ctx) throws Exception {
         long ms = resolveMs(ctx);
         log.info("demo-delay: instance={} node={} ms={}", ctx.getInstanceCode(), ctx.getNodeCode(), ms);
+        ctx.log("延时 " + ms + "ms");
         long slept = 0;
         while (slept < ms) {
             long step = Math.min(STEP_MS, ms - slept);

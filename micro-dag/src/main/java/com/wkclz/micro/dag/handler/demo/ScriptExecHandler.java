@@ -58,6 +58,7 @@ public class ScriptExecHandler implements NodeHandler {
                 throw ValidationException.of("demo-script-exec handle 返回值不可序列化");
             }
             Object parsed = OBJECT_MAPPER.readValue(json.asString(), Object.class);
+            ctx.log("脚本执行完成");
             if (parsed instanceof Map<?, ?> m) {
                 @SuppressWarnings("unchecked")
                 Map<String, Object> output = (Map<String, Object>) m;

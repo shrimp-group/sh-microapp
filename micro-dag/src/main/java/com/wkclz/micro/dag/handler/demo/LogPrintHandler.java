@@ -34,6 +34,7 @@ public class LogPrintHandler implements NodeHandler {
         Map<String, Object> params = ctx.inputParams();
         log.info("demo-log-print: instance={} node={} attempt={} params={}",
             ctx.getInstanceCode(), ctx.getNodeCode(), ctx.getAttempt(), params);
+        ctx.log("echo: " + params);
         return NodeResult.ok(Map.of("echo", params));
     }
 }

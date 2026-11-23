@@ -29,14 +29,15 @@ public class DataFetchHandler implements NodeHandler {
     public String nodeCode() { return "fetch"; }
     public NodeResult execute(NodeContext ctx) throws Exception {
         ctx.checkInterrupted(); // 长任务周期性检查协作式中断
+        // 前置未满足：return NodeResult.notReady(Map.of("msg", "上游数据未落库"));
         return NodeResult.ok(Map.of("rows", 100)).withTraceCode("TRC-xxx");
     }
     public void cleanup(NodeContext ctx) { /* 重跑前清理历史数据 */ }
 }
 ```
 
-3. 执行建表脚本 `sql/dag_init.sql`，然后调用 `POST /micro-dag/definition/create`（后端生成 dagCode）+ `/definition/publish`
-   创建流程，`POST /micro-dag/definition/update` 编辑 DRAFT 草稿，`POST /micro-dag/instance/launch` 发起实例。
+3. 执行建表脚本 `sql/dag_init.sql`，然后调用 `POST /micro-dag/process/create`（后端生成 dagCode）+ `/process/version/publish`
+   创建流程，`POST /micro-dag/process/version/update` 编辑 DRAFT 草稿，`POST /micro-dag/instance/launch` 发起实例。
 4. 可选：执行 `sql/dag_demo.sql` 灌入 14 条全场景演示流程（幂等，dag_code 前缀 dag_demo_，配合 `dag.demo-enabled=true` 使用，教程见 docs/living-docs-technical/modules/micro-dag-demo-tutorial.md）
 
 ## 配置项（dag.*）
@@ -77,7 +78,7 @@ START 节点 params 配置触发方式（缺省 MANUAL 手动 launch）：
 
 - `DagTriggerScheduler` 轮询 PUBLISHED 定义（dag.trigger.interval-ms），cron（Spring 6 域）到点自动 launch 实例
 - 幂等：traceCode = `TIMER-{dagCode}-v{version}-{触发时间}`，同一触发点仅发起一个实例；Redis 锁防集群竞争
-- 语义：停机期间错过的历史槽位不补触发，仅补触发最近一个到期槽位；触发状态内存态，重启自动重建
+- 语义：停机期间错过的历史槽位不补触发，仅补触发最近一个到期槽位；触发状态内存态，重启自动重建；无 TIMER 触发的定义按 dagVersion 负缓存，仅版本变更时重新加载
 - `dag.enabled=false` 或 `dag.trigger.enabled=false` 时触发器不运行，手动 launch 不受影响
 - 校验：triggerType=TIMER 时 cron 必填且可解析（DagValidator）
 
@@ -95,6 +96,8 @@ GraalJS 依赖为 optional，classpath 缺失时 `demo-script-exec` 自动跳过
 | demo-script-exec | 演示-JS脚本 | script（定义 `handle(input)`）、input（缺省为全部入参） | handle 返回对象原样输出，标量包装为 `{result}` |
 | demo-fail | 演示-可控失败 | failTimes（前 N 次失败，缺省 0）、msg | 前 N 次 `{attempt, msg}` 失败，之后 `{attempt, msg: success}` 成功并回填 trace_code；演示显式失败、RETRYING、过程日志(NODE_LOG)、trace 回填 |
 
+全部 demo handler 均上报过程日志（ctx.log → NODE_LOG），实例监控执行记录时间线可查看正常执行的过程日志（demo-fail 之外此前无上报）。
+
 ## 核心机制速记
 
 - 状态推进双通道：完成事件即时回调 + 轮询兜底，汇合于 DB CAS，天然幂等
@@ -107,18 +110,23 @@ GraalJS 依赖为 optional，classpath 缺失时 `demo-script-exec` 自动跳过
 - 节点分类：SYSTEM 永久生效 / DEMO 受 dag.demo-enabled 限制 / BUSINESS 业务接入默认
 - 清理钩子：重跑目标 attempt > 0 → cleanup_flag=1 → 执行前先调 handler.cleanup
 - 显式失败：handler 返回 NodeResult.fail(output) → 派发 FAIL（output 含 String 类型 msg 键时作为失败消息；output 写入 output_json，RETRYING/FAILED 均写）
+- 未就绪：handler 返回 NodeResult.notReady(output) → 派发 NOT_READY 事件并复用失败重试链路（RETRYING + FIXED/EXPONENTIAL 退避），attempt 耗尽转 FAILED；output 含 String msg 键时作为未就绪原因写入 error_msg
 - 过程日志：handler 调 ctx.log(message) 内存缓冲（线程安全，上限 dag.log.max-chars，超限丢弃并置 truncated）；
-  flusher 单线程按 dag.log.flush-interval-ms 扫描落库 NODE_LOG 事件（log_text 独立字段，无 detail_json），节点终态 finally 兜底 flush 一次并补 `...[truncated]` 标记
+  flusher 单线程按 dag.log.flush-interval-ms 扫描落库 NODE_LOG 事件（log_text 独立字段，无 detail_json），节点终态 finally 兜底 flush 一次并补 `...[truncated]` 标记；
+  落库异常在 flush 内部消化（log.error 显形），防止 scheduleAtFixedRate 任务被异常永久取消导致 flusher 静默停摆
 - DDL 迁移（存量库升级时执行，新建库直接用最新表定义）：`ALTER TABLE dag_execution_log MODIFY detail_json JSON;` `ALTER TABLE dag_execution_log ADD COLUMN log_text TEXT COMMENT '过程日志内容(NODE_LOG 专用)';`（迁移前校验存量 detail_json 均为合法 JSON，详见 docs/tasks/micro-dag/02-data-layer.md）
 
 ## API 一览（前缀 /micro-dag，详见 rest/Route.java）
 
-定义 create/update/publish/page/detail/copy · handler/list · expression/preview ·
+流程 page/create · 版本 create/update/publish/detail/list · handler/list · expression/preview ·
 实例 launch/page/detail/terminate/rerun-from · 节点 detail/interrupt/params/skip/reset/rerun
 
 ## 前端（独立工程 sh-dag-ui，appCode=dag）
 
-- DagDefinitionList：流程定义分页列表（查询/新建/设计/复制/发布），设计动作经全屏弹窗内嵌设计器
+- DagProcessList：流程分页列表（一条流程一条记录，聚合状态 EDITING/PUBLISHED 与最新版本列，
+  操作仅设计+历史版本），设计动作经全屏弹窗内嵌设计器；无草稿时以最新已发布版本为底稿打开，
+  发布按钮收归设计器 footer（关闭弹窗刷新列表）
+- VersionHistoryDialog：版本历史弹窗（版本列表 + 全屏只读画布查看，草稿显示"草稿"、发布版本显示 vN）
 - DagDesigner：纯设计器（左信息栏[编码/必填名称] / 左 handler 面板 / 中画布[自动布局悬浮] / 右属性面板），保存/发布/关闭为全局按钮固定右下角
 - DagInstanceList：实例分页列表（查询/发起/详情/终止），状态中文展示，不做定时刷新（关闭详情弹窗后刷新），详情动作经全屏弹窗内嵌详情组件
 - DagGraph：X6 画布封装——节点左右端口磁吸连线（仅 out→in）、mousedown 即选中、

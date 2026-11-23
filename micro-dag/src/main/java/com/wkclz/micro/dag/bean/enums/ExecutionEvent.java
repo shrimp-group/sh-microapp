@@ -11,6 +11,7 @@ public enum ExecutionEvent {
     CLAIM("领取"),
     SUCCESS("成功"),
     FAIL("失败"),
+    NOT_READY("未就绪"),
     TIMEOUT("超时"),
     INTERRUPT("中断"),
     RETRY_SCHEDULED("重试已排期"),
