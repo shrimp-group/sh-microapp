@@ -134,7 +134,7 @@ class DagInterventionServiceTest {
 
     @Test
     void skip_keepsManuallySkippedDownstream() {
-        // 下游为人工跳过（非级联）时不得误重置，实例保持 FAILED
+        // 下游为人工跳过（非级联）时不得误重置；skip 表达继续意图，FAILED 实例仍回 RUNNING
         DagNodeInstance failed = node(NODE_CODE, "FAILED", 1);
         when(mapper.selectOneByEntity(any())).thenReturn(failed);
         DagInstance failedInstance = instance("FAILED");
@@ -149,7 +149,27 @@ class DagInterventionServiceTest {
         service.skip(req(null));
 
         assertEquals("SKIPPED", manual.getStatus());
-        assertEquals("FAILED", failedInstance.getStatus());
+        assertEquals("RUNNING", failedInstance.getStatus());
+    }
+
+    @Test
+    void skip_failedNode_pendingDownstream_resumesInstance() {
+        // 失败下游等待语义：下游保持 PENDING → skip 失败节点后实例回 RUNNING，下游由调度器继续推进
+        DagNodeInstance failed = node(NODE_CODE, "FAILED", 1);
+        when(mapper.selectOneByEntity(any())).thenReturn(failed);
+        DagInstance failedInstance = instance("FAILED");
+        when(instanceService.selectOneByEntity(any())).thenReturn(failedInstance);
+        DagDefModel def = new DagDefModel();
+        def.setEdges(List.of(edge(NODE_CODE, "down1")));
+        when(versionService.load("d1", 1)).thenReturn(def);
+        DagNodeInstance pending = node("down1", "PENDING", 0);
+        when(mapper.listByInstanceCode(INSTANCE_CODE)).thenReturn(List.of(failed, pending));
+
+        service.skip(req(null));
+
+        assertEquals("PENDING", pending.getStatus());
+        assertEquals("RUNNING", failedInstance.getStatus());
+        verify(engine).advance(INSTANCE_CODE);
     }
 
     @Test

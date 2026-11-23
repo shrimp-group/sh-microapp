@@ -242,8 +242,8 @@ public class DagInterventionService extends BaseService<DagNodeInstance, DagNode
     }
 
     /**
-     * 跳过补救：下游闭包内凭级联跳过原因识别被连锁 SKIPPED 的节点，重置 PENDING 重新调度；
-     * 有恢复节点且实例 FAILED 时回 RUNNING（人工跳过/条件分支跳过的下游不受影响）
+     * 跳过补救 + 实例恢复：下游闭包内凭级联跳过原因识别被连锁 SKIPPED 的节点，重置 PENDING 重新调度；
+     * 实例 FAILED 时一律回 RUNNING（skip 表达继续意图，下游 PENDING 等待节点由调度器继续推进；终止实例不恢复）
      */
     private void rescueDownstream(String instanceCode, String nodeCode) {
         DagInstance instance = instanceService.selectOneByEntity(instanceQuery(instanceCode));
@@ -252,18 +252,16 @@ public class DagInterventionService extends BaseService<DagNodeInstance, DagNode
         }
         DagDefModel def = versionService.load(instance.getDagCode(), instance.getDagVersion());
         Set<String> downstream = downstreamClosure(def, nodeCode);
-        boolean rescued = false;
         for (DagNodeInstance n : mapper.listByInstanceCode(instanceCode)) {
             if (downstream.contains(n.getNodeCode()) && NodeStatus.SKIPPED.name().equals(n.getStatus())
                 && DagEngineService.CASCADE_SKIP_REASON.equals(n.getSkipReason())) {
                 log.info("micro-dag: 跳过补救恢复下游 instanceCode={} nodeCode={}", instanceCode, n.getNodeCode());
                 doReset(n, false);
                 logService.log(n.getInstanceCode(), n.getNodeCode(), n.getAttempt(), ExecutionEvent.RESET, null, null);
-                rescued = true;
             }
         }
-        if (rescued && InstanceStatus.FAILED.name().equals(instance.getStatus())) {
-            log.info("micro-dag: 跳过补救唤醒实例 instanceCode={}", instanceCode);
+        if (InstanceStatus.FAILED.name().equals(instance.getStatus())) {
+            log.info("micro-dag: 跳过后恢复实例 instanceCode={}", instanceCode);
             instance.setStatus(InstanceStatus.RUNNING.name());
             instanceService.updateById(instance);
         }
