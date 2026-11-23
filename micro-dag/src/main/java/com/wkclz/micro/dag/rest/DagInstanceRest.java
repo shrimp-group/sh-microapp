@@ -3,12 +3,14 @@ package com.wkclz.micro.dag.rest;
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.base.R;
 import com.wkclz.micro.dag.bean.req.InstancePageReq;
+import com.wkclz.micro.dag.bean.req.InstanceRerunFromReq;
 import com.wkclz.micro.dag.bean.req.LaunchReq;
 import com.wkclz.micro.dag.bean.resp.InstanceDagViewResp;
 import com.wkclz.micro.dag.bean.resp.InstanceResp;
 import com.wkclz.micro.dag.service.DagInstanceService;
 import com.wkclz.micro.dag.service.DagInterventionService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -51,9 +53,10 @@ public class DagInstanceRest {
     }
 
     @PostMapping(Route.INSTANCE_RERUN_FROM)
-    public R<Void> rerunFrom(@RequestParam String instanceCode, @RequestParam String nodeCode) {
-        log.info("micro-dag: 从指定节点重跑 instanceCode={} nodeCode={}", instanceCode, nodeCode);
-        interventionService.rerunFrom(instanceCode, nodeCode);
+    public R<Void> rerunFrom(@RequestBody InstanceRerunFromReq req) {
+        log.info("micro-dag: 从指定节点重跑 instanceCode={} nodeCode={} hasParams={}",
+            req.getInstanceCode(), req.getNodeCode(), StringUtils.isNotBlank(req.getInstanceParamsJson()));
+        interventionService.rerunFrom(req);
         return R.ok();
     }
 }

@@ -26,7 +26,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * 推进引擎：节点成功/失败/中断落库 → 级联跳过 → 实例终态 → Redis 唤醒调度（双通道的"事件即时"侧）
+ * 推进引擎：节点成功/失败/中断落库 → 分支级联跳过 → 实例终态 → Redis 唤醒调度（双通道的"事件即时"侧）。
  */
 @Slf4j
 @Service
@@ -34,6 +34,9 @@ public class DagEngineService extends BaseService<DagNodeInstance, DagNodeInstan
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final int MAX_ERROR_LEN = 1000;
+
+    /** 级联跳过统一原因（DagInterventionService.skip 补救时凭此识别可恢复节点） */
+    public static final String CASCADE_SKIP_REASON = "上游分支条件不满足";
 
     private final DagInstanceService instanceService;
     private final DagProcessVersionService versionService;
@@ -127,8 +130,8 @@ public class DagEngineService extends BaseService<DagNodeInstance, DagNodeInstan
     }
 
     /**
-     * 推进实例：级联跳过 → 实例终态 → Redis 唤醒调度器（就绪领取统一走调度器，保持单一 CAS 入口）。
-     * 人工干预（skip / rerun 等）复用本方法触发下游就绪计算。
+     * 推进实例：分支级联跳过（仅条件不满足）→ 实例终态（节点失败下游保持 PENDING 等待）→ Redis 唤醒调度器
+     * （就绪领取统一走调度器，保持单一 CAS 入口）。人工干预（skip / rerun 等）复用本方法触发下游就绪计算。
      */
     public void advance(String instanceCode) {
         DagInstance where = new DagInstance();
@@ -152,7 +155,7 @@ public class DagEngineService extends BaseService<DagNodeInstance, DagNodeInstan
         for (DagNodeInstance n : nodes) {
             if (skips.contains(n.getNodeCode())) {
                 n.setStatus(NodeStatus.SKIPPED.name());
-                n.setSkipReason("上游分支条件不满足");
+                n.setSkipReason(CASCADE_SKIP_REASON);
                 updateNode(n);
                 logService.log(n.getInstanceCode(), n.getNodeCode(), n.getAttempt(), ExecutionEvent.SKIP, null, null);
                 statusMap.put(n.getNodeCode(), NodeStatus.SKIPPED);

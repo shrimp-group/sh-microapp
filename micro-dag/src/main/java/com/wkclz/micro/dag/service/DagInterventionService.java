@@ -8,6 +8,7 @@ import com.wkclz.micro.dag.bean.entity.DagNodeInstance;
 import com.wkclz.micro.dag.bean.enums.ExecutionEvent;
 import com.wkclz.micro.dag.bean.enums.InstanceStatus;
 import com.wkclz.micro.dag.bean.enums.NodeStatus;
+import com.wkclz.micro.dag.bean.req.InstanceRerunFromReq;
 import com.wkclz.micro.dag.bean.req.NodeInterveneReq;
 import com.wkclz.micro.dag.cache.DagRedisPublisher;
 import com.wkclz.micro.dag.mapper.DagNodeInstanceMapper;
@@ -16,11 +17,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -29,6 +32,8 @@ import java.util.Set;
 @Slf4j
 @Service
 public class DagInterventionService extends BaseService<DagNodeInstance, DagNodeInstanceMapper> {
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private final DagInstanceService instanceService;
     private final DagProcessVersionService versionService;
@@ -72,7 +77,11 @@ public class DagInterventionService extends BaseService<DagNodeInstance, DagNode
         mapper.updateById(node);
     }
 
-    /** skip：非运行态置 SKIPPED + skip_reason，触发下游就绪计算 */
+    /**
+     * skip：非运行态置 SKIPPED + skip_reason，触发下游就绪计算。
+     * 跳过补救：下游闭包内被级联跳过的节点重置 PENDING 重新调度（跳过视为上游满足，下游继续执行），
+     * 实例 FAILED 时回 RUNNING；人工跳过的下游节点不受影响
+     */
     @Transactional
     public void skip(NodeInterveneReq req) {
         DagNodeInstance node = mustExist(req.getInstanceCode(), req.getNodeCode());
@@ -84,6 +93,7 @@ public class DagInterventionService extends BaseService<DagNodeInstance, DagNode
         node.setSkipReason(StringUtils.defaultIfBlank(req.getSkipReason(), "人工跳过"));
         mapper.updateById(node);
         logService.log(node.getInstanceCode(), node.getNodeCode(), node.getAttempt(), ExecutionEvent.SKIP, null, null);
+        rescueDownstream(node.getInstanceCode(), node.getNodeCode());
         engine.advance(node.getInstanceCode());
     }
 
@@ -99,14 +109,19 @@ public class DagInterventionService extends BaseService<DagNodeInstance, DagNode
         logService.log(node.getInstanceCode(), node.getNodeCode(), node.getAttempt(), ExecutionEvent.RESET, null, null);
     }
 
-    /** rerun：单节点 reset + 清理钩子判定 + 实例回 RUNNING + 唤醒调度 */
+    /** rerun：可选重设节点参数（非空校验合法后更新）+ 单节点 reset + 清理钩子判定 + 实例回 RUNNING + 唤醒调度 */
     @Transactional
-    public void rerun(String instanceCode, String nodeCode) {
-        DagNodeInstance node = mustExist(instanceCode, nodeCode);
+    public void rerun(NodeInterveneReq req) {
+        mustBeValidJson(req.getInputParamsJson(), "节点参数");
+        DagNodeInstance node = mustExist(req.getInstanceCode(), req.getNodeCode());
         if (NodeStatus.RUNNING.name().equals(node.getStatus())) {
             throw ValidationException.of("RUNNING 节点不可重跑，请先中断/终止");
         }
-        log.info("micro-dag: 人工重跑 instanceCode={} nodeCode={}", instanceCode, nodeCode);
+        log.info("micro-dag: 人工重跑 instanceCode={} nodeCode={} hasParams={}",
+            node.getInstanceCode(), node.getNodeCode(), StringUtils.isNotBlank(req.getInputParamsJson()));
+        if (StringUtils.isNotBlank(req.getInputParamsJson())) {
+            node.setInputParamsJson(req.getInputParamsJson());
+        }
         node.setInterruptFlag(0);
         node.setCleanupFlag(hasHistory(node) ? 1 : 0);
         doReset(node, false);
@@ -114,9 +129,11 @@ public class DagInterventionService extends BaseService<DagNodeInstance, DagNode
         resumeInstance(node.getInstanceCode());
     }
 
-    /** rerun-from：目标节点及全部下游 reset（上游 SUCCESS 保留），实例回 RUNNING */
+    /** rerun-from：可选重设实例参数（同步 bizParamsJson 与 contextJson）+ 目标节点及全部下游 reset（上游 SUCCESS 保留），实例回 RUNNING */
     @Transactional
-    public void rerunFrom(String instanceCode, String nodeCode) {
+    public void rerunFrom(InstanceRerunFromReq req) {
+        String instanceCode = req.getInstanceCode();
+        mustBeValidJson(req.getInstanceParamsJson(), "实例参数");
         DagInstance instance = instanceService.selectOneByEntity(instanceQuery(instanceCode));
         if (instance == null) {
             throw ValidationException.of("实例不存在: " + instanceCode);
@@ -124,9 +141,14 @@ public class DagInterventionService extends BaseService<DagNodeInstance, DagNode
         if (InstanceStatus.RUNNING.name().equals(instance.getStatus())) {
             throw ValidationException.of("实例运行中不可 rerun-from，请先终止");
         }
-        log.info("micro-dag: 从指定节点重跑 instanceCode={} nodeCode={}", instanceCode, nodeCode);
+        log.info("micro-dag: 从指定节点重跑 instanceCode={} nodeCode={} hasParams={}",
+            instanceCode, req.getNodeCode(), StringUtils.isNotBlank(req.getInstanceParamsJson()));
+        if (StringUtils.isNotBlank(req.getInstanceParamsJson())) {
+            instance.setBizParamsJson(req.getInstanceParamsJson());
+            instance.setContextJson(req.getInstanceParamsJson());
+        }
         DagDefModel def = versionService.load(instance.getDagCode(), instance.getDagVersion());
-        Set<String> downstream = downstreamClosure(def, nodeCode);
+        Set<String> downstream = downstreamClosure(def, req.getNodeCode());
         List<DagNodeInstance> nodes = mapper.listByInstanceCode(instanceCode);
         for (DagNodeInstance n : nodes) {
             if (!downstream.contains(n.getNodeCode())) {
@@ -188,6 +210,19 @@ public class DagInterventionService extends BaseService<DagNodeInstance, DagNode
         return where;
     }
 
+    /** 非空 JSON 校验：空值放行，非法抛 ValidationException（阻止带脏参数重跑） */
+    private void mustBeValidJson(String json, String label) {
+        if (StringUtils.isBlank(json)) {
+            return;
+        }
+        try {
+            OBJECT_MAPPER.readValue(json, Map.class);
+        } catch (Exception e) {
+            log.error("micro-dag: {} JSON 非法 json={}", label, json, e);
+            throw ValidationException.of(label + " JSON 非法");
+        }
+    }
+
     private void doReset(DagNodeInstance node, boolean clearParams) {
         node.setStatus(NodeStatus.PENDING.name());
         node.setErrorMsg(null);
@@ -204,6 +239,34 @@ public class DagInterventionService extends BaseService<DagNodeInstance, DagNode
     /** 历史执行判定：attempt > 0 即发生过领取执行 → 重跑前需清理钩子 */
     private boolean hasHistory(DagNodeInstance node) {
         return node.getAttempt() != null && node.getAttempt() > 0;
+    }
+
+    /**
+     * 跳过补救：下游闭包内凭级联跳过原因识别被连锁 SKIPPED 的节点，重置 PENDING 重新调度；
+     * 有恢复节点且实例 FAILED 时回 RUNNING（人工跳过/条件分支跳过的下游不受影响）
+     */
+    private void rescueDownstream(String instanceCode, String nodeCode) {
+        DagInstance instance = instanceService.selectOneByEntity(instanceQuery(instanceCode));
+        if (instance == null) {
+            return;
+        }
+        DagDefModel def = versionService.load(instance.getDagCode(), instance.getDagVersion());
+        Set<String> downstream = downstreamClosure(def, nodeCode);
+        boolean rescued = false;
+        for (DagNodeInstance n : mapper.listByInstanceCode(instanceCode)) {
+            if (downstream.contains(n.getNodeCode()) && NodeStatus.SKIPPED.name().equals(n.getStatus())
+                && DagEngineService.CASCADE_SKIP_REASON.equals(n.getSkipReason())) {
+                log.info("micro-dag: 跳过补救恢复下游 instanceCode={} nodeCode={}", instanceCode, n.getNodeCode());
+                doReset(n, false);
+                logService.log(n.getInstanceCode(), n.getNodeCode(), n.getAttempt(), ExecutionEvent.RESET, null, null);
+                rescued = true;
+            }
+        }
+        if (rescued && InstanceStatus.FAILED.name().equals(instance.getStatus())) {
+            log.info("micro-dag: 跳过补救唤醒实例 instanceCode={}", instanceCode);
+            instance.setStatus(InstanceStatus.RUNNING.name());
+            instanceService.updateById(instance);
+        }
     }
 
     private void resumeInstance(String instanceCode) {

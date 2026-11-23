@@ -6,6 +6,7 @@ import com.wkclz.micro.dag.bean.resp.NodeDetailResp;
 import com.wkclz.micro.dag.service.DagInterventionService;
 import com.wkclz.micro.dag.service.DagNodeInstanceService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -55,9 +56,10 @@ public class DagNodeInstanceRest {
     }
 
     @PostMapping(Route.NODE_RERUN)
-    public R<Void> rerun(@RequestParam String instanceCode, @RequestParam String nodeCode) {
-        log.info("micro-dag: 重跑节点 instanceCode={} nodeCode={}", instanceCode, nodeCode);
-        interventionService.rerun(instanceCode, nodeCode);
+    public R<Void> rerun(@RequestBody NodeInterveneReq req) {
+        log.info("micro-dag: 重跑节点 instanceCode={} nodeCode={} hasParams={}",
+            req.getInstanceCode(), req.getNodeCode(), StringUtils.isNotBlank(req.getInputParamsJson()));
+        interventionService.rerun(req);
         return R.ok();
     }
 }

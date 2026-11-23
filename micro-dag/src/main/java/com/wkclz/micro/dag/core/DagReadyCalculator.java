@@ -65,9 +65,9 @@ public class DagReadyCalculator {
     }
 
     /**
-     * 计算需要级联置 SKIPPED 的节点：
-     * 全部入边均确定性不满足（上游 FAILED/MANUAL_STOPPED、上游链式 SKIPPED、条件边求值 false）；
-     * 上游为 PENDING/RUNNING/RETRYING 属未定状态，不参与跳过判定
+     * 计算需要级联置 SKIPPED 的节点（仅分支语义）：
+     * 全部入边均确定性不满足（SUCCESS 上游的条件边求值 false、上游链式 SKIPPED）；
+     * 上游为 FAILED/MANUAL_STOPPED/PENDING/RUNNING/RETRYING 属未定状态，下游保持 PENDING 等待，不参与跳过判定
      */
     public Set<String> cascadeSkips(DagDefModel def, Map<String, NodeStatus> statusMap,
                                     Map<String, Object> ctx, Map<String, Map<String, Object>> nodeOutputs) {
@@ -100,10 +100,9 @@ public class DagReadyCalculator {
                         anySatisfied = true;
                         break;
                     }
-                } else if (up == NodeStatus.PENDING || up == NodeStatus.RUNNING || up == NodeStatus.RETRYING) {
-                    anyUndetermined = true; // 上游未定，暂不跳过
+                } else {
+                    anyUndetermined = true; // 上游未定（含 FAILED/MANUAL_STOPPED，保持等待）暂不跳过
                 }
-                // FAILED / MANUAL_STOPPED / 上游缺失 → 该边确定性不满足
             }
             if (!anySatisfied && !anyUndetermined) {
                 skipped.add(code);
@@ -113,15 +112,23 @@ public class DagReadyCalculator {
         return skipped;
     }
 
-    /** 全部节点均终态时返回实例终态（任一 FAILED/MANUAL_STOPPED → FAILED，否则 SUCCESS），未终态返回 empty */
+    /**
+     * 实例终态计算：存在 FAILED/MANUAL_STOPPED 且无在途节点（RUNNING/RETRYING）→ FAILED
+     * （下游 PENDING 保持等待，可重跑恢复）；无失败且全部节点终态 → SUCCESS；否则 empty
+     */
     public Optional<String> instanceTerminalStatus(Map<String, NodeStatus> statusMap) {
-        boolean allTerminal = statusMap.values().stream().allMatch(NodeStatus::isTerminal);
-        if (!allTerminal) {
+        boolean anyInFlight = statusMap.values().stream()
+            .anyMatch(s -> s == NodeStatus.RUNNING || s == NodeStatus.RETRYING);
+        if (anyInFlight) {
             return Optional.empty();
         }
         boolean anyFailed = statusMap.values().stream()
             .anyMatch(s -> s == NodeStatus.FAILED || s == NodeStatus.MANUAL_STOPPED);
-        return Optional.of(anyFailed ? "FAILED" : "SUCCESS");
+        if (anyFailed) {
+            return Optional.of("FAILED");
+        }
+        boolean allTerminal = statusMap.values().stream().allMatch(NodeStatus::isTerminal);
+        return allTerminal ? Optional.of("SUCCESS") : Optional.empty();
     }
 
     private List<EdgeDef> incomingEdges(DagDefModel def, String target) {

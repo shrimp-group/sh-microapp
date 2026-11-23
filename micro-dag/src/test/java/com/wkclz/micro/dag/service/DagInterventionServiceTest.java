@@ -6,6 +6,7 @@ import com.wkclz.micro.dag.bean.dto.EdgeDef;
 import com.wkclz.micro.dag.bean.entity.DagInstance;
 import com.wkclz.micro.dag.bean.entity.DagNodeInstance;
 import com.wkclz.micro.dag.bean.enums.ExecutionEvent;
+import com.wkclz.micro.dag.bean.req.InstanceRerunFromReq;
 import com.wkclz.micro.dag.bean.req.NodeInterveneReq;
 import com.wkclz.micro.dag.cache.DagRedisPublisher;
 import com.wkclz.micro.dag.mapper.DagNodeInstanceMapper;
@@ -110,6 +111,48 @@ class DagInterventionServiceTest {
     }
 
     @Test
+    void skip_rescuesCascadedSkippedDownstream() {
+        // 下游存在级联原因（上游分支条件不满足）的 SKIPPED 节点 → skip 补救：重置 PENDING、FAILED 实例回 RUNNING
+        DagNodeInstance failed = node(NODE_CODE, "FAILED", 1);
+        when(mapper.selectOneByEntity(any())).thenReturn(failed);
+        DagInstance failedInstance = instance("FAILED");
+        when(instanceService.selectOneByEntity(any())).thenReturn(failedInstance);
+        DagDefModel def = new DagDefModel();
+        def.setEdges(List.of(edge(NODE_CODE, "down1")));
+        when(versionService.load("d1", 1)).thenReturn(def);
+        DagNodeInstance cascaded = node("down1", "SKIPPED", null);
+        cascaded.setSkipReason("上游分支条件不满足");
+        when(mapper.listByInstanceCode(INSTANCE_CODE)).thenReturn(List.of(failed, cascaded));
+
+        service.skip(req(null));
+
+        assertEquals("PENDING", cascaded.getStatus());
+        assertEquals(null, cascaded.getSkipReason());
+        assertEquals("RUNNING", failedInstance.getStatus());
+        verify(engine).advance(INSTANCE_CODE);
+    }
+
+    @Test
+    void skip_keepsManuallySkippedDownstream() {
+        // 下游为人工跳过（非级联）时不得误重置，实例保持 FAILED
+        DagNodeInstance failed = node(NODE_CODE, "FAILED", 1);
+        when(mapper.selectOneByEntity(any())).thenReturn(failed);
+        DagInstance failedInstance = instance("FAILED");
+        when(instanceService.selectOneByEntity(any())).thenReturn(failedInstance);
+        DagDefModel def = new DagDefModel();
+        def.setEdges(List.of(edge(NODE_CODE, "down1")));
+        when(versionService.load("d1", 1)).thenReturn(def);
+        DagNodeInstance manual = node("down1", "SKIPPED", 0);
+        manual.setSkipReason("人工跳过");
+        when(mapper.listByInstanceCode(INSTANCE_CODE)).thenReturn(List.of(failed, manual));
+
+        service.skip(req(null));
+
+        assertEquals("SKIPPED", manual.getStatus());
+        assertEquals("FAILED", failedInstance.getStatus());
+    }
+
+    @Test
     void reset_defaultKeepsParams_clearsResults() {
         DagNodeInstance node = node(NODE_CODE, "FAILED", 2);
         node.setOutputJson("{}");
@@ -145,7 +188,7 @@ class DagInterventionServiceTest {
         DagInstance instance = instance("FAILED");
         when(instanceService.selectOneByEntity(any())).thenReturn(instance);
 
-        service.rerun(INSTANCE_CODE, NODE_CODE);
+        service.rerun(rerunReq(null));
 
         assertEquals("PENDING", node.getStatus());
         assertEquals(1, node.getCleanupFlag());
@@ -156,12 +199,36 @@ class DagInterventionServiceTest {
     }
 
     @Test
+    void rerun_withParams_updatesInput() {
+        DagNodeInstance node = node(NODE_CODE, "FAILED", 2);
+        node.setInputParamsJson("{\"old\":1}");
+        when(mapper.selectOneByEntity(any())).thenReturn(node);
+        when(instanceService.selectOneByEntity(any())).thenReturn(instance("FAILED"));
+
+        service.rerun(rerunReq("{\"k\":\"v\"}"));
+
+        assertEquals("{\"k\":\"v\"}", node.getInputParamsJson());
+        assertEquals("PENDING", node.getStatus());
+    }
+
+    @Test
+    void rerun_withInvalidParams_throws() {
+        DagNodeInstance node = node(NODE_CODE, "FAILED", 2);
+        when(mapper.selectOneByEntity(any())).thenReturn(node);
+
+        assertThrows(ValidationException.class, () -> service.rerun(rerunReq("not-json")));
+
+        assertEquals("FAILED", node.getStatus());
+        verify(mapper, never()).updateById(any());
+    }
+
+    @Test
     void rerun_noHistory_noCleanupFlag() {
         DagNodeInstance node = node(NODE_CODE, "SKIPPED", null);
         when(mapper.selectOneByEntity(any())).thenReturn(node);
         when(instanceService.selectOneByEntity(any())).thenReturn(instance("FAILED"));
 
-        service.rerun(INSTANCE_CODE, NODE_CODE);
+        service.rerun(rerunReq(null));
 
         assertEquals(0, node.getCleanupFlag());
     }
@@ -170,7 +237,7 @@ class DagInterventionServiceTest {
     void rerun_running_throws() {
         when(mapper.selectOneByEntity(any())).thenReturn(node(NODE_CODE, "RUNNING", 1));
 
-        assertThrows(ValidationException.class, () -> service.rerun(INSTANCE_CODE, NODE_CODE));
+        assertThrows(ValidationException.class, () -> service.rerun(rerunReq(null)));
     }
 
     @Test
@@ -186,7 +253,7 @@ class DagInterventionServiceTest {
         DagNodeInstance d = node("D", "SUCCESS", 1);
         when(mapper.listByInstanceCode(INSTANCE_CODE)).thenReturn(List.of(a, b, c, d));
 
-        service.rerunFrom(INSTANCE_CODE, "A");
+        service.rerunFrom(rerunFromReq(null));
 
         ArgumentCaptor<DagNodeInstance> captor = ArgumentCaptor.forClass(DagNodeInstance.class);
         verify(mapper, times(3)).updateById(captor.capture());
@@ -200,10 +267,38 @@ class DagInterventionServiceTest {
     }
 
     @Test
+    void rerunFrom_withParams_updatesInstanceParams() {
+        DagInstance instance = instance("FAILED");
+        when(instanceService.selectOneByEntity(any())).thenReturn(instance);
+        DagDefModel def = new DagDefModel();
+        when(versionService.load("d1", 1)).thenReturn(def);
+        when(mapper.listByInstanceCode(INSTANCE_CODE)).thenReturn(List.of());
+
+        service.rerunFrom(rerunFromReq("{\"k\":\"v\"}"));
+
+        assertEquals("{\"k\":\"v\"}", instance.getBizParamsJson());
+        assertEquals("{\"k\":\"v\"}", instance.getContextJson());
+        assertEquals("RUNNING", instance.getStatus());
+        verify(instanceService).updateById(instance);
+        verify(publisher).wakeUp();
+    }
+
+    @Test
+    void rerunFrom_withInvalidParams_throws() {
+        DagInstance instance = instance("FAILED");
+        when(instanceService.selectOneByEntity(any())).thenReturn(instance);
+
+        assertThrows(ValidationException.class, () -> service.rerunFrom(rerunFromReq("not-json")));
+
+        verify(instanceService, never()).updateById(any());
+        verify(publisher, never()).wakeUp();
+    }
+
+    @Test
     void rerunFrom_runningInstance_throws() {
         when(instanceService.selectOneByEntity(any())).thenReturn(instance("RUNNING"));
 
-        assertThrows(ValidationException.class, () -> service.rerunFrom(INSTANCE_CODE, "A"));
+        assertThrows(ValidationException.class, () -> service.rerunFrom(rerunFromReq(null)));
     }
 
     @Test
@@ -264,6 +359,22 @@ class DagInterventionServiceTest {
         req.setNodeCode(NODE_CODE);
         req.setInputParamsJson("{\"k\":\"v\"}");
         req.setClearParams(clearParams);
+        return req;
+    }
+
+    private NodeInterveneReq rerunReq(String inputParamsJson) {
+        NodeInterveneReq req = new NodeInterveneReq();
+        req.setInstanceCode(INSTANCE_CODE);
+        req.setNodeCode(NODE_CODE);
+        req.setInputParamsJson(inputParamsJson);
+        return req;
+    }
+
+    private InstanceRerunFromReq rerunFromReq(String instanceParamsJson) {
+        InstanceRerunFromReq req = new InstanceRerunFromReq();
+        req.setInstanceCode(INSTANCE_CODE);
+        req.setNodeCode("A");
+        req.setInstanceParamsJson(instanceParamsJson);
         return req;
     }
 

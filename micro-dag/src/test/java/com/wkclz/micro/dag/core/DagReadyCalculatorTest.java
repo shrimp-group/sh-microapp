@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * 就绪计算单测：上游满足才就绪 / SKIPPED 视为满足 / 条件边求值 / 级联跳过 / 实例终态
+ * 就绪计算单测：上游满足才就绪 / SKIPPED 视为满足 / 条件边求值 / 分支级联跳过（失败下游保持等待） / 实例终态
  */
 class DagReadyCalculatorTest {
 
@@ -133,8 +133,8 @@ class DagReadyCalculatorTest {
     }
 
     @Test
-    void shouldSkipWhenUpstreamFailed() {
-        // a FAILED → b 普通边确定性不满足 → b SKIPPED，c 链式 SKIPPED
+    void shouldNotSkipWhenUpstreamFailed() {
+        // a FAILED → b/c 保持 PENDING 等待，不得级联跳过；MANUAL_STOPPED 同语义
         NodeDef a = new NodeDef(); a.setCode("a"); a.setHandler("h-a");
         NodeDef b = new NodeDef(); b.setCode("b"); b.setHandler("h-b");
         NodeDef c = new NodeDef(); c.setCode("c"); c.setHandler("h-c");
@@ -147,7 +147,9 @@ class DagReadyCalculatorTest {
         all.put("a", NodeStatus.FAILED);
         all.put("b", NodeStatus.PENDING);
         all.put("c", NodeStatus.PENDING);
-        assertEquals(Set.of("b", "c"), calc.cascadeSkips(def, all, Map.of(), Map.of()));
+        assertEquals(Set.of(), calc.cascadeSkips(def, all, Map.of(), Map.of()));
+        all.put("a", NodeStatus.MANUAL_STOPPED);
+        assertEquals(Set.of(), calc.cascadeSkips(def, all, Map.of(), Map.of()));
     }
 
     @Test
@@ -156,9 +158,16 @@ class DagReadyCalculatorTest {
         all.put("a", NodeStatus.SUCCESS);
         all.put("b", NodeStatus.SKIPPED);
         assertEquals("SUCCESS", calc.instanceTerminalStatus(all).orElse(null));
+        // b FAILED、下游 c PENDING 等待 → 实例 FAILED
         all.put("b", NodeStatus.FAILED);
+        all.put("c", NodeStatus.PENDING);
         assertEquals("FAILED", calc.instanceTerminalStatus(all).orElse(null));
-        all.put("b", NodeStatus.PENDING);
+        // 无失败但仍有 PENDING → 未终态
+        all.put("b", NodeStatus.SKIPPED);
+        assertTrue(calc.instanceTerminalStatus(all).isEmpty());
+        // 存在 FAILED 且有在途节点 → 未终态
+        all.put("b", NodeStatus.FAILED);
+        all.put("c", NodeStatus.RUNNING);
         assertTrue(calc.instanceTerminalStatus(all).isEmpty());
     }
 }

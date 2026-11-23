@@ -105,7 +105,9 @@ GraalJS 依赖为 optional，classpath 缺失时 `demo-script-exec` 自动跳过
 - 就绪领取唯一入口：DagScheduler.scan() 的 casClaim，防重复执行
 - 故障转移：租约过期（lease_expire_time < now）→ 重置 PENDING 重派
 - 重试：失败且 attempt ≤ maxRetry → RETRYING + next_retry_time，到期由调度提升
-- 分支：上游完成后对出边求值（`${ctx.*}` / `${out.<node>.*}` + 比较 + and/or），不满足级联 SKIPPED；级联跳过仅在上游全部确定性不满足（FAILED/MANUAL_STOPPED/链式 SKIPPED/条件求值 false）时触发，上游 PENDING/RUNNING/RETRYING 属未定状态不参与跳过
+- 分支：上游完成后对出边求值（`${ctx.*}` / `${out.<node>.*}` + 比较 + and/or），不满足级联 SKIPPED；级联跳过仅在全部入边确定性不满足（SUCCESS 上游条件求值 false、链式 SKIPPED）时触发；上游 FAILED/MANUAL_STOPPED/PENDING/RUNNING/RETRYING 属未定状态，下游保持 PENDING 等待不跳过
+- 失败等待：节点 FAILED/MANUAL_STOPPED 后下游保持 PENDING 等待，实例在无在途节点（RUNNING/RETRYING）时置 FAILED；人工 rerun / rerun-from 恢复后下游继续推进
+- 跳过补救：skip 非运行态节点 → 下游闭包内凭级联原因（上游分支条件不满足）识别被连锁 SKIPPED 的节点重置 PENDING 重新调度（跳过视为上游满足，下游继续执行），FAILED 实例回 RUNNING；人工跳过的下游节点不受影响。注意 SKIPPED 上游 satisfiesDownstream=true，实例 RUNNING 时手动 skip PENDING 节点本就不级联
 - 特殊节点直达：仅 START/END/BRANCH 且 handler 为空（存量兼容）领取后直达成功；有 handler 一律走 worker
 - 节点分类：SYSTEM 永久生效 / DEMO 受 dag.demo-enabled 限制 / BUSINESS 业务接入默认
 - 清理钩子：重跑目标 attempt > 0 → cleanup_flag=1 → 执行前先调 handler.cleanup
@@ -119,7 +121,7 @@ GraalJS 依赖为 optional，classpath 缺失时 `demo-script-exec` 自动跳过
 ## API 一览（前缀 /micro-dag，详见 rest/Route.java）
 
 流程 page/create · 版本 create/update/publish/detail/list · handler/list · expression/preview ·
-实例 launch/page/detail/terminate/rerun-from · 节点 detail/interrupt/params/skip/reset/rerun
+实例 launch/page/detail/terminate/rerun-from（body 可选 instanceParamsJson，非空时同步 bizParamsJson 与 contextJson） · 节点 detail/interrupt/params/skip/reset/rerun（body 可选 inputParamsJson，非空时重设节点参数）
 
 ## 前端（独立工程 sh-dag-ui，appCode=dag）
 
