@@ -167,7 +167,7 @@ public class DagProcessVersionService extends BaseService<DagProcessVersion, Dag
         processMapper.updateById(process);
     }
 
-    /** 发布：全量校验 + 起始节点检查 + 版本递增重挂，节点/边行随版本重挂，返回发布版本号 */
+    /** 发布：全量校验 + 版本递增重挂，节点/边行随版本重挂，返回发布版本号 */
     @Transactional
     public Integer publish(Long id) {
         log.info("micro-dag: 发布版本 id={}", id);
@@ -182,11 +182,6 @@ public class DagProcessVersionService extends BaseService<DagProcessVersion, Dag
         List<String> errors = validator.validate(def, registry);
         if (!errors.isEmpty()) {
             throw ValidationException.of("发布校验失败: " + String.join("; ", errors));
-        }
-        boolean hasStart = def.getNodes().stream().anyMatch(n ->
-            def.getEdges() == null || def.getEdges().stream().noneMatch(e -> n.getCode().equals(e.getToCode())));
-        if (!hasStart) {
-            throw ValidationException.of("发布校验失败: 缺少起始节点（无上游的节点）");
         }
 
         DagProcessVersion query = new DagProcessVersion();

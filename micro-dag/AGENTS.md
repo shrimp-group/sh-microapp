@@ -103,7 +103,7 @@ GraalJS 依赖为 optional，classpath 缺失时 `demo-script-exec` 自动跳过
 - 状态推进双通道：完成事件即时回调 + 轮询兜底，汇合于 DB CAS，天然幂等
 - 节点参数 schema：NodeHandler.paramSchema() 声明参数定义（NodeParamDef：key/label/type/必填/requiredWhen/范围/选项），随 handler/list 下发，设计器按定义渲染参数表单（表单/JSON 双模式）；DagValidator 保存与发布时按定义校验（必填/范围/CRON/DATETIME/SELECT/KEY_VALUE），schema 未声明的自由键不拦截；免 handler 的 START 节点 cron 校验按 nodeType 兜底
 - 就绪领取唯一入口：DagScheduler.scan() 的 casClaim，防重复执行
-- 故障转移：租约过期（lease_expire_time < now）→ 重置 PENDING 重派
+- 故障转移：租约过期（lease_expire_time < now）→ attempt ≤ maxRetry 重置 PENDING 重派，attempt 耗尽置 FAILED（error_msg=租约过期回收，重试次数已耗尽）
 - 重试：失败且 attempt ≤ maxRetry → RETRYING + next_retry_time，到期由调度提升
 - 分支：上游完成后对出边求值（`${ctx.*}` / `${out.<node>.*}` + 比较 + and/or），不满足级联 SKIPPED；级联跳过仅在全部入边确定性不满足（SUCCESS 上游条件求值 false、链式 SKIPPED）时触发；上游 FAILED/MANUAL_STOPPED/PENDING/RUNNING/RETRYING 属未定状态，下游保持 PENDING 等待不跳过
 - 失败等待：节点 FAILED/MANUAL_STOPPED 后下游保持 PENDING 等待，实例在无在途节点（RUNNING/RETRYING）时置 FAILED；人工 rerun / rerun-from 恢复后下游继续推进

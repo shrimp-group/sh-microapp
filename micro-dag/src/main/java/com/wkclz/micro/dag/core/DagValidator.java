@@ -87,9 +87,11 @@ public class DagValidator {
         }
         // 5. 环检测（Kahn）
         Map<String, Integer> inDegree = new HashMap<>();
+        Map<String, Integer> outDegree = new HashMap<>();
         Map<String, List<String>> adj = new HashMap<>();
         for (String code : nodeMap.keySet()) {
             inDegree.put(code, 0);
+            outDegree.put(code, 0);
             adj.put(code, new ArrayList<>());
         }
         Set<String> seenEdges = new HashSet<>();
@@ -100,8 +102,11 @@ public class DagValidator {
             if (seenEdges.add(e.getFromCode() + "->" + e.getToCode())) {
                 adj.get(e.getFromCode()).add(e.getToCode());
                 inDegree.merge(e.getToCode(), 1, Integer::sum);
+                outDegree.merge(e.getFromCode(), 1, Integer::sum);
             }
         }
+        // 入度快照：Kahn 会消费 inDegree，入口约束需用原始入度
+        Map<String, Integer> initInDegree = new HashMap<>(inDegree);
         List<String> zero = new ArrayList<>();
         inDegree.forEach((k, v) -> { if (v == 0) { zero.add(k); } });
         int visited = 0;
@@ -118,7 +123,30 @@ public class DagValidator {
             inDegree.forEach((k, v) -> { if (v > 0) { cycleNodes.add(k); } });
             errors.add("定义存在环，涉及节点：" + cycleNodes);
         }
-        // 6. 特殊节点（START/END/BRANCH）：nodeType 合法性 + 拓扑约束
+        // 6. 入口/汇点约束：必须恰好 1 个 START/END，且 START 为唯一入口（入度 0）、END 为唯一汇点（出度 0）
+        List<String> startCodes = new ArrayList<>();
+        List<String> endCodes = new ArrayList<>();
+        for (NodeDef n : def.getNodes()) {
+            if (NodeType.START.getCode().equals(n.getNodeType())) { startCodes.add(n.getCode()); }
+            if (NodeType.END.getCode().equals(n.getNodeType())) { endCodes.add(n.getCode()); }
+        }
+        if (startCodes.isEmpty()) { errors.add("缺少开始节点（nodeType=START）"); }
+        if (startCodes.size() > 1) { errors.add("开始节点只能有一个：" + startCodes); }
+        if (endCodes.isEmpty()) { errors.add("缺少结束节点（nodeType=END）"); }
+        if (endCodes.size() > 1) { errors.add("结束节点只能有一个：" + endCodes); }
+        List<String> notEntry = new ArrayList<>();
+        List<String> notSink = new ArrayList<>();
+        for (Map.Entry<String, NodeDef> en : nodeMap.entrySet()) {
+            if (initInDegree.get(en.getKey()) == 0 && !NodeType.START.getCode().equals(en.getValue().getNodeType())) {
+                notEntry.add(en.getKey());
+            }
+            if (outDegree.get(en.getKey()) == 0 && !NodeType.END.getCode().equals(en.getValue().getNodeType())) {
+                notSink.add(en.getKey());
+            }
+        }
+        if (!notEntry.isEmpty()) { errors.add("节点不在开始位置（存在入度为 0 的非开始节点）：" + notEntry); }
+        if (!notSink.isEmpty()) { errors.add("节点不在结束位置（存在出度为 0 的非结束节点）：" + notSink); }
+        // 7. 特殊节点（START/END/BRANCH）：nodeType 合法性 + 拓扑约束
         for (NodeDef n : def.getNodes()) {
             NodeType type = NodeType.ofCode(n.getNodeType());
             if (n.getNodeType() != null && type == null) {
@@ -144,9 +172,9 @@ public class DagValidator {
                 case NORMAL -> { }
             }
         }
-        // 7. nodeType 与 handler 匹配（START↔system-start、END↔system-end、BRANCH↔system-branch、system-timer 仅限 NORMAL）
+        // 8. nodeType 与 handler 匹配（START↔system-start、END↔system-end、BRANCH↔system-branch、system-timer 仅限 NORMAL）
         for (NodeDef n : def.getNodes()) {
-            // 非法 nodeType 已在规则 6 报错，此处按缺省 NORMAL 处理避免 NPE
+            // 非法 nodeType 已在规则 7 报错，此处按缺省 NORMAL 处理避免 NPE
             NodeType t = NodeType.ofCode(n.getNodeType());
             String type = (t == null ? NodeType.NORMAL : t).getCode();
             String handler = n.getHandler();
@@ -165,7 +193,7 @@ public class DagValidator {
                 errors.add("节点 " + n.getCode() + " 的 nodeType 与 handler 不匹配：" + sn.getCode() + " 节点不能使用 " + handler);
             }
         }
-        // 8. 节点参数 schema 校验：按 handler 声明的 paramSchema 校验 params（schema 未声明的自由键不拦截）；
+        // 9. 节点参数 schema 校验：按 handler 声明的 paramSchema 校验 params（schema 未声明的自由键不拦截）；
         //    特殊节点免 handler（存量兼容）时，START 时间驱动 cron 按 nodeType 兜底校验
         for (NodeDef n : def.getNodes()) {
             String handler = n.getHandler();
