@@ -23,9 +23,11 @@
         WHERE status = 'RETRYING' AND next_retry_time &lt;= #{now} AND deleted = 0
     </update>
 
+    <!-- 故障转移：attempt > max_retry（重试次数耗尽）置 FAILED，否则重置 PENDING 重派 -->
     <update id="reclaimExpiredLease">
         UPDATE dag_node_instance
-        SET status = 'PENDING',
+        SET status = CASE WHEN attempt &gt; IFNULL(max_retry, 0) THEN 'FAILED' ELSE 'PENDING' END,
+            error_msg = CASE WHEN attempt &gt; IFNULL(max_retry, 0) THEN '租约过期回收，重试次数已耗尽' ELSE NULL END,
             lease_owner = NULL,
             lease_expire_time = NULL,
             version = version + 1
@@ -56,7 +58,7 @@
     </update>
 
     <select id="listExpiredLease" resultType="com.wkclz.micro.dag.bean.entity.DagNodeInstance">
-        SELECT id, instance_code, node_code, status, attempt, lease_owner
+        SELECT id, instance_code, node_code, status, attempt, max_retry, lease_owner
         FROM dag_node_instance
         WHERE status = 'RUNNING' AND lease_expire_time &lt; #{now} AND deleted = 0
     </select>

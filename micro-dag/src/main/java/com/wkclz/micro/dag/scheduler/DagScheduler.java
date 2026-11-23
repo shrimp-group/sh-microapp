@@ -106,8 +106,16 @@ public class DagScheduler {
         }
         int count = nodeMapper.reclaimExpiredLease(now);
         for (DagNodeInstance node : expired) {
-            logService.log(node.getInstanceCode(), node.getNodeCode(), node.getAttempt(),
-                ExecutionEvent.LEASE_RECLAIM, null, node.getLeaseOwner());
+            // 与 reclaimExpiredLease 的 CASE 同规则：attempt > max_retry 视为重试耗尽，节点已置 FAILED
+            boolean exhausted = (node.getAttempt() == null ? 0 : node.getAttempt())
+                > (node.getMaxRetry() == null ? 0 : node.getMaxRetry());
+            if (exhausted) {
+                logService.log(node.getInstanceCode(), node.getNodeCode(), node.getAttempt(),
+                    ExecutionEvent.FAIL, toJson(Map.of("error", "租约过期回收，重试次数已耗尽")), node.getLeaseOwner());
+            } else {
+                logService.log(node.getInstanceCode(), node.getNodeCode(), node.getAttempt(),
+                    ExecutionEvent.LEASE_RECLAIM, null, node.getLeaseOwner());
+            }
         }
         log.info("micro-dag: 租约回收 {} 个节点", count);
     }
@@ -189,6 +197,15 @@ public class DagScheduler {
         } catch (Exception e) {
             log.error("micro-dag: JSON 解析失败 json={}", json, e);
             return Map.of();
+        }
+    }
+
+    private String toJson(Map<String, Object> map) {
+        try {
+            return OBJECT_MAPPER.writeValueAsString(map);
+        } catch (Exception e) {
+            log.error("micro-dag: JSON 序列化失败 map={}", map, e);
+            return "{}";
         }
     }
 }
