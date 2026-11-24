@@ -11,13 +11,16 @@ import com.wkclz.micro.dag.bean.enums.NodeStatus;
 import com.wkclz.micro.dag.bean.req.InstanceRerunFromReq;
 import com.wkclz.micro.dag.bean.req.NodeInterveneReq;
 import com.wkclz.micro.dag.cache.DagRedisPublisher;
+import com.wkclz.micro.dag.helper.DagKeys;
 import com.wkclz.micro.dag.mapper.DagNodeInstanceMapper;
+import com.wkclz.micro.dag.utils.JsonUtils;
 import com.wkclz.mybatis.service.BaseService;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.ObjectMapper;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -33,33 +36,30 @@ import java.util.Set;
 @Service
 public class DagInterventionService extends BaseService<DagNodeInstance, DagNodeInstanceMapper> {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    @Resource
+    private DagInstanceService instanceService;
+    @Resource
+    private DagProcessVersionService versionService;
+    @Resource
+    private DagEngineService engine;
+    @Resource
+    private DagExecutionLogService logService;
+    @Resource
+    private DagRedisPublisher publisher;
 
-    private final DagInstanceService instanceService;
-    private final DagProcessVersionService versionService;
-    private final DagEngineService engine;
-    private final DagExecutionLogService logService;
-    private final DagRedisPublisher publisher;
-
-    public DagInterventionService(DagInstanceService instanceService, DagProcessVersionService versionService,
-                                  DagEngineService engine, DagExecutionLogService logService,
-                                  DagRedisPublisher publisher) {
+    @PostConstruct
+    public void init() {
         log.info("micro-dag: 初始化人工干预服务");
-        this.instanceService = instanceService;
-        this.versionService = versionService;
-        this.engine = engine;
-        this.logService = logService;
-        this.publisher = publisher;
     }
 
     /** interrupt：RUNNING 校验 → interrupt_flag=1 → Redis 广播（本机 cancel + 异机忽略） */
     @Transactional
     public void interrupt(String instanceCode, String nodeCode) {
+        log.info("micro-dag: 人工中断 instanceCode={} nodeCode={}", instanceCode, nodeCode);
         DagNodeInstance node = mustExist(instanceCode, nodeCode);
         if (!NodeStatus.RUNNING.name().equals(node.getStatus())) {
             throw ValidationException.of("仅 RUNNING 节点可中断，当前状态: " + node.getStatus());
         }
-        log.info("micro-dag: 人工中断 instanceCode={} nodeCode={}", instanceCode, nodeCode);
         node.setInterruptFlag(1);
         mapper.updateById(node);
         publisher.publishInterrupt(instanceCode, nodeCode);
@@ -68,11 +68,11 @@ public class DagInterventionService extends BaseService<DagNodeInstance, DagNode
     /** params：非运行态改节点参数，重跑时生效 */
     @Transactional
     public void params(NodeInterveneReq req) {
+        log.info("micro-dag: 人工改参 instanceCode={} nodeCode={}", req.getInstanceCode(), req.getNodeCode());
         DagNodeInstance node = mustExist(req.getInstanceCode(), req.getNodeCode());
         if (NodeStatus.RUNNING.name().equals(node.getStatus())) {
             throw ValidationException.of("RUNNING 节点不可改参，请先中断/终止");
         }
-        log.info("micro-dag: 人工改参 instanceCode={} nodeCode={}", req.getInstanceCode(), req.getNodeCode());
         node.setInputParamsJson(req.getInputParamsJson());
         mapper.updateById(node);
     }
@@ -84,11 +84,11 @@ public class DagInterventionService extends BaseService<DagNodeInstance, DagNode
      */
     @Transactional
     public void skip(NodeInterveneReq req) {
+        log.info("micro-dag: 人工跳过 instanceCode={} nodeCode={} reason={}", req.getInstanceCode(), req.getNodeCode(), req.getSkipReason());
         DagNodeInstance node = mustExist(req.getInstanceCode(), req.getNodeCode());
         if (NodeStatus.RUNNING.name().equals(node.getStatus())) {
             throw ValidationException.of("RUNNING 节点不可跳过，请先中断/终止");
         }
-        log.info("micro-dag: 人工跳过 instanceCode={} nodeCode={} reason={}", node.getInstanceCode(), node.getNodeCode(), req.getSkipReason());
         node.setStatus(NodeStatus.SKIPPED.name());
         node.setSkipReason(StringUtils.defaultIfBlank(req.getSkipReason(), "人工跳过"));
         mapper.updateById(node);
@@ -100,11 +100,11 @@ public class DagInterventionService extends BaseService<DagNodeInstance, DagNode
     /** reset：置 PENDING，清除输出/异常/重试时间；clearParams=true 时同时清除节点参数。不自动触发调度 */
     @Transactional
     public void reset(NodeInterveneReq req) {
+        log.info("micro-dag: 人工重置 instanceCode={} nodeCode={} clearParams={}", req.getInstanceCode(), req.getNodeCode(), req.getClearParams());
         DagNodeInstance node = mustExist(req.getInstanceCode(), req.getNodeCode());
         if (NodeStatus.RUNNING.name().equals(node.getStatus())) {
             throw ValidationException.of("RUNNING 节点不可重置，请先中断/终止");
         }
-        log.info("micro-dag: 人工重置 instanceCode={} nodeCode={} clearParams={}", node.getInstanceCode(), node.getNodeCode(), req.getClearParams());
         doReset(node, Boolean.TRUE.equals(req.getClearParams()));
         logService.log(node.getInstanceCode(), node.getNodeCode(), node.getAttempt(), ExecutionEvent.RESET, null, null);
     }
@@ -112,13 +112,13 @@ public class DagInterventionService extends BaseService<DagNodeInstance, DagNode
     /** rerun：可选重设节点参数（非空校验合法后更新）+ 单节点 reset + 清理钩子判定 + 实例回 RUNNING + 唤醒调度 */
     @Transactional
     public void rerun(NodeInterveneReq req) {
+        log.info("micro-dag: 人工重跑 instanceCode={} nodeCode={} hasParams={}",
+            req.getInstanceCode(), req.getNodeCode(), StringUtils.isNotBlank(req.getInputParamsJson()));
         mustBeValidJson(req.getInputParamsJson(), "节点参数");
         DagNodeInstance node = mustExist(req.getInstanceCode(), req.getNodeCode());
         if (NodeStatus.RUNNING.name().equals(node.getStatus())) {
             throw ValidationException.of("RUNNING 节点不可重跑，请先中断/终止");
         }
-        log.info("micro-dag: 人工重跑 instanceCode={} nodeCode={} hasParams={}",
-            node.getInstanceCode(), node.getNodeCode(), StringUtils.isNotBlank(req.getInputParamsJson()));
         if (StringUtils.isNotBlank(req.getInputParamsJson())) {
             node.setInputParamsJson(req.getInputParamsJson());
         }
@@ -133,6 +133,8 @@ public class DagInterventionService extends BaseService<DagNodeInstance, DagNode
     @Transactional
     public void rerunFrom(InstanceRerunFromReq req) {
         String instanceCode = req.getInstanceCode();
+        log.info("micro-dag: 从指定节点重跑 instanceCode={} nodeCode={} hasParams={}",
+            instanceCode, req.getNodeCode(), StringUtils.isNotBlank(req.getInstanceParamsJson()));
         mustBeValidJson(req.getInstanceParamsJson(), "实例参数");
         DagInstance instance = instanceService.selectOneByEntity(instanceQuery(instanceCode));
         if (instance == null) {
@@ -141,8 +143,6 @@ public class DagInterventionService extends BaseService<DagNodeInstance, DagNode
         if (InstanceStatus.RUNNING.name().equals(instance.getStatus())) {
             throw ValidationException.of("实例运行中不可 rerun-from，请先终止");
         }
-        log.info("micro-dag: 从指定节点重跑 instanceCode={} nodeCode={} hasParams={}",
-            instanceCode, req.getNodeCode(), StringUtils.isNotBlank(req.getInstanceParamsJson()));
         if (StringUtils.isNotBlank(req.getInstanceParamsJson())) {
             instance.setBizParamsJson(req.getInstanceParamsJson());
             instance.setContextJson(req.getInstanceParamsJson());
@@ -167,6 +167,7 @@ public class DagInterventionService extends BaseService<DagNodeInstance, DagNode
     /** terminate：实例置 TERMINATED；RUNNING 实例的运行中节点走 interrupt 流程 */
     @Transactional
     public void terminate(String instanceCode) {
+        log.info("micro-dag: 终止实例 instanceCode={}", instanceCode);
         DagInstance instance = instanceService.selectOneByEntity(instanceQuery(instanceCode));
         if (instance == null) {
             throw ValidationException.of("实例不存在: " + instanceCode);
@@ -175,7 +176,6 @@ public class DagInterventionService extends BaseService<DagNodeInstance, DagNode
         if (!InstanceStatus.RUNNING.name().equals(status) && !InstanceStatus.FAILED.name().equals(status)) {
             throw ValidationException.of("仅 RUNNING/FAILED 实例可终止，当前状态: " + status);
         }
-        log.info("micro-dag: 终止实例 instanceCode={} status={}", instanceCode, status);
         boolean wasRunning = InstanceStatus.RUNNING.name().equals(status);
         instance.setStatus(InstanceStatus.TERMINATED.name());
         instanceService.updateById(instance);
@@ -199,7 +199,7 @@ public class DagInterventionService extends BaseService<DagNodeInstance, DagNode
         where.setNodeCode(nodeCode);
         DagNodeInstance node = selectOneByEntity(where);
         if (node == null) {
-            throw ValidationException.of("节点实例不存在: " + instanceCode + ":" + nodeCode);
+            throw ValidationException.of("节点实例不存在: " + DagKeys.instanceNodeKey(instanceCode, nodeCode));
         }
         return node;
     }
@@ -216,9 +216,9 @@ public class DagInterventionService extends BaseService<DagNodeInstance, DagNode
             return;
         }
         try {
-            OBJECT_MAPPER.readValue(json, Map.class);
+            JsonUtils.readValue(json, Map.class);
         } catch (Exception e) {
-            log.error("micro-dag: {} JSON 非法 json={}", label, json, e);
+            log.warn("micro-dag: {} JSON 非法 json={}", label, json, e);
             throw ValidationException.of(label + " JSON 非法");
         }
     }
@@ -252,13 +252,17 @@ public class DagInterventionService extends BaseService<DagNodeInstance, DagNode
         }
         DagDefModel def = versionService.load(instance.getDagCode(), instance.getDagVersion());
         Set<String> downstream = downstreamClosure(def, nodeCode);
+        int rescued = 0;
         for (DagNodeInstance n : mapper.listByInstanceCode(instanceCode)) {
             if (downstream.contains(n.getNodeCode()) && NodeStatus.SKIPPED.name().equals(n.getStatus())
                 && DagEngineService.CASCADE_SKIP_REASON.equals(n.getSkipReason())) {
-                log.info("micro-dag: 跳过补救恢复下游 instanceCode={} nodeCode={}", instanceCode, n.getNodeCode());
                 doReset(n, false);
                 logService.log(n.getInstanceCode(), n.getNodeCode(), n.getAttempt(), ExecutionEvent.RESET, null, null);
+                rescued++;
             }
+        }
+        if (rescued > 0) {
+            log.info("micro-dag: 跳过补救恢复下游节点数={} instanceCode={}", rescued, instanceCode);
         }
         if (InstanceStatus.FAILED.name().equals(instance.getStatus())) {
             log.info("micro-dag: 跳过后恢复实例 instanceCode={}", instanceCode);

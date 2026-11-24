@@ -1,5 +1,7 @@
 package com.wkclz.micro.dag.api;
 
+import lombok.Getter;
+
 import java.util.Map;
 
 /**
@@ -9,10 +11,14 @@ import java.util.Map;
  */
 public class NodeResult {
 
+    @Getter
     private final boolean success;
     /** 未就绪标记：节点已执行但前置条件未满足 */
+    @Getter
     private final boolean notReady;
+    @Getter
     private final Map<String, Object> output;
+    @Getter
     private final String traceCode;
 
     private NodeResult(boolean success, boolean notReady, Map<String, Object> output, String traceCode) {
@@ -53,9 +59,4 @@ public class NodeResult {
     public NodeResult withTraceCode(String traceCode) {
         return new NodeResult(this.success, this.notReady, this.output, traceCode);
     }
-
-    public boolean isSuccess() { return success; }
-    public boolean isNotReady() { return notReady; }
-    public Map<String, Object> getOutput() { return output; }
-    public String getTraceCode() { return traceCode; }
 }

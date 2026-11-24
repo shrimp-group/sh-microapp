@@ -8,6 +8,7 @@ import lombok.Data;
 import java.util.List;
 
 /** 基于已有流程创建草稿请求 */
+@Schema(description = "基于已有流程创建草稿请求")
 @Data
 public class ProcessVersionCreateReq {
 

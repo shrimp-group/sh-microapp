@@ -8,6 +8,7 @@ import lombok.Data;
 import java.util.List;
 
 /** 流程版本详情响应（编辑加载与历史只读查看共用） */
+@Schema(description = "流程版本详情响应（编辑加载与历史只读查看共用）")
 @Data
 public class ProcessVersionDetailResp {
 

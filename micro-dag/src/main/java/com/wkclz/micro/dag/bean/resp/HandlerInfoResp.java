@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.util.List;
 
+@Schema(description = "NodeHandler 信息响应（含参数定义）")
 @Data
 public class HandlerInfoResp {
 

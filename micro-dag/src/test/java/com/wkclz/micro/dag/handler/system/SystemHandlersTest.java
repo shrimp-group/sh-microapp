@@ -9,6 +9,7 @@ import com.wkclz.micro.dag.bean.enums.NodeParamType;
 import com.wkclz.micro.dag.bean.enums.SystemHandler;
 import com.wkclz.micro.dag.core.DagExpressionEvaluator;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,6 +28,13 @@ class SystemHandlersTest {
 
     private NodeContext ctx(String inputJson, AtomicBoolean interrupted) {
         return new NodeContext("INS-1", "node-1", "TRC-1", 1, inputJson, interrupted == null ? () -> false : interrupted::get);
+    }
+
+    /** @Resource 字段注入的手工装配 */
+    private SystemBranchHandler branchHandler() {
+        SystemBranchHandler handler = new SystemBranchHandler();
+        ReflectionTestUtils.setField(handler, "evaluator", new DagExpressionEvaluator());
+        return handler;
     }
 
     // ---------- system-start ----------
@@ -57,7 +65,7 @@ class SystemHandlersTest {
 
     @Test
     void branchEvaluatesConditions() {
-        SystemBranchHandler handler = new SystemBranchHandler(new DagExpressionEvaluator());
+        SystemBranchHandler handler = branchHandler();
         assertEquals(SystemHandler.BRANCH.getCode(), handler.nodeCode());
         assertEquals("系统-分支节点", handler.nodeName());
         assertEquals(NodeCategory.SYSTEM, handler.category());
@@ -73,7 +81,7 @@ class SystemHandlersTest {
 
     @Test
     void branchMissingBranchesReturnsEmpty() {
-        SystemBranchHandler handler = new SystemBranchHandler(new DagExpressionEvaluator());
+        SystemBranchHandler handler = branchHandler();
         NodeResult result = handler.execute(ctx("{\"amount\":1}", null));
         assertEquals(Map.of("branches", Map.of(), "selected", List.of()), result.getOutput());
         // branches 非 Map 同样返回空明细

@@ -1,6 +1,7 @@
 package com.wkclz.micro.dag.api;
 
-import tools.jackson.databind.ObjectMapper;
+import com.wkclz.micro.dag.utils.JsonUtils;
+import lombok.Getter;
 
 import java.util.Map;
 import java.util.function.BooleanSupplier;
@@ -10,15 +11,18 @@ import java.util.function.BooleanSupplier;
  */
 public class NodeContext {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
     /** 过程日志缓冲默认上限（字符数） */
     private static final int DEFAULT_MAX_LOG_CHARS = 8000;
 
+    @Getter
     private final String instanceCode;
+    @Getter
     private final String nodeCode;
+    @Getter
     private final String traceCode;
+    @Getter
     private final int attempt;
+    @Getter
     private final String inputJson;
     private final BooleanSupplier interruptedCheck;
     /** 过程日志缓冲上限（超出后丢弃后续内容并置 truncated） */
@@ -45,23 +49,9 @@ public class NodeContext {
         this.maxLogChars = maxLogChars;
     }
 
-    public String getInstanceCode() { return instanceCode; }
-    public String getNodeCode() { return nodeCode; }
-    public String getTraceCode() { return traceCode; }
-    public int getAttempt() { return attempt; }
-    public String getInputJson() { return inputJson; }
-
     /** 节点参数解析为 Map（input_params_json），解析失败返回空 Map */
-    @SuppressWarnings("unchecked")
     public Map<String, Object> inputParams() {
-        if (inputJson == null || inputJson.isBlank()) {
-            return Map.of();
-        }
-        try {
-            return OBJECT_MAPPER.readValue(inputJson, Map.class);
-        } catch (Exception e) {
-            return Map.of();
-        }
+        return JsonUtils.parseMapQuiet(inputJson);
     }
 
     /** 协作式中断检查点：命中抛 InterruptedException，由引擎转为 MANUAL_STOPPED */

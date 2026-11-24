@@ -3,6 +3,7 @@ package com.wkclz.micro.dag.bean.req;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+@Schema(description = "实例从指定节点重跑请求")
 @Data
 public class InstanceRerunFromReq {
 

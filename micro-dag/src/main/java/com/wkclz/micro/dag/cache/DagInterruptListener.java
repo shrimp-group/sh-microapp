@@ -1,10 +1,11 @@
 package com.wkclz.micro.dag.cache;
 
+import com.wkclz.micro.dag.bean.constant.DagConstants;
 import com.wkclz.micro.dag.config.DagProperties;
 import com.wkclz.micro.dag.worker.DagWorkerExecutor;
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
@@ -20,16 +21,16 @@ import org.springframework.stereotype.Component;
 @ConditionalOnProperty(prefix = "dag", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class DagInterruptListener implements MessageListener {
 
-    @Autowired
+    @Resource
     private DagWorkerExecutor worker;
-    @Autowired
+    @Resource
     private RedisMessageListenerContainer redisMessageListenerContainer;
-    @Autowired
+    @Resource
     private DagProperties properties;
 
     @PostConstruct
     public void init() {
-        if ("db".equalsIgnoreCase(properties.getChannel())) {
+        if (DagConstants.CHANNEL_DB.equalsIgnoreCase(properties.getChannel())) {
             log.info("micro-dag: dag.channel=db，中断广播监听未启用");
             return;
         }
@@ -43,7 +44,8 @@ public class DagInterruptListener implements MessageListener {
         String payload = new String(message.getBody());
         String[] parts = payload.split(":", 2);
         if (parts.length != 2) {
-            log.error("micro-dag: 中断广播 payload 非法: {}", payload);
+            // 广播消息非法仅跳过本条，由租约/超时机制兜底，降级 warn
+            log.warn("micro-dag: 中断广播 payload 非法: {}", payload);
             return;
         }
         String instanceCode = parts[0];

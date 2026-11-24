@@ -1,10 +1,11 @@
 package com.wkclz.micro.dag.cache;
 
+import com.wkclz.micro.dag.bean.constant.DagConstants;
 import com.wkclz.micro.dag.config.DagProperties;
 import com.wkclz.micro.dag.scheduler.DagScheduler;
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
@@ -20,16 +21,16 @@ import org.springframework.stereotype.Component;
 @ConditionalOnProperty(prefix = "dag", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class DagWakeupListener implements MessageListener {
 
-    @Autowired
+    @Resource
     private DagScheduler scheduler;
-    @Autowired
+    @Resource
     private RedisMessageListenerContainer redisMessageListenerContainer;
-    @Autowired
+    @Resource
     private DagProperties properties;
 
     @PostConstruct
     public void init() {
-        if ("db".equalsIgnoreCase(properties.getChannel())) {
+        if (DagConstants.CHANNEL_DB.equalsIgnoreCase(properties.getChannel())) {
             log.info("micro-dag: dag.channel=db，唤醒广播监听未启用");
             return;
         }

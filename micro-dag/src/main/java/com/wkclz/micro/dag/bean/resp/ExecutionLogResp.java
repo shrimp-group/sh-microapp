@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
+@Schema(description = "执行记录响应")
 @Data
 public class ExecutionLogResp {
 

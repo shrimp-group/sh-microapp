@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 /**
  * 实例分页查询：复用 BaseEntity 分页字段（current/size），按非空字段等值过滤
  */
+@Schema(description = "实例分页查询请求")
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class InstancePageReq extends BaseEntity {

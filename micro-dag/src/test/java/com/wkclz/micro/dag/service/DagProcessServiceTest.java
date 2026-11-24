@@ -39,7 +39,10 @@ class DagProcessServiceTest {
         versionMapper = mock(DagProcessVersionMapper.class);
         versionService = mock(DagProcessVersionService.class);
         idGenerator = mock(RedisIdGenerator.class);
-        service = new DagProcessService(versionService, versionMapper, idGenerator);
+        service = new DagProcessService();
+        ReflectionTestUtils.setField(service, "versionService", versionService);
+        ReflectionTestUtils.setField(service, "versionMapper", versionMapper);
+        ReflectionTestUtils.setField(service, "idGenerator", idGenerator);
         ReflectionTestUtils.setField(service, "mapper", processMapper);
     }
 

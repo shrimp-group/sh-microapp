@@ -65,7 +65,12 @@ class DagProcessVersionServiceTest {
             @Override
             public NodeResult execute(NodeContext ctx) { return NodeResult.ok(Map.of()); }
         });
-        service = new DagProcessVersionService(new DagValidator(), registry, nodeMapper, edgeMapper, processMapper);
+        service = new DagProcessVersionService();
+        ReflectionTestUtils.setField(service, "validator", new DagValidator());
+        ReflectionTestUtils.setField(service, "registry", registry);
+        ReflectionTestUtils.setField(service, "nodeMapper", nodeMapper);
+        ReflectionTestUtils.setField(service, "edgeMapper", edgeMapper);
+        ReflectionTestUtils.setField(service, "processMapper", processMapper);
         ReflectionTestUtils.setField(service, "mapper", mapper);
     }
 

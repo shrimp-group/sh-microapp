@@ -2,6 +2,7 @@ package com.wkclz.micro.dag.service;
 
 import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.dag.api.NodeHandlerRegistry;
+import com.wkclz.micro.dag.bean.constant.DagConstants;
 import com.wkclz.micro.dag.bean.dto.DagDefModel;
 import com.wkclz.micro.dag.bean.dto.EdgeDef;
 import com.wkclz.micro.dag.bean.dto.NodeDef;
@@ -20,14 +21,16 @@ import com.wkclz.micro.dag.mapper.DagEdgeMapper;
 import com.wkclz.micro.dag.mapper.DagNodeMapper;
 import com.wkclz.micro.dag.mapper.DagProcessMapper;
 import com.wkclz.micro.dag.mapper.DagProcessVersionMapper;
+import com.wkclz.micro.dag.utils.JsonUtils;
 import com.wkclz.mybatis.service.BaseService;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.ObjectMapper;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -39,23 +42,16 @@ import java.util.Map;
 @Service
 public class DagProcessVersionService extends BaseService<DagProcessVersion, DagProcessVersionMapper> {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
-    private final DagValidator validator;
-    private final NodeHandlerRegistry registry;
-    private final DagNodeMapper nodeMapper;
-    private final DagEdgeMapper edgeMapper;
-    private final DagProcessMapper processMapper;
-
-    public DagProcessVersionService(DagValidator validator, NodeHandlerRegistry registry,
-                                    DagNodeMapper nodeMapper, DagEdgeMapper edgeMapper,
-                                    DagProcessMapper processMapper) {
-        this.validator = validator;
-        this.registry = registry;
-        this.nodeMapper = nodeMapper;
-        this.edgeMapper = edgeMapper;
-        this.processMapper = processMapper;
-    }
+    @Resource
+    private DagValidator validator;
+    @Resource
+    private NodeHandlerRegistry registry;
+    @Resource
+    private DagNodeMapper nodeMapper;
+    @Resource
+    private DagEdgeMapper edgeMapper;
+    @Resource
+    private DagProcessMapper processMapper;
 
     /** 按版本查 dag_node/dag_edge 组装 DagDefModel（定义详情/引擎装配共用入口），版本不存在抛 ValidationException */
     public DagDefModel load(String dagCode, Integer dagVersion) {
@@ -118,8 +114,8 @@ public class DagProcessVersionService extends BaseService<DagProcessVersion, Dag
         try {
             insert(draft);
         } catch (DuplicateKeyException e) {
-            // uk_code_version 唯一索引硬约束：并发创建草稿
-            log.error("micro-dag: 并发创建草稿冲突 dagCode={}", req.getDagCode(), e);
+            // uk_code_version 唯一索引硬约束：并发创建草稿（并发竞争未抢到，异常已反馈调用方）
+            log.warn("micro-dag: 并发创建草稿冲突 dagCode={}", req.getDagCode(), e);
             throw ValidationException.of("已有编辑中草稿，请刷新列表");
         }
         syncName(req.getDagCode(), req.getDagName());
@@ -186,9 +182,13 @@ public class DagProcessVersionService extends BaseService<DagProcessVersion, Dag
 
         DagProcessVersion query = new DagProcessVersion();
         query.setDagCode(entity.getDagCode());
-        int maxVersion = selectByEntity(query).stream()
-            .mapToInt(d -> d.getDagVersion() == null ? 0 : d.getDagVersion())
-            .max().orElse(0);
+        int maxVersion = 0;
+        for (DagProcessVersion d : selectByEntity(query)) {
+            int v = d.getDagVersion() == null ? 0 : d.getDagVersion();
+            if (v > maxVersion) {
+                maxVersion = v;
+            }
+        }
         // 节点/边行仍挂在旧版本上：先删旧版本行，版本号提升后按新版本重建，保证 load 新版本可查
         deleteNodesAndEdges(entity.getDagCode(), entity.getDagVersion());
         entity.setDagVersion(maxVersion + 1);
@@ -224,18 +224,22 @@ public class DagProcessVersionService extends BaseService<DagProcessVersion, Dag
         DagProcessVersion q = new DagProcessVersion();
         q.setDagCode(dagCode);
         List<DagProcessVersion> rows = selectByEntity(q);
-        return rows.stream()
-            .map(r -> {
-                ProcessVersionResp resp = new ProcessVersionResp();
-                resp.setId(r.getId());
-                resp.setDagCode(r.getDagCode());
-                resp.setDagVersion(r.getDagVersion());
-                resp.setStatus(r.getStatus());
-                resp.setUpdateTime(r.getUpdateTime());
-                return resp;
-            })
-            .sorted(Comparator.comparingInt(ProcessVersionResp::getDagVersion).reversed())
-            .toList();
+        List<ProcessVersionResp> resps = new ArrayList<>();
+        for (DagProcessVersion r : rows) {
+            resps.add(toVersionResp(r));
+        }
+        resps.sort(Comparator.comparingInt(ProcessVersionResp::getDagVersion).reversed());
+        return resps;
+    }
+
+    private ProcessVersionResp toVersionResp(DagProcessVersion r) {
+        ProcessVersionResp resp = new ProcessVersionResp();
+        resp.setId(r.getId());
+        resp.setDagCode(r.getDagCode());
+        resp.setDagVersion(r.getDagVersion());
+        resp.setStatus(r.getStatus());
+        resp.setUpdateTime(r.getUpdateTime());
+        return resp;
     }
 
     private NodeDef toNodeDef(DagNode row) {
@@ -248,7 +252,7 @@ public class DagProcessVersionService extends BaseService<DagProcessVersion, Dag
         n.setMaxRetry(row.getMaxRetry());
         n.setIntervalSec(row.getIntervalSec());
         n.setBackoff(row.getBackoff());
-        n.setParams(parseMap(row.getParamsJson()));
+        n.setParams(JsonUtils.parseMap(row.getParamsJson()));
         n.setPosX(row.getPosX());
         n.setPosY(row.getPosY());
         return n;
@@ -292,7 +296,7 @@ public class DagProcessVersionService extends BaseService<DagProcessVersion, Dag
             row.setMaxRetry(n.getMaxRetry());
             row.setIntervalSec(n.getIntervalSec());
             row.setBackoff(n.getBackoff());
-            row.setParamsJson(toJson(n.getParams() == null ? Map.of() : n.getParams()));
+            row.setParamsJson(JsonUtils.toJson(n.getParams() == null ? Map.of() : n.getParams()));
             row.setPosX(n.getPosX());
             row.setPosY(n.getPosY());
             nodeMapper.insert(row);
@@ -304,7 +308,7 @@ public class DagProcessVersionService extends BaseService<DagProcessVersion, Dag
             row.setEdgeCode(e.getEdgeCode());
             row.setFromCode(e.getFromCode());
             row.setToCode(e.getToCode());
-            row.setType(e.getType() == null ? EdgeDef.TYPE_NORMAL : e.getType());
+            row.setType(e.getType() == null ? DagConstants.EDGE_TYPE_NORMAL : e.getType());
             row.setWhenExpr(e.getWhenExpr());
             edgeMapper.insert(row);
         }
@@ -323,28 +327,6 @@ public class DagProcessVersionService extends BaseService<DagProcessVersion, Dag
         edgeDel.setDagVersion(dagVersion);
         for (DagEdge old : edgeMapper.selectByEntity(edgeDel)) {
             edgeMapper.deleteById(old.getId());
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> parseMap(String json) {
-        if (json == null || json.isBlank()) {
-            return Map.of();
-        }
-        try {
-            return OBJECT_MAPPER.readValue(json, Map.class);
-        } catch (Exception e) {
-            log.error("micro-dag: JSON 解析失败 json={}", json, e);
-            return Map.of();
-        }
-    }
-
-    private String toJson(Object obj) {
-        try {
-            return OBJECT_MAPPER.writeValueAsString(obj);
-        } catch (Exception e) {
-            log.error("micro-dag: JSON 序列化失败", e);
-            return "{}";
         }
     }
 }

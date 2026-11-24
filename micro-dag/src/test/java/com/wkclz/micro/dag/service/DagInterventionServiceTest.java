@@ -48,7 +48,12 @@ class DagInterventionServiceTest {
         engine = mock(DagEngineService.class);
         logService = mock(DagExecutionLogService.class);
         publisher = mock(DagRedisPublisher.class);
-        service = new DagInterventionService(instanceService, versionService, engine, logService, publisher);
+        service = new DagInterventionService();
+        ReflectionTestUtils.setField(service, "instanceService", instanceService);
+        ReflectionTestUtils.setField(service, "versionService", versionService);
+        ReflectionTestUtils.setField(service, "engine", engine);
+        ReflectionTestUtils.setField(service, "logService", logService);
+        ReflectionTestUtils.setField(service, "publisher", publisher);
         ReflectionTestUtils.setField(service, "mapper", mapper);
     }
 

@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
+@Schema(description = "节点实例响应")
 @Data
 public class NodeInstanceResp {
 

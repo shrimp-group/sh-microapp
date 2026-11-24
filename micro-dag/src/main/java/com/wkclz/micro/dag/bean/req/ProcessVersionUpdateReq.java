@@ -8,6 +8,7 @@ import lombok.Data;
 import java.util.List;
 
 /** 保存草稿请求 */
+@Schema(description = "保存草稿请求")
 @Data
 public class ProcessVersionUpdateReq {
 

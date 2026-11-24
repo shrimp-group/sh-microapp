@@ -1,10 +1,12 @@
 package com.wkclz.micro.dag.core;
 
+import com.wkclz.micro.dag.bean.constant.DagConstants;
 import com.wkclz.micro.dag.bean.dto.DagDefModel;
 import com.wkclz.micro.dag.bean.dto.EdgeDef;
 import com.wkclz.micro.dag.bean.dto.NodeDef;
 import com.wkclz.micro.dag.bean.enums.NodeStatus;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +21,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class DagReadyCalculatorTest {
 
-    private final DagReadyCalculator calc = new DagReadyCalculator(new DagExpressionEvaluator());
+    private final DagReadyCalculator calc = buildCalculator();
+
+    /** @Resource 字段注入的手工装配 */
+    private DagReadyCalculator buildCalculator() {
+        DagReadyCalculator calc = new DagReadyCalculator();
+        ReflectionTestUtils.setField(calc, "evaluator", new DagExpressionEvaluator());
+        return calc;
+    }
 
     /** 构建 a -> (b) 且 a ->(条件)-> c 的定义 */
     private DagDefModel defWithCondition(String when) {
@@ -27,7 +36,7 @@ class DagReadyCalculatorTest {
         NodeDef b = new NodeDef(); b.setCode("b"); b.setHandler("h-b");
         NodeDef c = new NodeDef(); c.setCode("c"); c.setHandler("h-c");
         EdgeDef ab = new EdgeDef(); ab.setFromCode("a"); ab.setToCode("b");
-        EdgeDef ac = new EdgeDef(); ac.setFromCode("a"); ac.setToCode("c"); ac.setType(EdgeDef.TYPE_CONDITION); ac.setWhenExpr(when);
+        EdgeDef ac = new EdgeDef(); ac.setFromCode("a"); ac.setToCode("c"); ac.setType(DagConstants.EDGE_TYPE_CONDITION); ac.setWhenExpr(when);
         DagDefModel def = new DagDefModel();
         def.setNodes(List.of(a, b, c));
         def.setEdges(List.of(ab, ac));
@@ -101,7 +110,7 @@ class DagReadyCalculatorTest {
         NodeDef a = new NodeDef(); a.setCode("a"); a.setHandler("h-a");
         NodeDef c = new NodeDef(); c.setCode("c"); c.setHandler("h-c");
         NodeDef d = new NodeDef(); d.setCode("d"); d.setHandler("h-d");
-        EdgeDef ac = new EdgeDef(); ac.setFromCode("a"); ac.setToCode("c"); ac.setType(EdgeDef.TYPE_CONDITION); ac.setWhenExpr("${ctx.t} == 'api'");
+        EdgeDef ac = new EdgeDef(); ac.setFromCode("a"); ac.setToCode("c"); ac.setType(DagConstants.EDGE_TYPE_CONDITION); ac.setWhenExpr("${ctx.t} == 'api'");
         EdgeDef cd = new EdgeDef(); cd.setFromCode("c"); cd.setToCode("d");
         DagDefModel def = new DagDefModel();
         def.setNodes(List.of(a, c, d));

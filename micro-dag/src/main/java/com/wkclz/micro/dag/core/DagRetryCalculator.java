@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public class DagRetryCalculator {
 
     public LocalDateTime nextRetryTime(BackoffType backoff, int attempt, int intervalSec, LocalDateTime now) {
-        log.info("DagRetryCalculator.nextRetryTime backoff={} attempt={} intervalSec={}", backoff, attempt, intervalSec);
+        log.info("micro-dag: nextRetryTime backoff={} attempt={} intervalSec={}", backoff, attempt, intervalSec);
         long sec;
         if (backoff == BackoffType.EXPONENTIAL) {
             sec = (long) intervalSec * (1L << Math.min(attempt - 1, 20)); // 防溢出，封顶 2^20

@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.util.List;
 
+@Schema(description = "节点详情响应（节点实例信息 + 执行记录时间线）")
 @Data
 public class NodeDetailResp {
 

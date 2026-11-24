@@ -8,6 +8,7 @@ import lombok.Data;
 import java.util.List;
 
 /** 新建流程请求 */
+@Schema(description = "新建流程请求")
 @Data
 public class ProcessCreateReq {
 

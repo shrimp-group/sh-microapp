@@ -1,6 +1,9 @@
 package com.wkclz.micro.dag.scheduler;
 
+import com.wkclz.micro.dag.bean.constant.DagConstants;
 import com.wkclz.micro.dag.bean.dto.DagDefModel;
+import com.wkclz.micro.dag.bean.dto.NodeInstanceLeaseDto;
+import com.wkclz.micro.dag.bean.dto.NodeDef;
 import com.wkclz.micro.dag.bean.entity.DagInstance;
 import com.wkclz.micro.dag.bean.entity.DagNodeInstance;
 import com.wkclz.micro.dag.bean.enums.ExecutionEvent;
@@ -8,20 +11,23 @@ import com.wkclz.micro.dag.bean.enums.NodeStatus;
 import com.wkclz.micro.dag.bean.enums.NodeType;
 import com.wkclz.micro.dag.config.DagProperties;
 import com.wkclz.micro.dag.core.DagReadyCalculator;
+import com.wkclz.micro.dag.helper.DagLeaseHelper;
 import com.wkclz.micro.dag.mapper.DagInstanceMapper;
 import com.wkclz.micro.dag.mapper.DagNodeInstanceMapper;
 import com.wkclz.micro.dag.service.DagProcessVersionService;
 import com.wkclz.micro.dag.service.DagEngineService;
 import com.wkclz.micro.dag.service.DagExecutionLogService;
+import com.wkclz.micro.dag.utils.JsonUtils;
+import com.wkclz.micro.dag.utils.RuntimeUtils;
 import com.wkclz.micro.dag.worker.DagWorkerExecutor;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import tools.jackson.databind.ObjectMapper;
 
-import java.lang.management.ManagementFactory;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -37,38 +43,34 @@ import java.util.Set;
 @ConditionalOnProperty(prefix = "dag", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class DagScheduler {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final long LEASE_MARGIN_MS = 30_000;
-    private static final String WORKER_ID = ManagementFactory.getRuntimeMXBean().getName();
+    private final String workerId = RuntimeUtils.workerId();
 
-    private final DagInstanceMapper instanceMapper;
-    private final DagNodeInstanceMapper nodeMapper;
-    private final DagProcessVersionService versionService;
-    private final DagExecutionLogService logService;
-    private final DagReadyCalculator readyCalculator;
-    private final DagWorkerExecutor worker;
-    private final DagEngineService engineService;
-    private final DagProperties properties;
+    @Resource
+    private DagInstanceMapper instanceMapper;
+    @Resource
+    private DagNodeInstanceMapper nodeMapper;
+    @Resource
+    private DagProcessVersionService versionService;
+    @Resource
+    private DagExecutionLogService logService;
+    @Resource
+    private DagReadyCalculator readyCalculator;
+    @Resource
+    private DagWorkerExecutor worker;
+    @Resource
+    private DagEngineService engineService;
+    @Resource
+    private DagProperties properties;
 
-    public DagScheduler(DagInstanceMapper instanceMapper, DagNodeInstanceMapper nodeMapper,
-                        DagProcessVersionService versionService, DagExecutionLogService logService,
-                        DagReadyCalculator readyCalculator, DagWorkerExecutor worker,
-                        DagEngineService engineService, DagProperties properties) {
-        log.info("micro-dag: 初始化调度器 worker={} channel={}", WORKER_ID, properties.getChannel());
-        this.instanceMapper = instanceMapper;
-        this.nodeMapper = nodeMapper;
-        this.versionService = versionService;
-        this.logService = logService;
-        this.readyCalculator = readyCalculator;
-        this.worker = worker;
-        this.engineService = engineService;
-        this.properties = properties;
+    @PostConstruct
+    public void init() {
+        log.info("micro-dag: 初始化调度器 worker={} channel={}", workerId, properties.getChannel());
     }
 
     /** 轮询兜底通道；pubsub-only 模式不轮询 */
     @Scheduled(fixedDelayString = "${dag.scheduler.interval-ms:5000}")
     public void tick() {
-        if ("pubsub".equalsIgnoreCase(properties.getChannel())) {
+        if (DagConstants.CHANNEL_PUBSUB.equalsIgnoreCase(properties.getChannel())) {
             return;
         }
         scan();
@@ -77,7 +79,7 @@ public class DagScheduler {
     /** 事件唤醒通道（DagWakeupListener 调用）；db-only 模式忽略事件 */
     public void wakeUp() {
         log.debug("micro-dag: 收到调度唤醒");
-        if ("db".equalsIgnoreCase(properties.getChannel())) {
+        if (DagConstants.CHANNEL_DB.equalsIgnoreCase(properties.getChannel())) {
             return;
         }
         scan();
@@ -111,7 +113,7 @@ public class DagScheduler {
                 > (node.getMaxRetry() == null ? 0 : node.getMaxRetry());
             if (exhausted) {
                 logService.log(node.getInstanceCode(), node.getNodeCode(), node.getAttempt(),
-                    ExecutionEvent.FAIL, toJson(Map.of("error", "租约过期回收，重试次数已耗尽")), node.getLeaseOwner());
+                    ExecutionEvent.FAIL, JsonUtils.toJson(Map.of("error", "租约过期回收，重试次数已耗尽")), node.getLeaseOwner());
             } else {
                 logService.log(node.getInstanceCode(), node.getNodeCode(), node.getAttempt(),
                     ExecutionEvent.LEASE_RECLAIM, null, node.getLeaseOwner());
@@ -127,9 +129,9 @@ public class DagScheduler {
         Map<String, Map<String, Object>> outputs = new HashMap<>();
         for (DagNodeInstance n : nodes) {
             statusMap.put(n.getNodeCode(), NodeStatus.valueOf(n.getStatus()));
-            outputs.put(n.getNodeCode(), parseMap(n.getOutputJson()));
+            outputs.put(n.getNodeCode(), JsonUtils.parseMap(n.getOutputJson()));
         }
-        Map<String, Object> ctx = parseMap(instance.getContextJson());
+        Map<String, Object> ctx = JsonUtils.parseMap(instance.getContextJson());
 
         Set<String> ready = readyCalculator.readyNodes(def, statusMap, ctx, outputs);
         int claimed = 0;
@@ -141,16 +143,21 @@ public class DagScheduler {
             if (!ready.contains(node.getNodeCode())) {
                 continue;
             }
-            LocalDateTime expire = now.plusNanos(leaseDuration(node) * 1_000_000);
-            int ok = nodeMapper.casClaim(node.getId(), node.getVersion(), WORKER_ID, expire);
+            LocalDateTime expire = now.plusNanos(DagLeaseHelper.leaseDuration(properties, node) * DagConstants.MS_TO_NS);
+            NodeInstanceLeaseDto lease = new NodeInstanceLeaseDto();
+            lease.setId(node.getId());
+            lease.setVersion(node.getVersion());
+            lease.setLeaseOwner(workerId);
+            lease.setLeaseExpireTime(expire);
+            int ok = nodeMapper.casClaim(lease);
             if (ok == 1) {
                 claimed++;
                 node.setStatus(NodeStatus.RUNNING.name());
-                node.setLeaseOwner(WORKER_ID);
+                node.setLeaseOwner(workerId);
                 node.setLeaseExpireTime(expire);
                 node.setAttempt(node.getAttempt() == null ? 1 : node.getAttempt() + 1);
                 logService.log(node.getInstanceCode(), node.getNodeCode(), node.getAttempt(),
-                    ExecutionEvent.CLAIM, null, WORKER_ID);
+                    ExecutionEvent.CLAIM, null, workerId);
                 if (isPassthroughNode(def, node.getNodeCode())) {
                     // 存量兼容：START/END/BRANCH 且未配置 handler 的节点，领取后直达成功，由引擎级联推进下游；
                     // 配置了 handler 的节点（含 system-* 与业务 handler）一律走 worker 执行链路
@@ -170,42 +177,11 @@ public class DagScheduler {
         if (def == null || def.getNodes() == null) {
             return false;
         }
-        return def.getNodes().stream()
-            .filter(n -> n.getCode().equals(nodeCode))
-            .findFirst()
-            .map(n -> NodeType.specialOf(n.getNodeType()) != null && StringUtils.isBlank(n.getHandler()))
-            .orElse(false);
-    }
-
-    /** 租约时长与 DagWorkerExecutor.leaseDuration 保持同一规则 */
-    private long leaseDuration(DagNodeInstance node) {
-        long fixedMs = properties.getLease().getFixedMs();
-        // timeout_ms<=0 与 null 同义：不限时，租约用兜底时长（与 DagWorkerExecutor.leaseDuration 同规则）
-        if (node.getTimeoutMs() == null || node.getTimeoutMs() <= 0) {
-            return fixedMs;
+        for (NodeDef n : def.getNodes()) {
+            if (n.getCode().equals(nodeCode)) {
+                return NodeType.specialOf(n.getNodeType()) != null && StringUtils.isBlank(n.getHandler());
+            }
         }
-        return Math.max(fixedMs, node.getTimeoutMs() + LEASE_MARGIN_MS);
-    }
-
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> parseMap(String json) {
-        if (json == null || json.isBlank()) {
-            return Map.of();
-        }
-        try {
-            return OBJECT_MAPPER.readValue(json, Map.class);
-        } catch (Exception e) {
-            log.error("micro-dag: JSON 解析失败 json={}", json, e);
-            return Map.of();
-        }
-    }
-
-    private String toJson(Map<String, Object> map) {
-        try {
-            return OBJECT_MAPPER.writeValueAsString(map);
-        } catch (Exception e) {
-            log.error("micro-dag: JSON 序列化失败 map={}", map, e);
-            return "{}";
-        }
+        return false;
     }
 }

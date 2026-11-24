@@ -4,6 +4,7 @@ import com.wkclz.micro.dag.api.NodeContext;
 import com.wkclz.micro.dag.api.NodeHandler;
 import com.wkclz.micro.dag.api.NodeHandlerRegistry;
 import com.wkclz.micro.dag.api.NodeResult;
+import com.wkclz.micro.dag.bean.dto.NodeInstanceLeaseDto;
 import com.wkclz.micro.dag.bean.entity.DagInstance;
 import com.wkclz.micro.dag.bean.entity.DagNodeInstance;
 import com.wkclz.micro.dag.bean.enums.ExecutionEvent;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -60,7 +62,20 @@ class DagWorkerExecutorTest {
         publisher = mock(DagRedisPublisher.class);
         handler = mock(NodeHandler.class);
         when(registry.get(anyString())).thenReturn(handler);
-        executor = new DagWorkerExecutor(registry, nodeMapper, engine, logService, publisher, new DagProperties());
+        executor = buildExecutor(new DagProperties());
+    }
+
+    /** @Resource 字段注入的手工装配：new 后 setField 并触发 @PostConstruct 初始化线程池 */
+    private DagWorkerExecutor buildExecutor(DagProperties properties) {
+        DagWorkerExecutor executor = new DagWorkerExecutor();
+        ReflectionTestUtils.setField(executor, "registry", registry);
+        ReflectionTestUtils.setField(executor, "nodeMapper", nodeMapper);
+        ReflectionTestUtils.setField(executor, "engine", engine);
+        ReflectionTestUtils.setField(executor, "logService", logService);
+        ReflectionTestUtils.setField(executor, "publisher", publisher);
+        ReflectionTestUtils.setField(executor, "properties", properties);
+        executor.init();
+        return executor;
     }
 
     @Test
@@ -265,16 +280,16 @@ class DagWorkerExecutorTest {
     void leaseRenewal_scheduledAndExecuted() throws Exception {
         DagProperties properties = new DagProperties();
         properties.getLease().setFixedMs(90);
-        executor = new DagWorkerExecutor(registry, nodeMapper, engine, logService, publisher, properties);
+        executor = buildExecutor(properties);
         when(handler.execute(any())).thenAnswer(inv -> {
             Thread.sleep(200);
             return NodeResult.ok();
         });
-        when(nodeMapper.renewLease(any(), anyString(), any())).thenReturn(1);
+        when(nodeMapper.renewLease(any(NodeInstanceLeaseDto.class))).thenReturn(1);
 
         executor.submit(node(null, 0), instance());
 
-        verify(nodeMapper, timeout(VERIFY_TIMEOUT_MS).atLeastOnce()).renewLease(eq(1L), anyString(), any());
+        verify(nodeMapper, timeout(VERIFY_TIMEOUT_MS).atLeastOnce()).renewLease(any(NodeInstanceLeaseDto.class));
         verify(engine, timeout(VERIFY_TIMEOUT_MS)).onSuccess(eq(INSTANCE_CODE), eq(NODE_CODE), any());
         awaitRemoved();
     }
@@ -284,7 +299,7 @@ class DagWorkerExecutorTest {
         // 运行中过程日志由 flusher 按固定间隔批量落库（NODE_LOG，无 detail_json）
         DagProperties properties = new DagProperties();
         properties.getLog().setFlushIntervalMs(100);
-        executor = new DagWorkerExecutor(registry, nodeMapper, engine, logService, publisher, properties);
+        executor = buildExecutor(properties);
         when(handler.execute(any())).thenAnswer(inv -> {
             NodeContext ctx = inv.getArgument(0);
             ctx.log("step-1");
@@ -307,7 +322,7 @@ class DagWorkerExecutorTest {
         // 空缓冲跳过：flusher 多轮扫描但不产生任何 NODE_LOG 记录
         DagProperties properties = new DagProperties();
         properties.getLog().setFlushIntervalMs(100);
-        executor = new DagWorkerExecutor(registry, nodeMapper, engine, logService, publisher, properties);
+        executor = buildExecutor(properties);
         when(handler.execute(any())).thenAnswer(inv -> {
             Thread.sleep(300);
             return NodeResult.ok();
@@ -325,7 +340,7 @@ class DagWorkerExecutorTest {
         // 终态兜底 flush：flusher 间隔远大于执行时长，剩余缓冲由 supervise finally 兜底落库
         DagProperties properties = new DagProperties();
         properties.getLog().setFlushIntervalMs(60000);
-        executor = new DagWorkerExecutor(registry, nodeMapper, engine, logService, publisher, properties);
+        executor = buildExecutor(properties);
         when(handler.execute(any())).thenAnswer(inv -> {
             ((NodeContext) inv.getArgument(0)).log("final-line");
             return NodeResult.ok();
@@ -343,7 +358,7 @@ class DagWorkerExecutorTest {
         // 未上报不落库：handler 全程不 log，终态兜底也不写 NODE_LOG
         DagProperties properties = new DagProperties();
         properties.getLog().setFlushIntervalMs(60000);
-        executor = new DagWorkerExecutor(registry, nodeMapper, engine, logService, publisher, properties);
+        executor = buildExecutor(properties);
         when(handler.execute(any())).thenReturn(NodeResult.ok());
 
         executor.submit(node(null, 0), instance());
@@ -359,7 +374,7 @@ class DagWorkerExecutorTest {
         DagProperties properties = new DagProperties();
         properties.getLog().setFlushIntervalMs(60000);
         properties.getLog().setMaxChars(50);
-        executor = new DagWorkerExecutor(registry, nodeMapper, engine, logService, publisher, properties);
+        executor = buildExecutor(properties);
         when(handler.execute(any())).thenAnswer(inv -> {
             NodeContext ctx = inv.getArgument(0);
             ctx.log("a".repeat(30));
@@ -384,7 +399,7 @@ class DagWorkerExecutorTest {
         // 落库异常必须在 flush 内部消化，保证后续运行中日志继续按间隔落库（≥3 次 NODE_LOG 调用）
         DagProperties properties = new DagProperties();
         properties.getLog().setFlushIntervalMs(100);
-        executor = new DagWorkerExecutor(registry, nodeMapper, engine, logService, publisher, properties);
+        executor = buildExecutor(properties);
         Mockito.doThrow(new RuntimeException("db down")).when(logService).log(
             anyString(), anyString(), any(), any(), any(), any(), anyString());
         when(handler.execute(any())).thenAnswer(inv -> {

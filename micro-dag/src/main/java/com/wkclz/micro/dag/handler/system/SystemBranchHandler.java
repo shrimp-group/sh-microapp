@@ -6,6 +6,7 @@ import com.wkclz.micro.dag.api.NodeResult;
 import com.wkclz.micro.dag.bean.enums.NodeCategory;
 import com.wkclz.micro.dag.bean.enums.SystemHandler;
 import com.wkclz.micro.dag.core.DagExpressionEvaluator;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -23,11 +24,8 @@ import java.util.Map;
 @Component
 public class SystemBranchHandler implements NodeHandler {
 
-    private final DagExpressionEvaluator evaluator;
-
-    public SystemBranchHandler(DagExpressionEvaluator evaluator) {
-        this.evaluator = evaluator;
-    }
+    @Resource
+    private DagExpressionEvaluator evaluator;
 
     @Override
     public String nodeCode() {

@@ -3,6 +3,7 @@ package com.wkclz.micro.dag.bean.resp;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+@Schema(description = "分支表达式试算响应")
 @Data
 public class ExpressionPreviewResp {
 

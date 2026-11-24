@@ -2,6 +2,7 @@ package com.wkclz.micro.dag.service;
 
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.exception.ValidationException;
+import com.wkclz.micro.dag.bean.constant.DagConstants;
 import com.wkclz.micro.dag.bean.dto.DagDefModel;
 import com.wkclz.micro.dag.bean.dto.EdgeDef;
 import com.wkclz.micro.dag.bean.dto.NodeDef;
@@ -20,20 +21,21 @@ import com.wkclz.micro.dag.bean.req.LaunchReq;
 import com.wkclz.micro.dag.bean.resp.InstanceDagViewResp;
 import com.wkclz.micro.dag.bean.resp.InstanceResp;
 import com.wkclz.micro.dag.bean.resp.NodeInstanceResp;
+import com.wkclz.micro.dag.helper.DagVersionHelper;
 import com.wkclz.micro.dag.mapper.DagInstanceMapper;
 import com.wkclz.micro.dag.mapper.DagNodeInstanceMapper;
+import com.wkclz.micro.dag.utils.JsonUtils;
 import com.wkclz.mybatis.service.BaseService;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,23 +47,17 @@ import java.util.stream.Collectors;
 @Service
 public class DagInstanceService extends BaseService<DagInstance, DagInstanceMapper> {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
     /** 一次执行的终态事件：耗时自 CLAIM 起算至该集合中的事件（LEASE_RECLAIM 为租约过期时该次的兜底终态） */
     private static final Set<String> COST_TERMINAL_EVENTS = Set.of(
         ExecutionEvent.SUCCESS.name(), ExecutionEvent.FAIL.name(), ExecutionEvent.NOT_READY.name(),
         ExecutionEvent.TIMEOUT.name(), ExecutionEvent.INTERRUPT.name(), ExecutionEvent.LEASE_RECLAIM.name());
 
-    private final DagProcessVersionService versionService;
-    private final DagNodeInstanceMapper nodeInstanceMapper;
-    private final DagExecutionLogService executionLogService;
-
-    public DagInstanceService(DagProcessVersionService versionService, DagNodeInstanceMapper nodeInstanceMapper,
-                              DagExecutionLogService executionLogService) {
-        this.versionService = versionService;
-        this.nodeInstanceMapper = nodeInstanceMapper;
-        this.executionLogService = executionLogService;
-    }
+    @Resource
+    private DagProcessVersionService versionService;
+    @Resource
+    private DagNodeInstanceMapper nodeInstanceMapper;
+    @Resource
+    private DagExecutionLogService executionLogService;
 
     /**
      * 发起实例：锁定 PUBLISHED 定义 → 生成 instance_code → 创建实例 + 全部节点实例（重试/超时/参数快照）
@@ -82,16 +78,16 @@ public class DagInstanceService extends BaseService<DagInstance, DagInstanceMapp
 
         DagProcessVersion query = new DagProcessVersion();
         query.setDagCode(req.getDagCode());
-        DagProcessVersion def = versionService.selectByEntity(query).stream()
-            .filter(d -> ProcessStatus.PUBLISHED.name().equals(d.getStatus()))
-            .max(Comparator.comparingInt(DagProcessVersion::getDagVersion))
-            .orElseThrow(() -> ValidationException.of("无可用的 PUBLISHED 定义: " + req.getDagCode()));
+        DagProcessVersion def = DagVersionHelper.maxVersionOf(versionService.selectByEntity(query), ProcessStatus.PUBLISHED.name());
+        if (def == null) {
+            throw ValidationException.of("无可用的 PUBLISHED 定义: " + req.getDagCode());
+        }
         DagDefModel dagDef = versionService.load(def.getDagCode(), def.getDagVersion());
         if (dagDef.getNodes() == null || dagDef.getNodes().isEmpty()) {
             throw ValidationException.of("定义无节点: " + req.getDagCode());
         }
 
-        String paramsJson = toJson(req.getParams() == null ? Map.of() : req.getParams());
+        String paramsJson = JsonUtils.toJsonStrict(req.getParams() == null ? Map.of() : req.getParams());
         DagInstance instance = new DagInstance();
         instance.setInstanceCode(newInstanceCode());
         instance.setTraceCode(req.getTraceCode());
@@ -120,7 +116,7 @@ public class DagInstanceService extends BaseService<DagInstance, DagInstanceMapp
             Map<String, Object> branches = new HashMap<>();
             if (NodeType.BRANCH.getCode().equals(nd.getNodeType()) && dagDef.getEdges() != null) {
                 dagDef.getEdges().stream()
-                    .filter(e -> nd.getCode().equals(e.getFromCode()) && EdgeDef.TYPE_CONDITION.equals(e.getType()))
+                    .filter(e -> nd.getCode().equals(e.getFromCode()) && DagConstants.EDGE_TYPE_CONDITION.equals(e.getType()))
                     .forEach(e -> branches.put(e.getToCode(), e.getWhenExpr()));
             }
             Map<String, Object> merged = new HashMap<>();
@@ -133,7 +129,7 @@ public class DagInstanceService extends BaseService<DagInstance, DagInstanceMapp
             if (!branches.isEmpty()) {
                 merged.putAll(branches);
             }
-            n.setInputParamsJson(toJson(merged));
+            n.setInputParamsJson(JsonUtils.toJsonStrict(merged));
             n.setInterruptFlag(0);
             n.setCleanupFlag(0);
             nodes.add(n);
@@ -179,25 +175,18 @@ public class DagInstanceService extends BaseService<DagInstance, DagInstanceMapp
             : dagDef.getNodes().stream().collect(Collectors.toMap(NodeDef::getCode, n -> n));
         // 最后一次执行耗时：供画布节点/详情气泡展示
         Map<String, Long> costMap = computeLastCostMs(nodes, executionLogService.listByInstance(instance.getInstanceCode()), LocalDateTime.now());
-        List<NodeInstanceResp> nodeResps = nodes.stream().map(n -> {
-            NodeInstanceResp r = new NodeInstanceResp();
-            BeanUtils.copyProperties(n, r);
-            NodeDef nd = defMap.get(n.getNodeCode());
-            if (nd != null) {
-                r.setPosX(nd.getPosX());
-                r.setPosY(nd.getPosY());
-            }
-            r.setLastCostMs(costMap.get(n.getNodeCode()));
-            return r;
-        }).toList();
+        List<NodeInstanceResp> nodeResps = new ArrayList<>();
+        for (DagNodeInstance n : nodes) {
+            nodeResps.add(toNodeResp(n, defMap, costMap));
+        }
         view.setNodes(nodeResps);
 
         Map<String, Map<String, Object>> outputs = new HashMap<>();
         for (DagNodeInstance n : nodes) {
-            outputs.put(n.getNodeCode(), parseMap(n.getOutputJson()));
+            outputs.put(n.getNodeCode(), JsonUtils.parseMap(n.getOutputJson()));
         }
         view.setNodeOutputs(outputs);
-        view.setCtx(parseMap(instance.getContextJson()));
+        view.setCtx(JsonUtils.parseMap(instance.getContextJson()));
 
         // 画布连线与节点坐标均来自定义快照（posX/posY 已随 NodeInstanceResp 带出）
         view.setEdges(dagDef.getEdges());
@@ -240,36 +229,27 @@ public class DagInstanceService extends BaseService<DagInstance, DagInstanceMapp
         return costMap;
     }
 
+    /** 节点实例响应组装：实例字段拷贝 + 定义坐标 + 最后一次执行耗时 */
+    private NodeInstanceResp toNodeResp(DagNodeInstance n, Map<String, NodeDef> defMap, Map<String, Long> costMap) {
+        NodeInstanceResp r = new NodeInstanceResp();
+        BeanUtils.copyProperties(n, r);
+        NodeDef nd = defMap.get(n.getNodeCode());
+        if (nd != null) {
+            r.setPosX(nd.getPosX());
+            r.setPosY(nd.getPosY());
+        }
+        r.setLastCostMs(costMap.get(n.getNodeCode()));
+        return r;
+    }
+
     private InstanceResp toResp(DagInstance instance) {
         InstanceResp resp = new InstanceResp();
         BeanUtils.copyProperties(instance, resp);
         return resp;
     }
 
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> parseMap(String json) {
-        if (json == null || json.isBlank()) {
-            return Map.of();
-        }
-        try {
-            return OBJECT_MAPPER.readValue(json, Map.class);
-        } catch (Exception e) {
-            log.error("micro-dag: JSON 解析失败 json={}", json, e);
-            return Map.of();
-        }
-    }
-
     /** instance_code 生成（模块内实现：时间戳+随机，不依赖 micro-seq） */
     private String newInstanceCode() {
         return "INST" + System.currentTimeMillis() + ThreadLocalRandom.current().nextInt(1000, 9999);
-    }
-
-    private String toJson(Object obj) {
-        try {
-            return OBJECT_MAPPER.writeValueAsString(obj);
-        } catch (Exception e) {
-            log.error("micro-dag: 参数序列化失败", e);
-            throw ValidationException.of("参数序列化失败: " + e.getMessage());
-        }
     }
 }

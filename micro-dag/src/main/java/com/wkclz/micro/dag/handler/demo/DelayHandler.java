@@ -5,6 +5,7 @@ import com.wkclz.micro.dag.api.NodeContext;
 import com.wkclz.micro.dag.api.NodeHandler;
 import com.wkclz.micro.dag.api.NodeResult;
 import com.wkclz.micro.dag.bean.enums.NodeCategory;
+import com.wkclz.micro.dag.utils.ParamUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
@@ -56,13 +57,7 @@ public class DelayHandler implements NodeHandler {
         if (v == null) {
             return DEFAULT_MS;
         }
-        long ms;
-        try {
-            ms = v instanceof Number n ? n.longValue() : Long.parseLong(v.toString().trim());
-        } catch (NumberFormatException e) {
-            log.error("demo-delay: ms 参数非法 value={}", v, e);
-            throw ValidationException.of("demo-delay ms 参数非法: " + v);
-        }
+        long ms = ParamUtils.parseLongParam(v, "demo-delay ms");
         return Math.min(Math.max(ms, 0), MAX_MS);
     }
 }

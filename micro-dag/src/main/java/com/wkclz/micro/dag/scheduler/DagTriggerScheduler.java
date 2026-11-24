@@ -11,6 +11,8 @@ import com.wkclz.micro.dag.config.DagProperties;
 import com.wkclz.micro.dag.service.DagProcessVersionService;
 import com.wkclz.micro.dag.service.DagInstanceService;
 import com.wkclz.redis.helper.RedisLock;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
@@ -38,22 +40,22 @@ public class DagTriggerScheduler {
     private static final String TRIGGER_TYPE_TIMER = "TIMER";
     private static final DateTimeFormatter FIRE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
-    private final DagProcessVersionService versionService;
-    private final DagInstanceService dagInstanceService;
-    private final DagProperties properties;
+    @Resource
+    private DagProcessVersionService versionService;
+    @Resource
+    private DagInstanceService dagInstanceService;
+    @Resource
+    private DagProperties properties;
     /** RedisLock 由 sh-redis @Component 装配，无 Redis 环境可能缺失，缺失时触发跳过不崩 */
-    private final ObjectProvider<RedisLock> redisLockProvider;
+    @Resource
+    private ObjectProvider<RedisLock> redisLockProvider;
 
     /** 内存触发状态：dagCode → 触发状态 */
     private final Map<String, TriggerState> states = new HashMap<>();
 
-    public DagTriggerScheduler(DagProcessVersionService versionService, DagInstanceService dagInstanceService,
-                               DagProperties properties, ObjectProvider<RedisLock> redisLockProvider) {
+    @PostConstruct
+    public void init() {
         log.info("micro-dag: 初始化时间驱动触发器 intervalMs={}", properties.getTrigger().getIntervalMs());
-        this.versionService = versionService;
-        this.dagInstanceService = dagInstanceService;
-        this.properties = properties;
-        this.redisLockProvider = redisLockProvider;
     }
 
     @Scheduled(fixedDelayString = "${dag.trigger.interval-ms:30000}")

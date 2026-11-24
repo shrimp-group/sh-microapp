@@ -11,12 +11,14 @@ import com.wkclz.micro.dag.bean.enums.NodeStatus;
 import com.wkclz.micro.dag.cache.DagRedisPublisher;
 import com.wkclz.micro.dag.core.DagReadyCalculator;
 import com.wkclz.micro.dag.core.DagRetryCalculator;
+import com.wkclz.micro.dag.helper.DagKeys;
 import com.wkclz.micro.dag.mapper.DagNodeInstanceMapper;
+import com.wkclz.micro.dag.utils.JsonUtils;
 import com.wkclz.mybatis.service.BaseService;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -32,29 +34,23 @@ import java.util.Set;
 @Service
 public class DagEngineService extends BaseService<DagNodeInstance, DagNodeInstanceMapper> {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final int MAX_ERROR_LEN = 1000;
 
     /** 级联跳过统一原因（DagInterventionService.skip 补救时凭此识别可恢复节点） */
     public static final String CASCADE_SKIP_REASON = "上游分支条件不满足";
 
-    private final DagInstanceService instanceService;
-    private final DagProcessVersionService versionService;
-    private final DagExecutionLogService logService;
-    private final DagReadyCalculator readyCalculator;
-    private final DagRetryCalculator retryCalculator;
-    private final DagRedisPublisher publisher;
-
-    public DagEngineService(DagInstanceService instanceService, DagProcessVersionService versionService,
-                            DagExecutionLogService logService, DagReadyCalculator readyCalculator,
-                            DagRetryCalculator retryCalculator, DagRedisPublisher publisher) {
-        this.instanceService = instanceService;
-        this.versionService = versionService;
-        this.logService = logService;
-        this.readyCalculator = readyCalculator;
-        this.retryCalculator = retryCalculator;
-        this.publisher = publisher;
-    }
+    @Resource
+    private DagInstanceService instanceService;
+    @Resource
+    private DagProcessVersionService versionService;
+    @Resource
+    private DagExecutionLogService logService;
+    @Resource
+    private DagReadyCalculator readyCalculator;
+    @Resource
+    private DagRetryCalculator retryCalculator;
+    @Resource
+    private DagRedisPublisher publisher;
 
     /** 节点成功回调（worker 线程调用）。防重投递：仅 RUNNING 状态落库 */
     @Transactional
@@ -65,7 +61,7 @@ public class DagEngineService extends BaseService<DagNodeInstance, DagNodeInstan
             return; // 防重投递：非 RUNNING 的重复回调直接忽略
         }
         node.setStatus(NodeStatus.SUCCESS.name());
-        node.setOutputJson(toJson(output == null ? Map.of() : output));
+        node.setOutputJson(JsonUtils.toJson(output == null ? Map.of() : output));
         node.setCleanupFlag(0);
         node.setErrorMsg(null);
         node.setNextRetryTime(null);
@@ -89,7 +85,7 @@ public class DagEngineService extends BaseService<DagNodeInstance, DagNodeInstan
         int attempt = node.getAttempt() == null ? 1 : node.getAttempt();
         String err = truncate(errorMsg);
         if (output != null) {
-            node.setOutputJson(toJson(output));
+            node.setOutputJson(JsonUtils.toJson(output));
         }
         if (attempt <= (node.getMaxRetry() == null ? 0 : node.getMaxRetry())) {
             LocalDateTime next = retryCalculator.nextRetryTime(
@@ -100,7 +96,7 @@ public class DagEngineService extends BaseService<DagNodeInstance, DagNodeInstan
             node.setErrorMsg(err);
             updateNode(node);
             logService.log(node.getInstanceCode(), node.getNodeCode(), attempt,
-                ExecutionEvent.RETRY_SCHEDULED, toJson(Map.of("nextRetryTime", next.toString(), "error", err == null ? "" : err)),
+                ExecutionEvent.RETRY_SCHEDULED, JsonUtils.toJson(Map.of("nextRetryTime", next.toString(), "error", err == null ? "" : err)),
                 node.getLeaseOwner());
         } else {
             node.setStatus(NodeStatus.FAILED.name());
@@ -108,7 +104,7 @@ public class DagEngineService extends BaseService<DagNodeInstance, DagNodeInstan
             node.setNextRetryTime(null);
             updateNode(node);
             logService.log(node.getInstanceCode(), node.getNodeCode(), attempt, failEvent,
-                toJson(Map.of("error", err == null ? "" : err)), node.getLeaseOwner());
+                JsonUtils.toJson(Map.of("error", err == null ? "" : err)), node.getLeaseOwner());
         }
         advance(node.getInstanceCode());
     }
@@ -147,9 +143,9 @@ public class DagEngineService extends BaseService<DagNodeInstance, DagNodeInstan
         Map<String, Map<String, Object>> outputs = new HashMap<>();
         for (DagNodeInstance n : nodes) {
             statusMap.put(n.getNodeCode(), NodeStatus.valueOf(n.getStatus()));
-            outputs.put(n.getNodeCode(), parseMap(n.getOutputJson()));
+            outputs.put(n.getNodeCode(), JsonUtils.parseMap(n.getOutputJson()));
         }
-        Map<String, Object> ctx = parseMap(instance.getContextJson());
+        Map<String, Object> ctx = JsonUtils.parseMap(instance.getContextJson());
 
         Set<String> skips = readyCalculator.cascadeSkips(def, statusMap, ctx, outputs);
         for (DagNodeInstance n : nodes) {
@@ -179,7 +175,7 @@ public class DagEngineService extends BaseService<DagNodeInstance, DagNodeInstan
         where.setNodeCode(nodeCode);
         DagNodeInstance node = mapper.selectOneByEntity(where);
         if (node == null) {
-            throw ValidationException.of("节点实例不存在: " + instanceCode + ":" + nodeCode);
+            throw ValidationException.of("节点实例不存在: " + DagKeys.instanceNodeKey(instanceCode, nodeCode));
         }
         if (!NodeStatus.RUNNING.name().equals(node.getStatus())) {
             log.info("micro-dag: 节点非 RUNNING，忽略重复回调 instanceCode={} nodeCode={} status={}", instanceCode, nodeCode, node.getStatus());
@@ -204,27 +200,5 @@ public class DagEngineService extends BaseService<DagNodeInstance, DagNodeInstan
             return msg;
         }
         return msg.substring(0, MAX_ERROR_LEN);
-    }
-
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> parseMap(String json) {
-        if (json == null || json.isBlank()) {
-            return Map.of();
-        }
-        try {
-            return OBJECT_MAPPER.readValue(json, Map.class);
-        } catch (Exception e) {
-            log.error("micro-dag: JSON 解析失败 json={}", json, e);
-            return Map.of();
-        }
-    }
-
-    private String toJson(Object obj) {
-        try {
-            return OBJECT_MAPPER.writeValueAsString(obj);
-        } catch (Exception e) {
-            log.error("micro-dag: JSON 序列化失败", e);
-            return "{}";
-        }
     }
 }

@@ -2,6 +2,7 @@ package com.wkclz.micro.dag.scheduler;
 
 import com.wkclz.micro.dag.bean.dto.DagDefModel;
 import com.wkclz.micro.dag.bean.dto.NodeDef;
+import com.wkclz.micro.dag.bean.dto.NodeInstanceLeaseDto;
 import com.wkclz.micro.dag.bean.entity.DagInstance;
 import com.wkclz.micro.dag.bean.entity.DagNodeInstance;
 import com.wkclz.micro.dag.bean.enums.ExecutionEvent;
@@ -18,6 +19,7 @@ import com.wkclz.micro.dag.worker.DagWorkerExecutor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -59,8 +61,15 @@ class DagSchedulerTest {
         worker = mock(DagWorkerExecutor.class);
         engineService = mock(DagEngineService.class);
         properties = new DagProperties();
-        scheduler = new DagScheduler(instanceMapper, nodeMapper, versionService, logService,
-            readyCalculator, worker, engineService, properties);
+        scheduler = new DagScheduler();
+        ReflectionTestUtils.setField(scheduler, "instanceMapper", instanceMapper);
+        ReflectionTestUtils.setField(scheduler, "nodeMapper", nodeMapper);
+        ReflectionTestUtils.setField(scheduler, "versionService", versionService);
+        ReflectionTestUtils.setField(scheduler, "logService", logService);
+        ReflectionTestUtils.setField(scheduler, "readyCalculator", readyCalculator);
+        ReflectionTestUtils.setField(scheduler, "worker", worker);
+        ReflectionTestUtils.setField(scheduler, "engineService", engineService);
+        ReflectionTestUtils.setField(scheduler, "properties", properties);
     }
 
     @Test
@@ -106,7 +115,7 @@ class DagSchedulerTest {
         when(instanceMapper.listRunning()).thenReturn(List.of(instance));
         when(nodeMapper.listByInstanceCode(INSTANCE_CODE)).thenReturn(List.of(node));
         when(readyCalculator.readyNodes(any(), any(), any(), any())).thenReturn(Set.of("A"));
-        when(nodeMapper.casClaim(any(), any(), anyString(), any())).thenReturn(1);
+        when(nodeMapper.casClaim(any(NodeInstanceLeaseDto.class))).thenReturn(1);
 
         scheduler.scan();
 
@@ -128,7 +137,7 @@ class DagSchedulerTest {
         when(instanceMapper.listRunning()).thenReturn(List.of(instance));
         when(nodeMapper.listByInstanceCode(INSTANCE_CODE)).thenReturn(List.of(node));
         when(readyCalculator.readyNodes(any(), any(), any(), any())).thenReturn(Set.of("A"));
-        when(nodeMapper.casClaim(any(), any(), anyString(), any())).thenReturn(1);
+        when(nodeMapper.casClaim(any(NodeInstanceLeaseDto.class))).thenReturn(1);
         DagDefModel def = new DagDefModel();
         NodeDef startNode = new NodeDef();
         startNode.setCode("A");
@@ -151,7 +160,7 @@ class DagSchedulerTest {
         when(instanceMapper.listRunning()).thenReturn(List.of(instance));
         when(nodeMapper.listByInstanceCode(INSTANCE_CODE)).thenReturn(List.of(node));
         when(readyCalculator.readyNodes(any(), any(), any(), any())).thenReturn(Set.of("A"));
-        when(nodeMapper.casClaim(any(), any(), anyString(), any())).thenReturn(1);
+        when(nodeMapper.casClaim(any(NodeInstanceLeaseDto.class))).thenReturn(1);
         DagDefModel def = new DagDefModel();
         NodeDef startNode = new NodeDef();
         startNode.setCode("A");
@@ -177,7 +186,7 @@ class DagSchedulerTest {
         when(instanceMapper.listRunning()).thenReturn(List.of(instance));
         when(nodeMapper.listByInstanceCode(INSTANCE_CODE)).thenReturn(List.of(node));
         when(readyCalculator.readyNodes(any(), any(), any(), any())).thenReturn(Set.of("A"));
-        when(nodeMapper.casClaim(any(), any(), anyString(), any())).thenReturn(0);
+        when(nodeMapper.casClaim(any(NodeInstanceLeaseDto.class))).thenReturn(0);
 
         scheduler.scan();
 
@@ -196,7 +205,7 @@ class DagSchedulerTest {
 
         scheduler.scan();
 
-        verify(nodeMapper, never()).casClaim(any(), any(), anyString(), any());
+        verify(nodeMapper, never()).casClaim(any(NodeInstanceLeaseDto.class));
         verify(worker, never()).submit(any(), any());
     }
 
@@ -209,11 +218,11 @@ class DagSchedulerTest {
         when(instanceMapper.listRunning()).thenReturn(List.of(instance));
         when(nodeMapper.listByInstanceCode(INSTANCE_CODE)).thenReturn(List.of(a, b));
         when(readyCalculator.readyNodes(any(), any(), any(), any())).thenReturn(Set.of("A", "B"));
-        when(nodeMapper.casClaim(any(), any(), anyString(), any())).thenReturn(1);
+        when(nodeMapper.casClaim(any(NodeInstanceLeaseDto.class))).thenReturn(1);
 
         scheduler.scan();
 
-        verify(nodeMapper, times(1)).casClaim(any(), any(), anyString(), any());
+        verify(nodeMapper, times(1)).casClaim(any(NodeInstanceLeaseDto.class));
         verify(worker, times(1)).submit(any(), any());
     }
 
@@ -249,7 +258,7 @@ class DagSchedulerTest {
         when(versionService.load(eq("d1"), any())).thenThrow(new IllegalStateException("boom"));
         when(versionService.load(eq("d2"), any())).thenReturn(new DagDefModel());
         when(readyCalculator.readyNodes(any(), any(), any(), any())).thenReturn(Set.of("A"));
-        when(nodeMapper.casClaim(any(), any(), anyString(), any())).thenReturn(1);
+        when(nodeMapper.casClaim(any(NodeInstanceLeaseDto.class))).thenReturn(1);
 
         scheduler.scan();
 

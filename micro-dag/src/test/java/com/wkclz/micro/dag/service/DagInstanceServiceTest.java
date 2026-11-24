@@ -2,6 +2,7 @@ package com.wkclz.micro.dag.service;
 
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.exception.ValidationException;
+import com.wkclz.micro.dag.bean.constant.DagConstants;
 import com.wkclz.micro.dag.bean.dto.DagDefModel;
 import com.wkclz.micro.dag.bean.dto.EdgeDef;
 import com.wkclz.micro.dag.bean.dto.NodeDef;
@@ -42,13 +43,18 @@ class DagInstanceServiceTest {
     private DagInstanceMapper mapper;
     private DagNodeInstanceMapper nodeInstanceMapper;
     private DagProcessVersionService versionService;
+    private DagExecutionLogService executionLogService;
 
     @BeforeEach
     void setUp() {
         mapper = mock(DagInstanceMapper.class);
         nodeInstanceMapper = mock(DagNodeInstanceMapper.class);
         versionService = mock(DagProcessVersionService.class);
-        service = new DagInstanceService(versionService, nodeInstanceMapper);
+        executionLogService = mock(DagExecutionLogService.class);
+        service = new DagInstanceService();
+        ReflectionTestUtils.setField(service, "versionService", versionService);
+        ReflectionTestUtils.setField(service, "nodeInstanceMapper", nodeInstanceMapper);
+        ReflectionTestUtils.setField(service, "executionLogService", executionLogService);
         ReflectionTestUtils.setField(service, "mapper", mapper);
 
         DagProcessVersion def = new DagProcessVersion();
@@ -76,7 +82,7 @@ class DagInstanceServiceTest {
         ab.setEdgeCode("a->b");
         ab.setFromCode("a");
         ab.setToCode("b");
-        ab.setType(EdgeDef.TYPE_NORMAL);
+        ab.setType(DagConstants.EDGE_TYPE_NORMAL);
         DagDefModel def = new DagDefModel();
         def.setDagCode("d1");
         def.setDagName("demo");
@@ -167,13 +173,13 @@ class DagInstanceServiceTest {
         ex.setEdgeCode("br->x");
         ex.setFromCode("br");
         ex.setToCode("x");
-        ex.setType(EdgeDef.TYPE_CONDITION);
+        ex.setType(DagConstants.EDGE_TYPE_CONDITION);
         ex.setWhenExpr("${ctx.sourceType} == 'x'");
         EdgeDef ey = new EdgeDef();
         ey.setEdgeCode("br->y");
         ey.setFromCode("br");
         ey.setToCode("y");
-        ey.setType(EdgeDef.TYPE_CONDITION);
+        ey.setType(DagConstants.EDGE_TYPE_CONDITION);
         ey.setWhenExpr("${ctx.sourceType} == 'y'");
         DagDefModel def = new DagDefModel();
         def.setDagCode("d1");

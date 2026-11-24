@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.util.Map;
 
+@Schema(description = "分支表达式试算请求")
 @Data
 public class ExpressionPreviewReq {
 

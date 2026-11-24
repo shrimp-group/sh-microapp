@@ -24,7 +24,7 @@ public class DagExpressionEvaluator {
     }
 
     public boolean evaluate(String expr, Map<String, Object> ctx, Map<String, Map<String, Object>> nodeOutputs) {
-        log.info("DagExpressionEvaluator.evaluate expr={}", expr);
+        log.info("micro-dag: evaluate expr={}", expr);
         List<Token> tokens = tokenize(expr);
         Parser parser = new Parser(tokens, ctx, nodeOutputs, expr);
         boolean result = parser.parseOr();
@@ -102,7 +102,8 @@ public class DagExpressionEvaluator {
 
     private static DagExpressionException err(String expr, int pos, String msg) {
         DagExpressionException ex = new DagExpressionException("表达式语法错误，位置 " + pos + "：" + msg + "，表达式：" + expr);
-        log.error("DagExpressionEvaluator 语法错误: {}", ex.getMessage());
+        // 表达式语法错误属校验类可容忍失败（由重试/校验清单兜底），降级 warn
+        log.warn("micro-dag: 表达式语法错误: {}", ex.getMessage());
         return ex;
     }
 

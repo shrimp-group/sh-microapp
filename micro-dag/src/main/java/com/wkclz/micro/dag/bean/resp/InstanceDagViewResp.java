@@ -7,6 +7,7 @@ import lombok.Data;
 import java.util.List;
 import java.util.Map;
 
+@Schema(description = "实例 DAG 视图响应（画布渲染）")
 @Data
 public class InstanceDagViewResp {
 

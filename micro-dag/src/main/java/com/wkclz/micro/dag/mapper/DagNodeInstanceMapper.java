@@ -1,5 +1,6 @@
 package com.wkclz.micro.dag.mapper;
 
+import com.wkclz.micro.dag.bean.dto.NodeInstanceLeaseDto;
 import com.wkclz.micro.dag.bean.entity.DagNodeInstance;
 import com.wkclz.mybatis.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
@@ -12,10 +13,7 @@ import java.util.List;
 public interface DagNodeInstanceMapper extends BaseMapper<DagNodeInstance> {
 
     /** CAS 领取：PENDING → RUNNING，attempt+1。影响行数=1 才代表领取成功 */
-    int casClaim(@Param("id") Long id,
-                 @Param("version") Integer version,
-                 @Param("leaseOwner") String leaseOwner,
-                 @Param("leaseExpireTime") LocalDateTime leaseExpireTime);
+    int casClaim(NodeInstanceLeaseDto lease);
 
     /** RETRYING 且到期的提升为 PENDING */
     int promoteRetrying(@Param("now") LocalDateTime now);
@@ -24,9 +22,7 @@ public interface DagNodeInstanceMapper extends BaseMapper<DagNodeInstance> {
     int reclaimExpiredLease(@Param("now") LocalDateTime now);
 
     /** 执行器租约续期：仅当前持有者且仍为 RUNNING 时生效 */
-    int renewLease(@Param("id") Long id,
-                   @Param("leaseOwner") String leaseOwner,
-                   @Param("leaseExpireTime") LocalDateTime leaseExpireTime);
+    int renewLease(NodeInstanceLeaseDto lease);
 
     /** 查询租约过期的 RUNNING 节点（回收前先查出以写 LEASE_RECLAIM 日志） */
     List<DagNodeInstance> listExpiredLease(@Param("now") LocalDateTime now);

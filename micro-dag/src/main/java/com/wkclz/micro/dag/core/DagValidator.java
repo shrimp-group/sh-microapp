@@ -1,20 +1,19 @@
 package com.wkclz.micro.dag.core;
 
 import com.wkclz.micro.dag.api.NodeHandlerRegistry;
+import com.wkclz.micro.dag.bean.constant.DagConstants;
 import com.wkclz.micro.dag.bean.dto.DagDefModel;
 import com.wkclz.micro.dag.bean.dto.EdgeDef;
 import com.wkclz.micro.dag.bean.dto.NodeDef;
 import com.wkclz.micro.dag.bean.dto.NodeParamDef;
 import com.wkclz.micro.dag.bean.enums.NodeType;
 import com.wkclz.micro.dag.bean.enums.SystemHandler;
+import com.wkclz.micro.dag.utils.TimeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,7 +32,7 @@ public class DagValidator {
     private static final String CODE_PATTERN = "[a-z0-9-]+";
 
     public List<String> validate(DagDefModel def, NodeHandlerRegistry registry) {
-        log.info("DagValidator.validate dagCode={}", def == null ? null : def.getDagCode());
+        log.info("micro-dag: validate dagCode={}", def == null ? null : def.getDagCode());
         List<String> errors = new ArrayList<>();
         if (def == null || def.getNodes() == null || def.getNodes().isEmpty()) {
             errors.add("节点列表不能为空");
@@ -80,7 +79,7 @@ public class DagValidator {
                 errors.add("边存在悬空依赖：" + e.getFromCode() + " -> " + e.getToCode());
                 continue;
             }
-            if (EdgeDef.TYPE_CONDITION.equals(e.getType())
+            if (DagConstants.EDGE_TYPE_CONDITION.equals(e.getType())
                 && (e.getWhenExpr() == null || e.getWhenExpr().isBlank())) {
                 errors.add("条件边缺少 whenExpr 表达式：" + e.getFromCode() + " -> " + e.getToCode());
             }
@@ -153,8 +152,12 @@ public class DagValidator {
                 errors.add("节点 " + n.getCode() + " 的 nodeType 非法：" + n.getNodeType());
                 continue;
             }
-            List<EdgeDef> outs = edges.stream().filter(e -> n.getCode().equals(e.getFromCode())).toList();
-            List<EdgeDef> ins = edges.stream().filter(e -> n.getCode().equals(e.getToCode())).toList();
+            List<EdgeDef> outs = new ArrayList<>();
+            List<EdgeDef> ins = new ArrayList<>();
+            for (EdgeDef e : edges) {
+                if (n.getCode().equals(e.getFromCode())) { outs.add(e); }
+                if (n.getCode().equals(e.getToCode())) { ins.add(e); }
+            }
             switch (type == null ? NodeType.NORMAL : type) {
                 case START -> {
                     if (!ins.isEmpty()) { errors.add("开始节点不能有入边：" + n.getCode()); }
@@ -165,7 +168,7 @@ public class DagValidator {
                 }
                 case BRANCH -> {
                     if (outs.isEmpty()) { errors.add("分支节点必须连出下游：" + n.getCode()); }
-                    if (!outs.stream().allMatch(e -> EdgeDef.TYPE_CONDITION.equals(e.getType()))) {
+                    if (hasNonConditionOutEdge(outs)) {
                         errors.add("分支节点的出边必须为条件分支：" + n.getCode());
                     }
                 }
@@ -207,8 +210,18 @@ public class DagValidator {
                 validateParamDef(n, p, params, errors);
             }
         }
-        log.info("DagValidator.validate done errors={}", errors);
+        log.info("micro-dag: validate done errors={}", errors);
         return errors;
+    }
+
+    /** 分支出边校验：存在非条件出边返回 true */
+    private boolean hasNonConditionOutEdge(List<EdgeDef> outs) {
+        for (EdgeDef e : outs) {
+            if (!DagConstants.EDGE_TYPE_CONDITION.equals(e.getType())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** 存量兜底：免 handler 的 START 节点 params.triggerType=TIMER 时 cron 必填且可解析（调度器按 nodeType 消费） */
@@ -229,7 +242,8 @@ public class DagValidator {
         try {
             CronExpression.parse(String.valueOf(cron));
         } catch (IllegalArgumentException e) {
-            log.error("DagValidator: cron 解析失败 nodeCode={} cron={}", n.getCode(), cron, e);
+            // 校验类错误清单收集，可容忍，降级 warn
+            log.warn("micro-dag: cron 解析失败 nodeCode={} cron={}", n.getCode(), cron, e);
             errors.add("节点 " + n.getCode() + " 的触发 cron 非法：" + e.getMessage());
         }
     }
@@ -257,7 +271,7 @@ public class DagValidator {
                     }
                 }
                 case CRON -> CronExpression.parse(String.valueOf(v).trim());
-                case DATETIME -> parseDateTime(String.valueOf(v).trim());
+                case DATETIME -> TimeUtils.parseFlexibleDateTime(String.valueOf(v).trim());
                 case SELECT -> {
                     if (p.getOptions() != null && !p.getOptions().isEmpty()
                         && p.getOptions().stream().noneMatch(o -> o.getValue().equalsIgnoreCase(String.valueOf(v)))) {
@@ -272,17 +286,9 @@ public class DagValidator {
                 default -> { /* TEXT/BOOLEAN/JSON 不做强校验 */ }
             }
         } catch (Exception e) {
-            log.error("DagValidator: 参数校验失败 nodeCode={} key={} value={}", n.getCode(), p.getKey(), v, e);
+            // 校验类错误清单收集，可容忍，降级 warn
+            log.warn("micro-dag: 参数校验失败 nodeCode={} key={} value={}", n.getCode(), p.getKey(), v, e);
             errors.add("节点 " + n.getCode() + " 的参数 " + label + " 非法：" + e.getMessage());
-        }
-    }
-
-    /** DATETIME 解析：先 LocalDateTime，失败再 Instant（转系统时区） */
-    private void parseDateTime(String v) {
-        try {
-            LocalDateTime.parse(v);
-        } catch (Exception ignored) {
-            LocalDateTime.ofInstant(Instant.parse(v), ZoneId.systemDefault());
         }
     }
 }

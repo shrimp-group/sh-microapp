@@ -1,9 +1,11 @@
 package com.wkclz.micro.dag.core;
 
+import com.wkclz.micro.dag.bean.constant.DagConstants;
 import com.wkclz.micro.dag.bean.dto.DagDefModel;
 import com.wkclz.micro.dag.bean.dto.EdgeDef;
 import com.wkclz.micro.dag.bean.dto.NodeDef;
 import com.wkclz.micro.dag.bean.enums.NodeStatus;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -23,11 +25,8 @@ import java.util.Set;
 @Component
 public class DagReadyCalculator {
 
-    private final DagExpressionEvaluator evaluator;
-
-    public DagReadyCalculator(DagExpressionEvaluator evaluator) {
-        this.evaluator = evaluator;
-    }
+    @Resource
+    private DagExpressionEvaluator evaluator;
 
     /**
      * 计算当前可领取的节点集合：
@@ -36,7 +35,7 @@ public class DagReadyCalculator {
      */
     public Set<String> readyNodes(DagDefModel def, Map<String, NodeStatus> statusMap,
                                   Map<String, Object> ctx, Map<String, Map<String, Object>> nodeOutputs) {
-        log.info("DagReadyCalculator.readyNodes nodeSize={}", def.getNodes() == null ? 0 : def.getNodes().size());
+        log.info("micro-dag: readyNodes nodeSize={}", def.getNodes() == null ? 0 : def.getNodes().size());
         Set<String> ready = new HashSet<>();
         for (NodeDef node : def.getNodes()) {
             if (statusMap.get(node.getCode()) != NodeStatus.PENDING) {
@@ -50,7 +49,7 @@ public class DagReadyCalculator {
                     allUpstreamSatisfied = false;
                     break;
                 }
-                if (EdgeDef.TYPE_CONDITION.equals(in.getType()) && up == NodeStatus.SUCCESS) {
+                if (DagConstants.EDGE_TYPE_CONDITION.equals(in.getType()) && up == NodeStatus.SUCCESS) {
                     if (!evaluator.evaluate(in.getWhenExpr(), ctx, nodeOutputs)) {
                         conditionsMet = false;
                         break;
@@ -71,7 +70,7 @@ public class DagReadyCalculator {
      */
     public Set<String> cascadeSkips(DagDefModel def, Map<String, NodeStatus> statusMap,
                                     Map<String, Object> ctx, Map<String, Map<String, Object>> nodeOutputs) {
-        log.info("DagReadyCalculator.cascadeSkips nodeSize={}", def.getNodes() == null ? 0 : def.getNodes().size());
+        log.info("micro-dag: cascadeSkips nodeSize={}", def.getNodes() == null ? 0 : def.getNodes().size());
         Set<String> skipped = new HashSet<>();
         Deque<String> queue = new ArrayDeque<>(def.getNodes().stream().map(NodeDef::getCode).toList());
         while (!queue.isEmpty()) {
@@ -91,7 +90,7 @@ public class DagReadyCalculator {
                     continue; // 上游被跳过 → 该边不满足
                 }
                 if (up != null && up.satisfiesDownstream()) {
-                    if (EdgeDef.TYPE_CONDITION.equals(in.getType()) && up == NodeStatus.SUCCESS) {
+                    if (DagConstants.EDGE_TYPE_CONDITION.equals(in.getType()) && up == NodeStatus.SUCCESS) {
                         if (evaluator.evaluate(in.getWhenExpr(), ctx, nodeOutputs)) {
                             anySatisfied = true;
                             break;

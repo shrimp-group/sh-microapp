@@ -76,7 +76,8 @@ public class HttpCallHandler implements NodeHandler {
     private HttpMethod resolveMethod(String method) {
         String m = method == null ? "GET" : method.trim().toUpperCase();
         if (!ALLOWED_METHODS.contains(m)) {
-            log.error("demo-http-call: method 参数非法 method={}", m);
+            // 参数校验类可容忍失败，降级 warn
+            log.warn("demo-http-call: method 参数非法 method={}", m);
             throw ValidationException.of("demo-http-call method 参数非法: " + m);
         }
         return HttpMethod.valueOf(m);

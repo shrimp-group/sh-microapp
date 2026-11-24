@@ -30,7 +30,8 @@ class DagNodeInstanceServiceTest {
     void setUp() {
         mapper = mock(DagNodeInstanceMapper.class);
         logService = mock(DagExecutionLogService.class);
-        service = new DagNodeInstanceService(logService);
+        service = new DagNodeInstanceService();
+        ReflectionTestUtils.setField(service, "logService", logService);
         ReflectionTestUtils.setField(service, "mapper", mapper);
     }
 

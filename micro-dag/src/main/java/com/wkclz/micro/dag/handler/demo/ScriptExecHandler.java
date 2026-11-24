@@ -5,10 +5,10 @@ import com.wkclz.micro.dag.api.NodeContext;
 import com.wkclz.micro.dag.api.NodeHandler;
 import com.wkclz.micro.dag.api.NodeResult;
 import com.wkclz.micro.dag.bean.enums.NodeCategory;
+import com.wkclz.micro.dag.utils.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
-import tools.jackson.databind.ObjectMapper;
 
 import java.util.Map;
 
@@ -19,8 +19,6 @@ import java.util.Map;
  */
 @Slf4j
 public class ScriptExecHandler implements NodeHandler {
-
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Override
     public String nodeCode() {
@@ -57,7 +55,7 @@ public class ScriptExecHandler implements NodeHandler {
             if (!json.isString()) {
                 throw ValidationException.of("demo-script-exec handle 返回值不可序列化");
             }
-            Object parsed = OBJECT_MAPPER.readValue(json.asString(), Object.class);
+            Object parsed = JsonUtils.readValue(json.asString(), Object.class);
             ctx.log("脚本执行完成");
             if (parsed instanceof Map<?, ?> m) {
                 @SuppressWarnings("unchecked")

@@ -8,13 +8,13 @@ import com.wkclz.micro.dag.bean.dto.NodeParamDef;
 import com.wkclz.micro.dag.bean.enums.NodeCategory;
 import com.wkclz.micro.dag.bean.enums.NodeParamType;
 import com.wkclz.micro.dag.bean.enums.SystemHandler;
+import com.wkclz.micro.dag.utils.ParamUtils;
+import com.wkclz.micro.dag.utils.TimeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
@@ -92,27 +92,17 @@ public class SystemTimerHandler implements NodeHandler {
         if (v == null) {
             return 0;
         }
-        long ms;
-        try {
-            ms = v instanceof Number n ? n.longValue() : Long.parseLong(v.toString().trim());
-        } catch (NumberFormatException e) {
-            log.error("system-timer: delayMs 参数非法 value={}", v, e);
-            throw ValidationException.of("system-timer delayMs 参数非法: " + v);
-        }
+        long ms = ParamUtils.parseLongParam(v, "system-timer delayMs");
         return Math.min(Math.max(ms, 0), MAX_DELAY_MS);
     }
 
     /** 解析 delayUntil：先 LocalDateTime.parse，失败再 Instant.parse（转系统时区），仍失败抛校验异常 */
     LocalDateTime resolveDelayUntil(String v) {
         try {
-            return LocalDateTime.parse(v.trim());
-        } catch (Exception ignored) {
-            // 尝试 Instant 解析
-        }
-        try {
-            return LocalDateTime.ofInstant(Instant.parse(v.trim()), ZoneId.systemDefault());
+            return TimeUtils.parseFlexibleDateTime(v.trim());
         } catch (Exception e) {
-            log.error("system-timer: delayUntil 参数非法 value={}", v, e);
+            // 参数校验类可容忍失败，降级 warn
+            log.warn("system-timer: delayUntil 参数非法 value={}", v, e);
             throw ValidationException.of("system-timer delayUntil 参数非法（需 ISO-8601 时间）: " + v);
         }
     }

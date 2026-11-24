@@ -7,6 +7,7 @@ import com.wkclz.micro.dag.api.NodeResult;
 import com.wkclz.micro.dag.bean.dto.NodeParamDef;
 import com.wkclz.micro.dag.bean.enums.NodeCategory;
 import com.wkclz.micro.dag.bean.enums.NodeParamType;
+import com.wkclz.micro.dag.utils.ParamUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -58,13 +59,7 @@ public class DemoFailHandler implements NodeHandler {
         if (v == null) {
             return 0;
         }
-        int failTimes;
-        try {
-            failTimes = v instanceof Number n ? n.intValue() : Integer.parseInt(v.toString().trim());
-        } catch (NumberFormatException e) {
-            log.error("demo-fail: failTimes 参数非法 value={}", v, e);
-            throw ValidationException.of("demo-fail failTimes 参数非法: " + v);
-        }
+        int failTimes = ParamUtils.parseIntParam(v, "demo-fail failTimes");
         return Math.max(failTimes, 0);
     }
 

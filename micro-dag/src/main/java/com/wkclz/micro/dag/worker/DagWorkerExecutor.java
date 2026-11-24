@@ -4,14 +4,21 @@ import com.wkclz.micro.dag.api.NodeContext;
 import com.wkclz.micro.dag.api.NodeHandler;
 import com.wkclz.micro.dag.api.NodeHandlerRegistry;
 import com.wkclz.micro.dag.api.NodeResult;
+import com.wkclz.micro.dag.bean.constant.DagConstants;
+import com.wkclz.micro.dag.bean.dto.NodeInstanceLeaseDto;
 import com.wkclz.micro.dag.bean.entity.DagInstance;
 import com.wkclz.micro.dag.bean.entity.DagNodeInstance;
 import com.wkclz.micro.dag.bean.enums.ExecutionEvent;
 import com.wkclz.micro.dag.cache.DagRedisPublisher;
 import com.wkclz.micro.dag.config.DagProperties;
+import com.wkclz.micro.dag.helper.DagKeys;
+import com.wkclz.micro.dag.helper.DagLeaseHelper;
 import com.wkclz.micro.dag.mapper.DagNodeInstanceMapper;
 import com.wkclz.micro.dag.service.DagEngineService;
 import com.wkclz.micro.dag.service.DagExecutionLogService;
+import com.wkclz.micro.dag.utils.RuntimeUtils;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -19,7 +26,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.management.ManagementFactory;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
@@ -44,38 +50,36 @@ import java.util.concurrent.TimeoutException;
 @ConditionalOnProperty(prefix = "dag", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class DagWorkerExecutor {
 
-    private static final long LEASE_MARGIN_MS = 30_000;
     /** 过程日志截断标记（终态兜底落库时追加） */
     private static final String TRUNCATED_MARK = "...[truncated]";
 
-    private final ThreadPoolExecutor pool;
-    private final ThreadPoolExecutor supervisorPool;
-    private final ScheduledThreadPoolExecutor leasePool;
-    private final ScheduledThreadPoolExecutor flushPool;
+    private ThreadPoolExecutor pool;
+    private ThreadPoolExecutor supervisorPool;
+    private ScheduledThreadPoolExecutor leasePool;
+    private ScheduledThreadPoolExecutor flushPool;
     /** 运行任务登记表，键为 instanceCode:nodeCode（跨机广播按此键定位本机任务） */
     private final ConcurrentHashMap<String, Future<?>> futures = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Boolean> interruptedFlags = new ConcurrentHashMap<>();
     /** 运行任务的过程日志上下文登记表，键同 futures（flusher 定时 drain 落库） */
     private final ConcurrentHashMap<String, NodeContext> reportCtxs = new ConcurrentHashMap<>();
-    private final String workerId = ManagementFactory.getRuntimeMXBean().getName();
+    private final String workerId = RuntimeUtils.workerId();
 
-    private final NodeHandlerRegistry registry;
-    private final DagNodeInstanceMapper nodeMapper;
-    private final DagEngineService engine;
-    private final DagExecutionLogService logService;
-    private final DagRedisPublisher publisher;
-    private final DagProperties properties;
+    @Resource
+    private NodeHandlerRegistry registry;
+    @Resource
+    private DagNodeInstanceMapper nodeMapper;
+    @Resource
+    private DagEngineService engine;
+    @Resource
+    private DagExecutionLogService logService;
+    @Resource
+    private DagRedisPublisher publisher;
+    @Resource
+    private DagProperties properties;
 
-    public DagWorkerExecutor(NodeHandlerRegistry registry, DagNodeInstanceMapper nodeMapper,
-                             DagEngineService engine, DagExecutionLogService logService,
-                             DagRedisPublisher publisher, DagProperties properties) {
+    @PostConstruct
+    public void init() {
         log.info("micro-dag: 初始化节点执行器 worker={}", workerId);
-        this.registry = registry;
-        this.nodeMapper = nodeMapper;
-        this.engine = engine;
-        this.logService = logService;
-        this.publisher = publisher;
-        this.properties = properties;
         int threads = properties.getWorker().getThreads();
         this.pool = new ThreadPoolExecutor(threads, threads, 60, TimeUnit.SECONDS,
             new LinkedBlockingQueue<>(), namedFactory("dag-worker"));
@@ -122,14 +126,9 @@ public class DagWorkerExecutor {
 
     /** 监督线程：租约续期 + 超时控制 + 结果派发（成功/显式失败/未就绪/超时/中断/失败六路） */
     private void supervise(DagNodeInstance node, CompletableFuture<NodeResult> future) {
-        long leaseMs = leaseDuration(node);
-        ScheduledFuture<?> renewal = leasePool.scheduleAtFixedRate(() -> {
-            try {
-                nodeMapper.renewLease(node.getId(), workerId, LocalDateTime.now().plusNanos(leaseMs * 1_000_000));
-            } catch (Exception e) {
-                log.error("micro-dag: 租约续期失败 node={}", node.getNodeCode(), e);
-            }
-        }, leaseMs / 3, leaseMs / 3, TimeUnit.MILLISECONDS);
+        long leaseMs = DagLeaseHelper.leaseDuration(properties, node);
+        ScheduledFuture<?> renewal = leasePool.scheduleAtFixedRate(
+            () -> renewLease(node, leaseMs), leaseMs / 3, leaseMs / 3, TimeUnit.MILLISECONDS);
         try {
             Long timeoutMs = node.getTimeoutMs();
             // timeout_ms=0 与 null 同义：不限时（0ms 立即超时会导致节点永远无法成功）
@@ -192,7 +191,7 @@ public class DagWorkerExecutor {
 
     /** 中断入口（DagInterruptListener 调用）：置本地标记 + cancel 工作任务 */
     public void interrupt(String instanceCode, String nodeCode) {
-        String key = instanceCode + ":" + nodeCode;
+        String key = DagKeys.instanceNodeKey(instanceCode, nodeCode);
         log.info("micro-dag: 本机中断 instanceCode={} nodeCode={}", instanceCode, nodeCode);
         interruptedFlags.put(key, true);
         Future<?> future = futures.get(key);
@@ -203,24 +202,25 @@ public class DagWorkerExecutor {
 
     /** 是否存在指定节点的本机执行任务（DagInterruptListener 判断是否本机处理） */
     public boolean isRunningHere(String instanceCode, String nodeCode) {
-        return futures.containsKey(instanceCode + ":" + nodeCode);
+        return futures.containsKey(DagKeys.instanceNodeKey(instanceCode, nodeCode));
     }
 
     public String getWorkerId() {
         return workerId;
     }
 
-    /**
-     * 租约时长：无超时节点用 fixedMs；有超时节点取 max(fixedMs, timeout + 30s)，
-     * 保证租约恒覆盖超时窗口（超时由本执行器 Future.get 强制），避免超时瞬间与故障转移重派撞车
-     */
-    private long leaseDuration(DagNodeInstance node) {
-        long fixedMs = properties.getLease().getFixedMs();
-        // timeout_ms<=0 与 null 同义：不限时，租约用兜底时长
-        if (node.getTimeoutMs() == null || node.getTimeoutMs() <= 0) {
-            return fixedMs;
+    /** 单次租约续期：失败仅告警不中断，下个周期继续重试 */
+    private void renewLease(DagNodeInstance node, long leaseMs) {
+        try {
+            NodeInstanceLeaseDto lease = new NodeInstanceLeaseDto();
+            lease.setId(node.getId());
+            lease.setLeaseOwner(workerId);
+            lease.setLeaseExpireTime(LocalDateTime.now().plusNanos(leaseMs * DagConstants.MS_TO_NS));
+            nodeMapper.renewLease(lease);
+        } catch (Exception e) {
+            // 续期偶发失败可由下个周期重试，降级 warn
+            log.warn("micro-dag: 租约续期失败 node={}", node.getNodeCode(), e);
         }
-        return Math.max(fixedMs, node.getTimeoutMs() + LEASE_MARGIN_MS);
     }
 
     private NodeContext buildContext(DagNodeInstance node, DagInstance instance) {
@@ -266,7 +266,7 @@ public class DagWorkerExecutor {
 
     /** 运行任务登记键：instanceCode:nodeCode */
     private String runKey(DagNodeInstance node) {
-        return node.getInstanceCode() + ":" + node.getNodeCode();
+        return DagKeys.instanceNodeKey(node.getInstanceCode(), node.getNodeCode());
     }
 
     /** 显式失败的失败消息：output 含 String 类型 msg 键则取该值，否则缺省文案 */

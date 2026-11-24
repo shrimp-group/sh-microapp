@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 /**
  * DAG 流程（一条流程一行，名称唯一持有处）
  */
+@Schema(description = "DAG 流程")
 @Data
 @EqualsAndHashCode(callSuper = false)
 public class DagProcess extends BaseEntity {

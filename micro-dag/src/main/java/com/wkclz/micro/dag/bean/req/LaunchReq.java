@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.util.Map;
 
+@Schema(description = "发起流程实例请求")
 @Data
 public class LaunchReq {
 

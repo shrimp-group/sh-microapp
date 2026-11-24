@@ -1,6 +1,8 @@
 package com.wkclz.micro.dag.api;
 
 import com.wkclz.core.exception.ValidationException;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +20,11 @@ public class NodeHandlerRegistry {
 
     private final Map<String, NodeHandler> handlers = new HashMap<>();
 
-    public NodeHandlerRegistry(List<NodeHandler> handlerList) {
+    @Resource
+    private List<NodeHandler> handlerList;
+
+    @PostConstruct
+    public void init() {
         for (NodeHandler handler : handlerList) {
             NodeHandler prev = handlers.put(handler.nodeCode(), handler);
             if (prev != null) {

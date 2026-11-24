@@ -6,6 +6,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /** 流程分页响应（含版本状态聚合） */
+@Schema(description = "流程分页响应（含版本状态聚合）")
 @Data
 public class ProcessPageResp {
 

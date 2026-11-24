@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -52,7 +53,17 @@ class DagTriggerSchedulerTest {
         when(redisLock.tryLock(anyString(), anyLong(), any())).thenReturn("req-1");
         redisLockProvider = (ObjectProvider<RedisLock>) mock(ObjectProvider.class);
         when(redisLockProvider.getIfAvailable()).thenReturn(redisLock);
-        scheduler = new DagTriggerScheduler(versionService, dagInstanceService, properties, redisLockProvider);
+        scheduler = buildScheduler();
+    }
+
+    /** @Resource 字段注入的手工装配 */
+    private DagTriggerScheduler buildScheduler() {
+        DagTriggerScheduler scheduler = new DagTriggerScheduler();
+        ReflectionTestUtils.setField(scheduler, "versionService", versionService);
+        ReflectionTestUtils.setField(scheduler, "dagInstanceService", dagInstanceService);
+        ReflectionTestUtils.setField(scheduler, "properties", properties);
+        ReflectionTestUtils.setField(scheduler, "redisLockProvider", redisLockProvider);
+        return scheduler;
     }
 
     @Test
@@ -83,7 +94,7 @@ class DagTriggerSchedulerTest {
         when(dagInstanceService.launch(any())).thenReturn(1L)
             .thenThrow(ValidationException.of("traceCode 已存在: TIMER-d1-v1-x"));
 
-        DagTriggerScheduler peer = new DagTriggerScheduler(versionService, dagInstanceService, properties, redisLockProvider);
+        DagTriggerScheduler peer = buildScheduler();
         LocalDateTime t0 = LocalDateTime.now().withNano(0);
         // 模拟集群两节点扫描同一到期槽位：后触发者被 launch 幂等校验拦截，不外抛
         assertDoesNotThrow(() -> {

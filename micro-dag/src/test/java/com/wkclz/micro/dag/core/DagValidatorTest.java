@@ -4,6 +4,7 @@ import com.wkclz.micro.dag.api.NodeContext;
 import com.wkclz.micro.dag.api.NodeHandler;
 import com.wkclz.micro.dag.api.NodeHandlerRegistry;
 import com.wkclz.micro.dag.api.NodeResult;
+import com.wkclz.micro.dag.bean.constant.DagConstants;
 import com.wkclz.micro.dag.bean.dto.DagDefModel;
 import com.wkclz.micro.dag.bean.dto.EdgeDef;
 import com.wkclz.micro.dag.bean.dto.NodeDef;
@@ -12,6 +13,7 @@ import com.wkclz.micro.dag.bean.enums.SystemHandler;
 import com.wkclz.micro.dag.handler.system.SystemStartHandler;
 import com.wkclz.micro.dag.handler.system.SystemTimerHandler;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Arrays;
 import java.util.List;
@@ -53,7 +55,7 @@ class DagValidatorTest {
 
     private EdgeDef conditionEdge(String fromCode, String toCode) {
         EdgeDef e = edge(fromCode, toCode);
-        e.setType(EdgeDef.TYPE_CONDITION);
+        e.setType(DagConstants.EDGE_TYPE_CONDITION);
         e.setWhenExpr("${ctx.k} == 'v'");
         return e;
     }
@@ -72,8 +74,11 @@ class DagValidatorTest {
 
     /** 按编码集合构建注册表，替代原 Set<String> 入参 */
     private NodeHandlerRegistry registry(String... codes) {
-        return new NodeHandlerRegistry(
+        NodeHandlerRegistry registry = new NodeHandlerRegistry();
+        ReflectionTestUtils.setField(registry, "handlerList",
             Arrays.stream(codes).map(this::handlerOf).toList());
+        registry.init();
+        return registry;
     }
 
     @Test
@@ -222,7 +227,7 @@ class DagValidatorTest {
         def.setNodes(List.of(specialNode("start", NodeType.START.getCode()), node("a"), node("b"),
             specialNode("end", NodeType.END.getCode())));
         EdgeDef e = edge("a", "b");
-        e.setType(EdgeDef.TYPE_CONDITION);
+        e.setType(DagConstants.EDGE_TYPE_CONDITION);
         def.setEdges(List.of(edge("start", "a"), e, edge("b", "end")));
         List<String> errors = validator.validate(def, registry("h-a", "h-b"));
         assertEquals(1, errors.size());
@@ -520,8 +525,11 @@ class DagValidatorTest {
 
     /** 含系统 handler 的注册表 */
     private NodeHandlerRegistry systemRegistry() {
-        return new NodeHandlerRegistry(
+        NodeHandlerRegistry registry = new NodeHandlerRegistry();
+        ReflectionTestUtils.setField(registry, "handlerList",
             List.of(new SystemStartHandler(), new SystemTimerHandler(), handlerOf("h-a")));
+        registry.init();
+        return registry;
     }
 
     @Test

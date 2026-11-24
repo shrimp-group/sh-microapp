@@ -41,8 +41,15 @@ class DagEngineServiceTest {
         versionService = mock(DagProcessVersionService.class);
         DagExecutionLogService logService = mock(DagExecutionLogService.class);
         DagRedisPublisher publisher = mock(DagRedisPublisher.class);
-        engine = new DagEngineService(instanceService, versionService, logService,
-            new DagReadyCalculator(new DagExpressionEvaluator()), new DagRetryCalculator(), publisher);
+        DagReadyCalculator readyCalculator = new DagReadyCalculator();
+        ReflectionTestUtils.setField(readyCalculator, "evaluator", new DagExpressionEvaluator());
+        engine = new DagEngineService();
+        ReflectionTestUtils.setField(engine, "instanceService", instanceService);
+        ReflectionTestUtils.setField(engine, "versionService", versionService);
+        ReflectionTestUtils.setField(engine, "logService", logService);
+        ReflectionTestUtils.setField(engine, "readyCalculator", readyCalculator);
+        ReflectionTestUtils.setField(engine, "retryCalculator", new DagRetryCalculator());
+        ReflectionTestUtils.setField(engine, "publisher", publisher);
         ReflectionTestUtils.setField(engine, "mapper", nodeMapper);
     }
 
@@ -153,7 +160,9 @@ class DagEngineServiceTest {
     @Test
     void instanceTerminalStatus_helper() {
         // 直接复用 DagReadyCalculator 已测逻辑，此处仅防回归
-        Optional<String> s = new DagReadyCalculator(new DagExpressionEvaluator())
+        DagReadyCalculator calc = new DagReadyCalculator();
+        ReflectionTestUtils.setField(calc, "evaluator", new DagExpressionEvaluator());
+        Optional<String> s = calc
             .instanceTerminalStatus(Map.of("a", com.wkclz.micro.dag.bean.enums.NodeStatus.FAILED));
         assertEquals("FAILED", s.get());
     }

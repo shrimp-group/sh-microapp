@@ -6,6 +6,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 /** 流程版本元信息响应 */
+@Schema(description = "流程版本元信息响应")
 @Data
 public class ProcessVersionResp {
 

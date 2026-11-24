@@ -3,6 +3,7 @@ package com.wkclz.micro.dag.bean.req;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+@Schema(description = "节点人工干预请求（跳过/改参/重置）")
 @Data
 public class NodeInterveneReq {
 
