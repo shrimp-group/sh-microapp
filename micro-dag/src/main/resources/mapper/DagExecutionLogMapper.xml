@@ -9,4 +9,11 @@
         ORDER BY id
     </select>
 
+    <select id="listByInstanceCode" resultType="com.wkclz.micro.dag.bean.entity.DagExecutionLog">
+        SELECT id, instance_code, node_code, attempt, event, detail_json, log_text, worker, create_time
+        FROM dag_execution_log
+        WHERE instance_code = #{instanceCode} AND deleted = 0
+        ORDER BY id
+    </select>
+
 </mapper>

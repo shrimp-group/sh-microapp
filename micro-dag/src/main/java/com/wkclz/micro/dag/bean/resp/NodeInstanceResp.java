@@ -68,6 +68,9 @@ public class NodeInstanceResp {
     @Schema(description = "停止原因")
     private String stopReason;
 
+    @Schema(description = "最后一次执行耗时 ms（最后一次 CLAIM 至该次终态事件；RUNNING 中按当前时刻持续计算）")
+    private Long lastCostMs;
+
     @Schema(description = "创建时间")
     private LocalDateTime createTime;
 

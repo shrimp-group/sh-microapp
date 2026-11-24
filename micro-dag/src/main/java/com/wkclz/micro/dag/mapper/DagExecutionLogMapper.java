@@ -12,4 +12,7 @@ public interface DagExecutionLogMapper extends BaseMapper<DagExecutionLog> {
 
     /** 按节点查询执行记录（时间正序） */
     List<DagExecutionLog> listByNode(@Param("instanceCode") String instanceCode, @Param("nodeCode") String nodeCode);
+
+    /** 按实例查询执行记录（时间正序，最后一次执行耗时计算用） */
+    List<DagExecutionLog> listByInstanceCode(@Param("instanceCode") String instanceCode);
 }

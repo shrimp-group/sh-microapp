@@ -38,4 +38,9 @@ public class DagExecutionLogService extends BaseService<DagExecutionLog, DagExec
     public List<DagExecutionLog> listByNode(String instanceCode, String nodeCode) {
         return mapper.listByNode(instanceCode, nodeCode);
     }
+
+    /** 按实例查询执行记录（时间正序） */
+    public List<DagExecutionLog> listByInstance(String instanceCode) {
+        return mapper.listByInstanceCode(instanceCode);
+    }
 }

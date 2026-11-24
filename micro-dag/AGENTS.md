@@ -7,8 +7,6 @@
 重跑清理钩子、唯一跟踪编码回填、自研分支表达式引擎、节点分类（SYSTEM/DEMO/BUSINESS）、
 系统节点 handler 化（开始/结束/分支/定时器）、开始节点时间驱动（cron 定时自动发起实例）。
 
-设计文档：`docs/superpowers/specs/2026-11-14-micro-dag-design.md`
-
 ## 业务方接入
 
 1. 引入依赖：
@@ -102,6 +100,7 @@ GraalJS 依赖为 optional，classpath 缺失时 `demo-script-exec` 自动跳过
 
 - 状态推进双通道：完成事件即时回调 + 轮询兜底，汇合于 DB CAS，天然幂等
 - 节点参数 schema：NodeHandler.paramSchema() 声明参数定义（NodeParamDef：key/label/type/必填/requiredWhen/范围/选项），随 handler/list 下发，设计器按定义渲染参数表单（表单/JSON 双模式）；DagValidator 保存与发布时按定义校验（必填/范围/CRON/DATETIME/SELECT/KEY_VALUE），schema 未声明的自由键不拦截；免 handler 的 START 节点 cron 校验按 nodeType 兜底
+- 入口/汇点约束：定义必须恰有 1 个 START 与 1 个 END，START 为唯一入口（全图仅其入度为 0）、END 为唯一汇点（全图仅其出度为 0），保存与发布共用校验（publish 内旧的"缺少起始节点"临时检查已删除）
 - 就绪领取唯一入口：DagScheduler.scan() 的 casClaim，防重复执行
 - 故障转移：租约过期（lease_expire_time < now）→ attempt ≤ maxRetry 重置 PENDING 重派，attempt 耗尽置 FAILED（error_msg=租约过期回收，重试次数已耗尽）
 - 重试：失败且 attempt ≤ maxRetry → RETRYING + next_retry_time，到期由调度提升
@@ -116,7 +115,8 @@ GraalJS 依赖为 optional，classpath 缺失时 `demo-script-exec` 自动跳过
 - 过程日志：handler 调 ctx.log(message) 内存缓冲（线程安全，上限 dag.log.max-chars，超限丢弃并置 truncated）；
   flusher 单线程按 dag.log.flush-interval-ms 扫描落库 NODE_LOG 事件（log_text 独立字段，无 detail_json），节点终态 finally 兜底 flush 一次并补 `...[truncated]` 标记；
   落库异常在 flush 内部消化（log.error 显形），防止 scheduleAtFixedRate 任务被异常永久取消导致 flusher 静默停摆
-- DDL 迁移（存量库升级时执行，新建库直接用最新表定义）：`ALTER TABLE dag_execution_log MODIFY detail_json JSON;` `ALTER TABLE dag_execution_log ADD COLUMN log_text TEXT COMMENT '过程日志内容(NODE_LOG 专用)';`（迁移前校验存量 detail_json 均为合法 JSON，详见 docs/tasks/micro-dag/02-data-layer.md）
+- 执行耗时：实例详情按节点计算 lastCostMs（最后一次 CLAIM → 该次终态事件 SUCCESS/FAIL/NOT_READY/TIMEOUT/INTERRUPT/LEASE_RECLAIM 的时间差；RUNNING 未结按当前时刻持续计算），画布节点/气泡展示用
+- DDL 迁移（存量库升级时执行，新建库直接用最新表定义）：`ALTER TABLE dag_execution_log MODIFY detail_json JSON;` `ALTER TABLE dag_execution_log ADD COLUMN log_text TEXT COMMENT '过程日志内容(NODE_LOG 专用)';`（迁移前校验存量 detail_json 均为合法 JSON）
 
 ## API 一览（前缀 /micro-dag，详见 rest/Route.java）
 
@@ -133,8 +133,9 @@ GraalJS 依赖为 optional，classpath 缺失时 `demo-script-exec` 自动跳过
 - DagInstanceList：实例分页列表（查询/发起/详情/终止），状态中文展示，不做定时刷新（关闭详情弹窗后刷新），详情动作经全屏弹窗内嵌详情组件
 - DagGraph：X6 画布封装——节点左右端口磁吸连线（仅 out→in）、mousedown 即选中、
   拖动坐标实时回写 def、拖入与连线均为增量操作（不做全量 render，避免坐标回跳重排）、
-  readonly 模式节点本体保持类型配色，执行状态经右上角标圆点（状态色）+ 第二行中文状态文字呈现
+  readonly 模式节点本体保持类型配色，执行状态经右上角标圆点（状态色）+ 第二行中文状态文字呈现，
+  第二行状态文字后拼接最后一次执行耗时（costMap，XhXmXsXms 格式）
 - DagInstanceDetail：实例详情（全屏 dialog 内嵌组件，支持 instanceCode prop + route query 兜底）——实例/节点状态中文、
-  节点七态色板着色 + 画布状态图例、点击节点经 el-popover 气泡展示概要与干预操作（中断/跳过/重置/重跑），
+  节点七态色板着色 + 画布状态图例、点击节点经 el-popover 气泡展示概要（含耗时行）与干预操作（中断/跳过/重置/重跑），
   执行记录时间线由气泡入口打开 NodeDetailDrawer 弹窗查看（事件枚举中文）
 - NodeDetailDrawer：执行记录时间线弹窗（仅承载 logs，事件枚举中文展示，由气泡入口打开）

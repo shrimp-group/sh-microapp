@@ -6,9 +6,11 @@ import com.wkclz.micro.dag.bean.dto.DagDefModel;
 import com.wkclz.micro.dag.bean.dto.EdgeDef;
 import com.wkclz.micro.dag.bean.dto.NodeDef;
 import com.wkclz.micro.dag.bean.entity.DagProcessVersion;
+import com.wkclz.micro.dag.bean.entity.DagExecutionLog;
 import com.wkclz.micro.dag.bean.entity.DagInstance;
 import com.wkclz.micro.dag.bean.entity.DagNodeInstance;
 import com.wkclz.micro.dag.bean.enums.BackoffType;
+import com.wkclz.micro.dag.bean.enums.ExecutionEvent;
 import com.wkclz.micro.dag.bean.enums.ProcessStatus;
 import com.wkclz.micro.dag.bean.enums.InstanceStatus;
 import com.wkclz.micro.dag.bean.enums.NodeStatus;
@@ -29,10 +31,13 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
@@ -42,12 +47,20 @@ public class DagInstanceService extends BaseService<DagInstance, DagInstanceMapp
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
+    /** 一次执行的终态事件：耗时自 CLAIM 起算至该集合中的事件（LEASE_RECLAIM 为租约过期时该次的兜底终态） */
+    private static final Set<String> COST_TERMINAL_EVENTS = Set.of(
+        ExecutionEvent.SUCCESS.name(), ExecutionEvent.FAIL.name(), ExecutionEvent.NOT_READY.name(),
+        ExecutionEvent.TIMEOUT.name(), ExecutionEvent.INTERRUPT.name(), ExecutionEvent.LEASE_RECLAIM.name());
+
     private final DagProcessVersionService versionService;
     private final DagNodeInstanceMapper nodeInstanceMapper;
+    private final DagExecutionLogService executionLogService;
 
-    public DagInstanceService(DagProcessVersionService versionService, DagNodeInstanceMapper nodeInstanceMapper) {
+    public DagInstanceService(DagProcessVersionService versionService, DagNodeInstanceMapper nodeInstanceMapper,
+                              DagExecutionLogService executionLogService) {
         this.versionService = versionService;
         this.nodeInstanceMapper = nodeInstanceMapper;
+        this.executionLogService = executionLogService;
     }
 
     /**
@@ -164,6 +177,8 @@ public class DagInstanceService extends BaseService<DagInstance, DagInstanceMapp
         DagDefModel dagDef = versionService.load(instance.getDagCode(), instance.getDagVersion());
         Map<String, NodeDef> defMap = dagDef.getNodes() == null ? Map.of()
             : dagDef.getNodes().stream().collect(Collectors.toMap(NodeDef::getCode, n -> n));
+        // 最后一次执行耗时：供画布节点/详情气泡展示
+        Map<String, Long> costMap = computeLastCostMs(nodes, executionLogService.listByInstance(instance.getInstanceCode()), LocalDateTime.now());
         List<NodeInstanceResp> nodeResps = nodes.stream().map(n -> {
             NodeInstanceResp r = new NodeInstanceResp();
             BeanUtils.copyProperties(n, r);
@@ -172,6 +187,7 @@ public class DagInstanceService extends BaseService<DagInstance, DagInstanceMapp
                 r.setPosX(nd.getPosX());
                 r.setPosY(nd.getPosY());
             }
+            r.setLastCostMs(costMap.get(n.getNodeCode()));
             return r;
         }).toList();
         view.setNodes(nodeResps);
@@ -186,6 +202,42 @@ public class DagInstanceService extends BaseService<DagInstance, DagInstanceMapp
         // 画布连线与节点坐标均来自定义快照（posX/posY 已随 NodeInstanceResp 带出）
         view.setEdges(dagDef.getEdges());
         return view;
+    }
+
+    /**
+     * 各节点最后一次执行耗时（ms）：按节点最大 attempt 的 CLAIM 起算，至该 attempt 的终态事件；
+     * 无终态事件且节点 RUNNING 时按当前时刻持续计算；从未领取的节点不计耗时
+     */
+    private Map<String, Long> computeLastCostMs(List<DagNodeInstance> nodes, List<DagExecutionLog> logs, LocalDateTime now) {
+        // attempt → CLAIM 时间（终态事件结算后移除，剩余项即执行中未结的领取）
+        Map<String, Map<Integer, LocalDateTime>> claims = new HashMap<>();
+        Map<String, Long> costMap = new HashMap<>();
+        for (DagExecutionLog l : logs) {
+            if (l.getNodeCode() == null || l.getAttempt() == null || l.getCreateTime() == null) {
+                continue;
+            }
+            Map<Integer, LocalDateTime> nodeClaims = claims.computeIfAbsent(l.getNodeCode(), k -> new HashMap<>());
+            if (ExecutionEvent.CLAIM.name().equals(l.getEvent())) {
+                nodeClaims.put(l.getAttempt(), l.getCreateTime());
+            } else if (COST_TERMINAL_EVENTS.contains(l.getEvent())) {
+                LocalDateTime claimTime = nodeClaims.remove(l.getAttempt());
+                if (claimTime != null) {
+                    costMap.put(l.getNodeCode(), Duration.between(claimTime, l.getCreateTime()).toMillis());
+                }
+            }
+        }
+        // RUNNING 中未结的领取：耗时随轮询刷新持续增长
+        for (DagNodeInstance n : nodes) {
+            if (!NodeStatus.RUNNING.name().equals(n.getStatus()) || n.getAttempt() == null) {
+                continue;
+            }
+            Map<Integer, LocalDateTime> nodeClaims = claims.get(n.getNodeCode());
+            LocalDateTime claimTime = nodeClaims == null ? null : nodeClaims.get(n.getAttempt());
+            if (claimTime != null) {
+                costMap.put(n.getNodeCode(), Duration.between(claimTime, now).toMillis());
+            }
+        }
+        return costMap;
     }
 
     private InstanceResp toResp(DagInstance instance) {

@@ -167,7 +167,7 @@ class DagValidatorTest {
         def.setNodes(List.of(specialNode("start", NodeType.START.getCode()), node("a"), node("b"),
             specialNode("end", NodeType.END.getCode())));
         def.setEdges(List.of(edge("start", "a"), edge("a", "b"), edge("a", "end")));
-        List<String> errors = validator.validate(def, registry("h-a"));
+        List<String> errors = validator.validate(def, registry("h-a", "h-b"));
         assertEquals(1, errors.size());
         assertTrue(errors.get(0).contains("节点不在结束位置（存在出度为 0 的非结束节点）"));
         assertTrue(errors.get(0).contains("b"));
@@ -301,8 +301,8 @@ class DagValidatorTest {
             specialNode("end", NodeType.END.getCode())));
         def.setEdges(List.of(edge("a", "end")));
         List<String> errors = validator.validate(def, registry("h-a"));
-        // start 无出边：a 成为非 START 入口，入口约束错误与局部约束错误并存
-        assertEquals(2, errors.size());
+        // start 无出边：a 成非 START 入口、start 自身成非 END 汇点，与局部约束错误并存
+        assertEquals(3, errors.size());
         assertTrue(errors.stream().anyMatch(e -> e.contains("开始节点必须连出下游")));
     }
 
@@ -578,8 +578,9 @@ class DagValidatorTest {
         NodeDef t = node("t");
         t.setHandler(SystemHandler.TIMER.getCode());
         t.setParams(Map.of("delayUntil", "not-a-time"));
-        def.setNodes(List.of(t));
-        def.setEdges(List.of());
+        def.setNodes(List.of(specialNode("start", NodeType.START.getCode()), t,
+            specialNode("end", NodeType.END.getCode())));
+        def.setEdges(List.of(edge("start", "t"), edge("t", "end")));
         List<String> errors = validator.validate(def, systemRegistry());
         assertEquals(1, errors.size());
         assertTrue(errors.get(0).contains("非法"));
@@ -593,8 +594,8 @@ class DagValidatorTest {
         NodeDef start = specialNode("start", NodeType.START.getCode());
         start.setHandler(SystemHandler.START.getCode());
         start.setParams(Map.of("triggerParams", "x"));   // KEY_VALUE 类型须为对象结构
-        def.setNodes(List.of(start, node("a")));
-        def.setEdges(List.of(edge("start", "a")));
+        def.setNodes(List.of(start, node("a"), specialNode("end", NodeType.END.getCode())));
+        def.setEdges(List.of(edge("start", "a"), edge("a", "end")));
         List<String> errors = validator.validate(def, systemRegistry());
         assertEquals(1, errors.size());
         assertTrue(errors.get(0).contains("对象结构"));
@@ -608,8 +609,8 @@ class DagValidatorTest {
         NodeDef start = specialNode("start", NodeType.START.getCode());
         start.setHandler(SystemHandler.START.getCode());
         start.setParams(Map.of("triggerType", "XXX"));   // 不在 SELECT 选项中
-        def.setNodes(List.of(start, node("a")));
-        def.setEdges(List.of(edge("start", "a")));
+        def.setNodes(List.of(start, node("a"), specialNode("end", NodeType.END.getCode())));
+        def.setEdges(List.of(edge("start", "a"), edge("a", "end")));
         List<String> errors = validator.validate(def, systemRegistry());
         assertEquals(1, errors.size());
         assertTrue(errors.get(0).contains("取值非法"));
@@ -623,8 +624,9 @@ class DagValidatorTest {
         NodeDef t = node("t");
         t.setHandler(SystemHandler.TIMER.getCode());
         t.setParams(Map.of("customKey", "自由参数", "delayMs", 500));   // schema 未声明的自由键不拦截
-        def.setNodes(List.of(t));
-        def.setEdges(List.of());
+        def.setNodes(List.of(specialNode("start", NodeType.START.getCode()), t,
+            specialNode("end", NodeType.END.getCode())));
+        def.setEdges(List.of(edge("start", "t"), edge("t", "end")));
         List<String> errors = validator.validate(def, systemRegistry());
         assertTrue(errors.isEmpty());
     }

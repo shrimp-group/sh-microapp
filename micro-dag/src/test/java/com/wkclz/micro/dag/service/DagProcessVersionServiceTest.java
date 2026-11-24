@@ -9,6 +9,7 @@ import com.wkclz.micro.dag.bean.dto.EdgeDef;
 import com.wkclz.micro.dag.bean.dto.NodeDef;
 import com.wkclz.micro.dag.bean.entity.DagProcess;
 import com.wkclz.micro.dag.bean.entity.DagProcessVersion;
+import com.wkclz.micro.dag.bean.entity.DagEdge;
 import com.wkclz.micro.dag.bean.entity.DagNode;
 import com.wkclz.micro.dag.bean.enums.NodeType;
 import com.wkclz.micro.dag.bean.enums.ProcessStatus;
@@ -57,7 +58,7 @@ class DagProcessVersionServiceTest {
         registry = mock(NodeHandlerRegistry.class);
         // 含系统 handler（system-start/system-end 永久注册，特殊节点带 handler 时需已注册）
         when(registry.codes()).thenReturn(Set.of("h1", "system-start", "system-end"));
-        // 规则 8 按 handler.paramSchema 校验 params：占位 handler 无 schema，保证既有用例不被参数校验拦截
+        // 规则 9 按 handler.paramSchema 校验 params：占位 handler 无 schema，保证既有用例不被参数校验拦截
         when(registry.get(any(String.class))).thenAnswer(inv -> new NodeHandler() {
             @Override
             public String nodeCode() { return String.valueOf(inv.getArgument(0)); }
@@ -84,14 +85,25 @@ class DagProcessVersionServiceTest {
         return p;
     }
 
-    private DagNode nodeRow(String code) {
+    private DagNode nodeRow(String code, String nodeType, String handler) {
         DagNode row = new DagNode();
         row.setDagCode("d1");
         row.setDagVersion(0);
         row.setNodeCode(code);
         row.setNodeName(code);
-        row.setHandler("h1");
+        row.setNodeType(nodeType);
+        row.setHandler(handler);
         return row;
+    }
+
+    private DagEdge edgeRow(String from, String to) {
+        DagEdge e = new DagEdge();
+        e.setDagCode("d1");
+        e.setDagVersion(0);
+        e.setEdgeCode(from + "->" + to);
+        e.setFromCode(from);
+        e.setToCode(to);
+        return e;
     }
 
     private NodeDef node(String code, String nodeType, String handler) {
@@ -114,8 +126,10 @@ class DagProcessVersionServiceTest {
         ProcessVersionCreateReq req = new ProcessVersionCreateReq();
         req.setDagCode(dagCode);
         req.setDagName(dagName);
-        req.setNodes(List.of(node("n1", null, "h1")));
-        req.setEdges(List.of());
+        // 定义需满足入口/汇点约束：唯一 START 入口、唯一 END 汇点
+        req.setNodes(List.of(node("start", NodeType.START.getCode(), null), node("n1", null, "h1"),
+            node("end", NodeType.END.getCode(), null)));
+        req.setEdges(List.of(edge("start", "n1"), edge("n1", "end")));
         return req;
     }
 
@@ -132,8 +146,10 @@ class DagProcessVersionServiceTest {
         DagProcessVersion d = version();
         when(mapper.selectById(1L)).thenReturn(d);
         when(mapper.selectOneByEntity(any())).thenReturn(d);
-        when(nodeMapper.selectByEntity(any())).thenReturn(List.of(nodeRow("a"), nodeRow("b")));
-        when(edgeMapper.selectByEntity(any())).thenReturn(List.of());
+        when(nodeMapper.selectByEntity(any())).thenReturn(List.of(
+            nodeRow("start", NodeType.START.getCode(), null), nodeRow("a", null, "h1"),
+            nodeRow("end", NodeType.END.getCode(), null)));
+        when(edgeMapper.selectByEntity(any())).thenReturn(List.of(edgeRow("start", "a"), edgeRow("a", "end")));
         DagProcessVersion existing = new DagProcessVersion();
         existing.setDagVersion(1);
         when(mapper.selectByEntity(any())).thenReturn(List.of(existing));
@@ -144,7 +160,7 @@ class DagProcessVersionServiceTest {
         assertEquals("PUBLISHED", d.getStatus());
         // 节点/边行随发布版本重挂，新版本可 load（否则发布后设计详情报"版本无节点"）
         ArgumentCaptor<DagNode> nodeCaptor = ArgumentCaptor.forClass(DagNode.class);
-        verify(nodeMapper, times(2)).insert(nodeCaptor.capture());
+        verify(nodeMapper, times(3)).insert(nodeCaptor.capture());
         for (DagNode row : nodeCaptor.getAllValues()) {
             assertEquals(2, row.getDagVersion());
         }
@@ -174,7 +190,7 @@ class DagProcessVersionServiceTest {
         ArgumentCaptor<DagProcess> pCap = ArgumentCaptor.forClass(DagProcess.class);
         verify(processMapper).updateById(pCap.capture());
         assertEquals("新名", pCap.getValue().getDagName());
-        verify(nodeMapper, times(1)).insert(any());
+        verify(nodeMapper, times(3)).insert(any());
     }
 
     @Test
@@ -208,7 +224,9 @@ class DagProcessVersionServiceTest {
         ProcessVersionUpdateReq req = new ProcessVersionUpdateReq();
         req.setId(9L);
         req.setDagName("名");
-        req.setNodes(List.of(node("n1", null, "h1")));
+        req.setNodes(List.of(node("start", NodeType.START.getCode(), null), node("n1", null, "h1"),
+            node("end", NodeType.END.getCode(), null)));
+        req.setEdges(List.of(edge("start", "n1"), edge("n1", "end")));
 
         ValidationException e = assertThrows(ValidationException.class, () -> service.updateDraft(req));
         assertTrue(e.getMessage().contains("仅 DRAFT 版本可修改"));
