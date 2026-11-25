@@ -5,15 +5,15 @@ import com.wkclz.core.base.R;
 import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.flowable.bean.entity.FlowableErrorLog;
 import com.wkclz.micro.flowable.bean.enums.ErrorType;
+import com.wkclz.micro.flowable.bean.enums.HandleStatus;
 import com.wkclz.micro.flowable.config.FlowableErrorLogProperties;
 import com.wkclz.micro.flowable.service.FlowableErrorLogService;
+import jakarta.annotation.Resource;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.service.annotation.GetExchange;
@@ -29,17 +29,17 @@ import java.time.LocalDateTime;
  * ErrorType 按约定推导，无需在 client 接口上标注：
  * GET → QUERY_ERROR；POST 且方法名 start 前缀 → START_ERROR；deploy、remove 前缀 → DEPLOY_ERROR；其余 POST → APPROVE_ERROR
  */
+@Slf4j
 @Aspect
 @Component
 public class FlowableClientAspect {
 
-    private static final Logger log = LoggerFactory.getLogger(FlowableClientAspect.class);
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    @Autowired
+    @Resource
     private FlowableErrorLogService errorLogService;
-    @Autowired
+    @Resource
     private FlowableErrorLogProperties errorLogProperties;
 
     /**
@@ -117,7 +117,7 @@ public class FlowableClientAspect {
             errorLog.setClientMethod(clientMethod);
             errorLog.setErrorMessage(errorMessage != null && errorMessage.length() > 1023 ? errorMessage.substring(0, 1023) : errorMessage);
             errorLog.setOccurTime(LocalDateTime.now());
-            errorLog.setHandleStatus("PENDING");
+            errorLog.setHandleStatus(HandleStatus.PENDING.name());
             if (requestData != null) {
                 errorLog.setRequestData(OBJECT_MAPPER.writeValueAsString(requestData));
             }

@@ -6,6 +6,7 @@ import com.wkclz.core.exception.ValidationException;
 import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.flowable.client.bean.req.ProcessStartReq;
 import com.wkclz.flowable.client.bean.req.ProcInsIdsReq;
+import com.wkclz.flowable.client.bean.resp.ActiveTaskResp;
 import com.wkclz.flowable.client.bean.resp.InstanceActiveTaskResp;
 import com.wkclz.flowable.client.bean.resp.ProcessInstanceResp;
 import com.wkclz.flowable.client.config.FlowableClient;
@@ -13,6 +14,7 @@ import com.wkclz.micro.flowable.bean.entity.FlowableApply;
 import com.wkclz.micro.flowable.bean.entity.FlowableApproval;
 import com.wkclz.micro.flowable.bean.entity.FlowableNodeConfig;
 import com.wkclz.micro.flowable.bean.entity.FlowableProcessDesign;
+import com.wkclz.micro.flowable.bean.constant.FlowableConstants;
 import com.wkclz.micro.flowable.bean.enums.ApplyStatus;
 import com.wkclz.micro.flowable.bean.enums.ApprovalAction;
 import com.wkclz.micro.flowable.bean.req.ApplyCreateReq;
@@ -29,39 +31,41 @@ import com.wkclz.tool.utils.BeanUtil;
 import com.wkclz.web.bean.IdReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Tag(name = "4.业务端-流程申请", description = "流程申请管理接口")
 @RestController
 @RequestMapping(Route.PREFIX)
 @Validated
 public class ApplyRest {
 
-    private static final Logger log = LoggerFactory.getLogger(ApplyRest.class);
 
-    @Autowired
+    @Resource
     private FlowableClient flowableClient;
-    @Autowired
+    @Resource
     private RedisIdGenerator redisIdGenerator;
-    @Autowired
+    @Resource
     private FlowableApplyService applyService;
-    @Autowired
+    @Resource
     private FlowableProcessDesignService designService;
-    @Autowired
+    @Resource
     private FlowableNodeConfigService nodeConfigService;
-    @Autowired
+    @Resource
     private FlowableApprovalService approvalService;
 
     @Operation(summary = "1.流程申请-发起")
@@ -72,9 +76,7 @@ public class ApplyRest {
         log.info("发起流程申请: designCode={}, user={}", req.getDesignCode(), userCode);
 
         // 查询设计
-        FlowableProcessDesign designParam = new FlowableProcessDesign();
-        designParam.setDesignCode(req.getDesignCode());
-        FlowableProcessDesign design = designService.selectOneByEntity(designParam);
+        FlowableProcessDesign design = designService.selectByDesignCode(req.getDesignCode());
         if (design == null) {
             throw ValidationException.of("流程设计不存在: {}", req.getDesignCode());
         }
@@ -121,7 +123,7 @@ public class ApplyRest {
     public R<ApplyInfoResp> info(@Valid IdReq req) {
         ApplyInfoResp resp = applyService.selectInfoById(req.getId());
         if (resp == null) {
-            log.error("申请详情不存在: id={}", req.getId());
+            log.warn("申请详情不存在: id={}", req.getId());
             throw ValidationException.of("申请单不存在");
         }
         fillCurrentNode(Collections.singletonList(resp));
@@ -133,10 +135,8 @@ public class ApplyRest {
     @PostMapping(Route.APPLY_CREATE_DRAFT)
     public R<ApplyCreateResp> createDraft(@Valid @RequestBody ApplyCreateReq req) {
         log.info("保存申请草稿: designCode={}, user={}", req.getDesignCode(), IdentityContext.getUserCode());
-        FlowableProcessDesign designParam = new FlowableProcessDesign();
-        designParam.setDesignCode(req.getDesignCode());
-        if (designService.selectOneByEntity(designParam) == null) {
-            log.error("保存申请草稿失败, 流程设计不存在: designCode={}", req.getDesignCode());
+        if (designService.selectByDesignCode(req.getDesignCode()) == null) {
+            log.warn("保存申请草稿失败, 流程设计不存在: designCode={}", req.getDesignCode());
             throw ValidationException.of("流程设计不存在: {}", req.getDesignCode());
         }
         FlowableApply apply = createApply(req, ApplyStatus.DRAFT.name());
@@ -156,18 +156,16 @@ public class ApplyRest {
             throw ValidationException.of("申请单不存在");
         }
         if (!apply.getStatus().equals(ApplyStatus.DRAFT.name())) {
-            log.error("提交申请草稿失败, 非草稿状态: id={}, status={}", req.getId(), apply.getStatus());
+            log.warn("提交申请草稿失败, 非草稿状态: id={}, status={}", req.getId(), apply.getStatus());
             throw ValidationException.of("仅草稿可提交");
         }
         if (!apply.getStartUserId().equals(userCode)) {
-            log.error("提交申请草稿失败, 非本人申请单: id={}, startUser={}, user={}", req.getId(), apply.getStartUserId(), userCode);
+            log.warn("提交申请草稿失败, 非本人申请单: id={}, startUser={}, user={}", req.getId(), apply.getStartUserId(), userCode);
             throw ValidationException.of("无权操作他人申请单");
         }
-        FlowableProcessDesign designParam = new FlowableProcessDesign();
-        designParam.setDesignCode(apply.getDesignCode());
-        FlowableProcessDesign design = designService.selectOneByEntity(designParam);
+        FlowableProcessDesign design = designService.selectByDesignCode(apply.getDesignCode());
         if (design == null) {
-            log.error("提交申请草稿失败, 流程设计不存在: designCode={}", apply.getDesignCode());
+            log.warn("提交申请草稿失败, 流程设计不存在: designCode={}", apply.getDesignCode());
             throw ValidationException.of("流程设计不存在: {}", apply.getDesignCode());
         }
         ProcessStartReq startReq = new ProcessStartReq();
@@ -194,7 +192,7 @@ public class ApplyRest {
     /** 创建申请单，applyCode 由 redisIdGenerator 生成 */
     private FlowableApply createApply(ApplyCreateReq req, String status) {
         FlowableApply apply = new FlowableApply();
-        apply.setApplyCode(redisIdGenerator.generateIdWithPrefix("apply_"));
+        apply.setApplyCode(redisIdGenerator.generateIdWithPrefix(FlowableConstants.APPLY_CODE_PREFIX));
         apply.setDesignCode(req.getDesignCode());
         apply.setBusinessType(req.getBusinessType());
         apply.setBusinessSummary(req.getBusinessSummary());
@@ -225,11 +223,14 @@ public class ApplyRest {
      * 节点名引擎侧已合并直接映射；审批人按节点配置计算后去重连接，全空显示 '-'；无活动任务的行保持 null
      */
     private void fillCurrentNode(List<? extends ApplyPageResp> rows) {
-        List<String> procInsIds = rows.stream()
-                .filter(r -> ApplyStatus.RUNNING.name().equals(r.getStatus()) && r.getProcInsId() != null && !r.getProcInsId().isEmpty())
-                .map(ApplyPageResp::getProcInsId)
-                .distinct()
-                .toList();
+        List<String> procInsIds = new ArrayList<>();
+        for (ApplyPageResp row : rows) {
+            boolean running = ApplyStatus.RUNNING.name().equals(row.getStatus())
+                    && row.getProcInsId() != null && !row.getProcInsId().isEmpty();
+            if (running && !procInsIds.contains(row.getProcInsId())) {
+                procInsIds.add(row.getProcInsId());
+            }
+        }
         if (procInsIds.isEmpty()) {
             return;
         }
@@ -242,14 +243,14 @@ public class ApplyRest {
         Map<String, InstanceActiveTaskResp> assemblyMap = assemblies.stream()
                 .filter(a -> a.getProcessInstanceId() != null)
                 .collect(Collectors.toMap(InstanceActiveTaskResp::getProcessInstanceId, a -> a, (a, b) -> a));
-        Set<String> designCodes = rows.stream()
-                .filter(r -> assemblyMap.containsKey(r.getProcInsId()))
-                .map(ApplyPageResp::getDesignCode)
-                .filter(c -> c != null && !c.isEmpty())
-                .collect(Collectors.toSet());
-        Map<String, List<FlowableNodeConfig>> nodeMap = nodeConfigService.selectByDesignCodes(designCodes).stream()
-                .filter(n -> n.getDesignCode() != null)
-                .collect(Collectors.groupingBy(FlowableNodeConfig::getDesignCode));
+        Set<String> designCodes = new HashSet<>();
+        for (ApplyPageResp row : rows) {
+            if (assemblyMap.containsKey(row.getProcInsId())
+                    && row.getDesignCode() != null && !row.getDesignCode().isEmpty()) {
+                designCodes.add(row.getDesignCode());
+            }
+        }
+        Map<String, List<FlowableNodeConfig>> nodeMap = nodeConfigService.groupByDesignCode(designCodes);
         int filled = 0;
         for (ApplyPageResp row : rows) {
             InstanceActiveTaskResp assembly = assemblyMap.get(row.getProcInsId());
@@ -257,13 +258,15 @@ public class ApplyRest {
                 continue;
             }
             row.setCurrentNodeName(assembly.getCurrentNodeName());
-            String assignee = assembly.getTasks().stream()
-                    .map(t -> nodeConfigService.calcAssigneeText(
-                            t.getTaskDefinitionKey(), t.getAssignee(), row.getStartUserId(), nodeMap.get(row.getDesignCode())))
-                    .filter(a -> a != null && !a.isEmpty() && !"-".equals(a))
-                    .distinct()
-                    .collect(Collectors.joining("、"));
-            row.setCurrentAssignee(assignee.isEmpty() ? "-" : assignee);
+            Set<String> assignees = new LinkedHashSet<>();
+            for (ActiveTaskResp task : assembly.getTasks()) {
+                String text = nodeConfigService.calcAssigneeText(
+                        task.getTaskDefinitionKey(), task.getAssignee(), row.getStartUserId(), nodeMap.get(row.getDesignCode()));
+                if (text != null && !text.isEmpty() && !FlowableConstants.EMPTY_ASSIGNEE_PLACEHOLDER.equals(text)) {
+                    assignees.add(text);
+                }
+            }
+            row.setCurrentAssignee(assignees.isEmpty() ? FlowableConstants.EMPTY_ASSIGNEE_PLACEHOLDER : String.join("、", assignees));
             filled++;
         }
         log.info("回填申请当前审批节点: rows={}, filled={}", rows.size(), filled);

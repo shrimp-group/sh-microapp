@@ -23,34 +23,34 @@ import com.wkclz.micro.flowable.service.FlowableNodeConfigService;
 import com.wkclz.tool.utils.BeanUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Tag(name = "5.业务端-任务审批", description = "待办/已办/审批流转/审批意见")
 @RestController
 @RequestMapping(Route.PREFIX)
 @Validated
 public class FlowableTaskRest {
 
-    private static final Logger log = LoggerFactory.getLogger(FlowableTaskRest.class);
 
-    @Autowired
+    @Resource
     private FlowableClient flowableClient;
-    @Autowired
+    @Resource
     private FlowableApprovalService approvalService;
-    @Autowired
+    @Resource
     private FlowableApplyService applyService;
-    @Autowired
+    @Resource
     private FlowableNodeConfigService nodeConfigService;
 
     @Operation(summary = "1.任务审批-待办分页查询")
@@ -193,19 +193,22 @@ public class FlowableTaskRest {
             return;
         }
         log.info("任务业务信息回填: rows={}", page.getRecords().size());
-        Set<String> procInsIds = page.getRecords().stream()
-                .map(procInsIdGetter)
-                .filter(c -> c != null && !c.isEmpty())
-                .collect(Collectors.toSet());
+        Set<String> procInsIds = new HashSet<>();
+        for (T row : page.getRecords()) {
+            String procInsId = procInsIdGetter.apply(row);
+            if (procInsId != null && !procInsId.isEmpty()) {
+                procInsIds.add(procInsId);
+            }
+        }
         Map<String, ApplyPageResp> applyMap = applyService.selectByProcInsIdsWithDesign(procInsIds).stream()
                 .collect(Collectors.toMap(ApplyPageResp::getProcInsId, a -> a, (a, b) -> a));
-        Set<String> designCodes = applyMap.values().stream()
-                .map(ApplyPageResp::getDesignCode)
-                .filter(c -> c != null && !c.isEmpty())
-                .collect(Collectors.toSet());
-        Map<String, List<FlowableNodeConfig>> nodeMap = nodeConfigService.selectByDesignCodes(designCodes).stream()
-                .filter(n -> n.getDesignCode() != null)
-                .collect(Collectors.groupingBy(FlowableNodeConfig::getDesignCode));
+        Set<String> designCodes = new HashSet<>();
+        for (ApplyPageResp apply : applyMap.values()) {
+            if (apply.getDesignCode() != null && !apply.getDesignCode().isEmpty()) {
+                designCodes.add(apply.getDesignCode());
+            }
+        }
+        Map<String, List<FlowableNodeConfig>> nodeMap = nodeConfigService.groupByDesignCode(designCodes);
         for (T row : page.getRecords()) {
             ApplyPageResp apply = applyMap.get(procInsIdGetter.apply(row));
             if (apply == null) {
@@ -237,9 +240,7 @@ public class FlowableTaskRest {
             }
             // 通过 procInsId 查找关联的 apply
             if (procInsId != null && !procInsId.isEmpty()) {
-                FlowableApply applyParam = new FlowableApply();
-                applyParam.setProcInsId(procInsId);
-                FlowableApply apply = applyService.selectOneByEntity(applyParam);
+                FlowableApply apply = applyService.selectByProcInsId(procInsId);
                 if (apply != null) {
                     approval.setApplyId(apply.getId());
                 }
@@ -278,15 +279,8 @@ public class FlowableTaskRest {
             if (activeTasks != null && !activeTasks.isEmpty()) {
                 return; // 流程仍有活动任务，未结束
             }
-            FlowableApply applyParam = new FlowableApply();
-            applyParam.setProcInsId(procInsId);
-            FlowableApply apply = applyService.selectOneByEntity(applyParam);
+            FlowableApply apply = applyService.updateStatusByProcInsId(procInsId, status.name());
             if (apply != null) {
-                FlowableApply update = new FlowableApply();
-                update.setId(apply.getId());
-                update.setStatus(status.name());
-                update.setVersion(apply.getVersion());
-                applyService.updateByIdSelective(update);
                 log.info("流程结束，更新申请单状态: applyId={}, status={}", apply.getId(), status);
             }
         } catch (Exception e) {

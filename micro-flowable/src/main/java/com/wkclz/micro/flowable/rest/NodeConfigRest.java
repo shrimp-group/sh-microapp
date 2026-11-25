@@ -11,24 +11,23 @@ import com.wkclz.tool.utils.BeanUtil;
 import com.wkclz.web.bean.IdReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @Tag(name = "2.管理端-节点配置", description = "节点配置管理接口")
 @RestController
 @RequestMapping(Route.PREFIX)
 @Validated
 public class NodeConfigRest {
 
-    private static final Logger log = LoggerFactory.getLogger(NodeConfigRest.class);
 
-    @Autowired
+    @Resource
     private FlowableNodeConfigService nodeConfigService;
 
     @Operation(summary = "1.节点配置-列表")
@@ -67,7 +66,7 @@ public class NodeConfigRest {
         if (req.getFormFields() != null) { update.setFormFields(req.getFormFields()); }
         int rows = nodeConfigService.updateByIdSelective(update);
         if (rows == 0) {
-            log.error("节点配置更新乐观锁冲突: id={}, version={}", req.getId(), req.getVersion());
+            log.warn("节点配置更新乐观锁冲突: id={}, version={}", req.getId(), req.getVersion());
             throw ValidationException.of("配置已被他人修改，请刷新后重试");
         }
         return R.ok(rows);

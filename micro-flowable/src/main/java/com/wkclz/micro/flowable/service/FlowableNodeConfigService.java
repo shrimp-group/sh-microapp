@@ -1,17 +1,18 @@
 package com.wkclz.micro.flowable.service;
 
 import com.wkclz.core.base.BaseEntity;
+import com.wkclz.micro.flowable.bean.constant.FlowableConstants;
 import com.wkclz.micro.flowable.bean.entity.FlowableNodeConfig;
 import com.wkclz.micro.flowable.bean.enums.NodeType;
 import com.wkclz.micro.flowable.mapper.FlowableNodeConfigMapper;
 import com.wkclz.mybatis.service.BaseService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -19,10 +20,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class FlowableNodeConfigService extends BaseService<FlowableNodeConfig, FlowableNodeConfigMapper> {
-
-    private static final Logger log = LoggerFactory.getLogger(FlowableNodeConfigService.class);
 
     /**
      * 解析 BPMN XML 并与存量节点配置差量同步：按 nodeKey 对比，新增缺失节点、
@@ -86,11 +86,7 @@ public class FlowableNodeConfigService extends BaseService<FlowableNodeConfig, F
         for (FlowableNodeConfig update : updates) {
             updateByIdSelective(update);
         }
-        if (!deleteIds.isEmpty()) {
-            FlowableNodeConfig delParam = new FlowableNodeConfig();
-            delParam.setIds(deleteIds);
-            deleteByIds(delParam);
-        }
+        deleteByIdList(deleteIds);
         log.info("节点配置差量同步完成: designCode={}, 新增={}, 更新={}, 删除={}", designCode, inserts.size(), updates.size(), deleteIds.size());
     }
 
@@ -99,7 +95,12 @@ public class FlowableNodeConfigService extends BaseService<FlowableNodeConfig, F
         List<Long> ids = selectByDesignCode(designCode).stream()
                 .map(BaseEntity::getId)
                 .toList();
-        if (ids.isEmpty()) {
+        deleteByIdList(ids);
+    }
+
+    /** 按主键批量删除节点配置，空列表不执行删除 */
+    private void deleteByIdList(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
             return;
         }
         FlowableNodeConfig delParam = new FlowableNodeConfig();
@@ -126,6 +127,18 @@ public class FlowableNodeConfigService extends BaseService<FlowableNodeConfig, F
         return mapper.selectByDesignCodes(designCodes);
     }
 
+    /** 按 designCode 分组节点配置（designCode 为空的节点跳过），供任务/申请列表回填审批人时复用 */
+    public Map<String, List<FlowableNodeConfig>> groupByDesignCode(Collection<String> designCodes) {
+        Map<String, List<FlowableNodeConfig>> nodeMap = new HashMap<>();
+        for (FlowableNodeConfig node : selectByDesignCodes(designCodes)) {
+            if (node.getDesignCode() == null) {
+                continue;
+            }
+            nodeMap.computeIfAbsent(node.getDesignCode(), k -> new ArrayList<>()).add(node);
+        }
+        return nodeMap;
+    }
+
     /**
      * 处理人展示文本纯计算重载，节点配置由调用方批量查询后传入：
      * 引擎受理人优先；USER/ROLE/DEPT 取节点配置值，STARTER 取发起人，nodeKey 缺失/配置缺失/类型未知时 '-'
@@ -135,22 +148,23 @@ public class FlowableNodeConfigService extends BaseService<FlowableNodeConfig, F
             return assignee;
         }
         if (nodeKey == null || nodeKey.isEmpty() || nodes == null || nodes.isEmpty()) {
-            return "-";
+            return FlowableConstants.EMPTY_ASSIGNEE_PLACEHOLDER;
         }
         FlowableNodeConfig node = nodes.stream()
                 .filter(n -> nodeKey.equals(n.getNodeKey())).findFirst().orElse(null);
         if (node == null || node.getAssigneeType() == null || node.getAssigneeType().isEmpty()) {
-            return "-";
+            return FlowableConstants.EMPTY_ASSIGNEE_PLACEHOLDER;
         }
         switch (node.getAssigneeType()) {
-            case "USER":
-            case "ROLE":
-            case "DEPT":
-                return node.getAssigneeValue() != null && !node.getAssigneeValue().isEmpty() ? node.getAssigneeValue() : "-";
-            case "STARTER":
-                return startUserId != null ? startUserId : "-";
+            case FlowableConstants.ASSIGNEE_TYPE_USER:
+            case FlowableConstants.ASSIGNEE_TYPE_ROLE:
+            case FlowableConstants.ASSIGNEE_TYPE_DEPT:
+                return node.getAssigneeValue() != null && !node.getAssigneeValue().isEmpty()
+                        ? node.getAssigneeValue() : FlowableConstants.EMPTY_ASSIGNEE_PLACEHOLDER;
+            case FlowableConstants.ASSIGNEE_TYPE_STARTER:
+                return startUserId != null ? startUserId : FlowableConstants.EMPTY_ASSIGNEE_PLACEHOLDER;
             default:
-                return "-";
+                return FlowableConstants.EMPTY_ASSIGNEE_PLACEHOLDER;
         }
     }
 

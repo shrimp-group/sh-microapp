@@ -10,38 +10,39 @@ import com.wkclz.flowable.client.bean.resp.*;
 import com.wkclz.flowable.client.config.FlowableClient;
 import com.wkclz.micro.flowable.bean.entity.FlowableApply;
 import com.wkclz.micro.flowable.bean.entity.FlowableApproval;
+import com.wkclz.micro.flowable.bean.enums.ApplyStatus;
 import com.wkclz.micro.flowable.bean.enums.ApprovalAction;
 import com.wkclz.micro.flowable.service.FlowableApplyService;
 import com.wkclz.micro.flowable.service.FlowableApprovalService;
 import com.wkclz.web.bean.IdReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Tag(name = "6.业务端-实例历史", description = "流程实例/历史查询（透传）")
 @RestController
 @RequestMapping(Route.PREFIX)
 @Validated
 public class InstanceHistoryRest {
 
-    private static final Logger log = LoggerFactory.getLogger(InstanceHistoryRest.class);
 
-    @Autowired
+    @Resource
     private FlowableClient flowableClient;
-    @Autowired
+    @Resource
     private FlowableApplyService applyService;
-    @Autowired
+    @Resource
     private FlowableApprovalService approvalService;
 
     @Operation(summary = "1.流程实例-分页查询")
@@ -89,10 +90,13 @@ public class InstanceHistoryRest {
             return;
         }
         log.info("实例业务信息回填: rows={}", page.getRecords().size());
-        Set<String> applyCodes = page.getRecords().stream()
-                .map(businessKeyGetter)
-                .filter(c -> c != null && !c.isEmpty())
-                .collect(Collectors.toSet());
+        Set<String> applyCodes = new HashSet<>();
+        for (T row : page.getRecords()) {
+            String applyCode = businessKeyGetter.apply(row);
+            if (applyCode != null && !applyCode.isEmpty()) {
+                applyCodes.add(applyCode);
+            }
+        }
         Map<String, FlowableApply> applyMap = applyService.selectByApplyCodes(applyCodes).stream()
                 .collect(Collectors.toMap(FlowableApply::getApplyCode, a -> a, (a, b) -> a));
         for (T row : page.getRecords()) {
@@ -113,16 +117,7 @@ public class InstanceHistoryRest {
         clientReq.setReason(req.getComment());
         R<Integer> result = flowableClient.getInstance().withdraw(clientReq);
         // 更新申请单状态
-        FlowableApply applyParam = new FlowableApply();
-        applyParam.setProcInsId(req.getProcInsId());
-        FlowableApply apply = applyService.selectOneByEntity(applyParam);
-        if (apply != null) {
-            FlowableApply updateApply = new FlowableApply();
-            updateApply.setId(apply.getId());
-            updateApply.setStatus("WITHDRAWN");
-            updateApply.setVersion(apply.getVersion());
-            applyService.updateByIdSelective(updateApply);
-        }
+        FlowableApply apply = applyService.updateStatusByProcInsId(req.getProcInsId(), ApplyStatus.WITHDRAWN.name());
         // 补写撤回审批意见
         try {
             FlowableApproval approval = new FlowableApproval();

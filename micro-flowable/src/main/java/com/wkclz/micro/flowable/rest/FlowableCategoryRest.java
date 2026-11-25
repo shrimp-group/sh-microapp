@@ -3,6 +3,7 @@ package com.wkclz.micro.flowable.rest;
 import com.wkclz.core.base.PageData;
 import com.wkclz.core.base.R;
 import com.wkclz.core.exception.ValidationException;
+import com.wkclz.micro.flowable.bean.constant.FlowableConstants;
 import com.wkclz.micro.flowable.bean.entity.FlowableCategory;
 import com.wkclz.micro.flowable.bean.entity.FlowableProcessDesign;
 import com.wkclz.micro.flowable.bean.req.CategoryCreateReq;
@@ -16,32 +17,31 @@ import com.wkclz.tool.utils.BeanUtil;
 import com.wkclz.web.bean.RemoveReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @Tag(name = "8.管理端-流程分类", description = "流程分类管理接口")
 @RestController
 @RequestMapping(Route.PREFIX)
 @Validated
 public class FlowableCategoryRest {
 
-    private static final Logger log = LoggerFactory.getLogger(FlowableCategoryRest.class);
 
     /** 默认分类编码，不可删除 */
     private static final String DEFAULT_CATEGORY_CODE = "default";
 
-    @Autowired
+    @Resource
     private RedisIdGenerator redisIdGenerator;
-    @Autowired
+    @Resource
     private FlowableCategoryService categoryService;
-    @Autowired
+    @Resource
     private FlowableProcessDesignService designService;
 
     @Operation(summary = "1.分类-分页查询")
@@ -70,7 +70,7 @@ public class FlowableCategoryRest {
         // 分类编码留空自动生成
         String categoryCode = req.getCategoryCode();
         if (StringUtils.isBlank(categoryCode)) {
-            categoryCode = redisIdGenerator.generateIdWithPrefix("flow_cat_");
+            categoryCode = redisIdGenerator.generateIdWithPrefix(FlowableConstants.CATEGORY_CODE_PREFIX);
             log.info("分类编码自动生成: categoryCode={}", categoryCode);
         }
         FlowableCategory query = new FlowableCategory();

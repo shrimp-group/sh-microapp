@@ -14,24 +14,23 @@ import com.wkclz.tool.utils.BeanUtil;
 import com.wkclz.web.bean.IdReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @Tag(name = "7.异常监控", description = "异常日志查询与处理")
 @RestController
 @RequestMapping(Route.PREFIX)
 @Validated
 public class ErrorLogRest {
 
-    private static final Logger log = LoggerFactory.getLogger(ErrorLogRest.class);
 
-    @Autowired
+    @Resource
     private FlowableErrorLogService errorLogService;
-    @Autowired
+    @Resource
     private FlowableApplyService applyService;
 
     @Operation(summary = "1.异常日志-分页查询")

@@ -8,6 +8,7 @@ import com.wkclz.flowable.client.bean.req.ProcessDeployReq;
 import com.wkclz.flowable.client.bean.resp.ProcessDefPageResp;
 import com.wkclz.flowable.client.bean.resp.ProcessDeployResp;
 import com.wkclz.flowable.client.config.FlowableClient;
+import com.wkclz.micro.flowable.bean.constant.FlowableConstants;
 import com.wkclz.micro.flowable.bean.entity.FlowableCategory;
 import com.wkclz.micro.flowable.bean.entity.FlowableNodeConfig;
 import com.wkclz.micro.flowable.bean.entity.FlowableProcessDesign;
@@ -23,16 +24,16 @@ import com.wkclz.web.bean.IdReq;
 import com.wkclz.web.bean.RemoveReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Tag(name = "1.管理端-流程设计", description = "流程设计管理接口")
@@ -42,15 +43,15 @@ import java.util.stream.Collectors;
 public class ProcessDesignRest {
 
 
-    @Autowired
+    @Resource
     private RedisIdGenerator redisIdGenerator;
-    @Autowired
+    @Resource
     private FlowableClient flowableClient;
-    @Autowired
+    @Resource
     private FlowableCategoryService categoryService;
-    @Autowired
+    @Resource
     private FlowableProcessDesignService designService;
-    @Autowired
+    @Resource
     private FlowableNodeConfigService nodeConfigService;
 
     @Operation(summary = "1.流程设计-分页查询")
@@ -62,10 +63,7 @@ public class ProcessDesignRest {
     @Operation(summary = "2.流程设计-详情")
     @GetMapping(Route.ADMIN_DESIGN_INFO)
     public R<DesignInfoResp> info(@Valid IdReq req) {
-        FlowableProcessDesign design = designService.selectById(req.getId());
-        if (design == null) {
-            throw ValidationException.of("设计不存在");
-        }
+        FlowableProcessDesign design = getDesignOrThrow(req.getId());
         DesignInfoResp resp = BeanUtil.cp(design, DesignInfoResp.class);
         // 查询节点配置
         FlowableNodeConfig nodeParam = new FlowableNodeConfig();
@@ -82,7 +80,7 @@ public class ProcessDesignRest {
     @Transactional(rollbackFor = Exception.class)
     public R<DesignUploadResp> create(@Valid @RequestBody DesignUploadReq req) {
         log.info("上传流程设计: designName={}", req.getDesignName());
-        String designCode = redisIdGenerator.generateIdWithPrefix("flow_");
+        String designCode = redisIdGenerator.generateIdWithPrefix(FlowableConstants.DESIGN_CODE_PREFIX);
         // 保存时归一化 process id/name 为设计表设置，入库与节点解析均基于归一化后 XML
         String xmlContent = designService.normalizeProcess(req.getXmlContent(), designCode, req.getDesignName());
         FlowableProcessDesign design = new FlowableProcessDesign();
@@ -110,10 +108,7 @@ public class ProcessDesignRest {
     @Transactional(rollbackFor = Exception.class)
     public R<Integer> update(@Valid @RequestBody DesignUpdateReq req) {
         log.info("更新流程设计: id={}", req.getId());
-        FlowableProcessDesign design = designService.selectById(req.getId());
-        if (design == null) {
-            throw ValidationException.of("设计不存在");
-        }
+        FlowableProcessDesign design = getDesignOrThrow(req.getId());
         FlowableProcessDesign update = new FlowableProcessDesign();
         update.setId(req.getId());
         update.setVersion(req.getVersion());
@@ -144,10 +139,7 @@ public class ProcessDesignRest {
     @Transactional(rollbackFor = Exception.class)
     public R<Integer> remove(@Valid @RequestBody RemoveReq req) {
         log.info("删除流程设计: id={}", req.getId());
-        FlowableProcessDesign design = designService.selectById(req.getId());
-        if (design == null) {
-            throw ValidationException.of("设计不存在");
-        }
+        FlowableProcessDesign design = getDesignOrThrow(req.getId());
         nodeConfigService.deleteByDesignCode(design.getDesignCode());
         FlowableProcessDesign del = new FlowableProcessDesign();
         del.setId(req.getId());
@@ -159,10 +151,7 @@ public class ProcessDesignRest {
     @Transactional(rollbackFor = Exception.class)
     public R<DesignDeployResp> deploy(@Valid @RequestBody DesignDeployReq req) {
         log.info("部署流程设计: id={}", req.getId());
-        FlowableProcessDesign design = designService.selectById(req.getId());
-        if (design == null) {
-            throw ValidationException.of("设计不存在");
-        }
+        FlowableProcessDesign design = getDesignOrThrow(req.getId());
         ProcessDeployReq deployReq = new ProcessDeployReq();
         deployReq.setName(design.getDesignCode() + ".bpmn20.xml");
         // process id/name 已在保存时归一化；部署前将分类编码写入 targetNamespace，
@@ -193,10 +182,7 @@ public class ProcessDesignRest {
     @PostMapping(Route.ADMIN_DESIGN_REMOVE_OLD_VERSIONS)
     public R<Integer> removeOldVersions(@Valid @RequestBody DesignCleanupReq req) {
         log.info("清理流程设计旧版本: id={}, cascade={}", req.getId(), req.getCascade());
-        FlowableProcessDesign design = designService.selectById(req.getId());
-        if (design == null) {
-            throw ValidationException.of("设计不存在");
-        }
+        FlowableProcessDesign design = getDesignOrThrow(req.getId());
         ProcessDefPageReq defReq = new ProcessDefPageReq();
         defReq.setKey(design.getDesignCode());
         defReq.setCurrent(1L);
@@ -207,10 +193,13 @@ public class ProcessDesignRest {
             return R.ok(0);
         }
         int maxVersion = defs.stream().mapToInt(ProcessDefPageResp::getVersion).max().orElse(0);
-        List<ProcessDefPageResp> oldDefs = defs.stream()
-                .filter(d -> d.getVersion() < maxVersion)
-                .sorted(Comparator.comparing(ProcessDefPageResp::getVersion))
-                .collect(Collectors.toList());
+        List<ProcessDefPageResp> oldDefs = new ArrayList<>();
+        for (ProcessDefPageResp def : defs) {
+            if (def.getVersion() < maxVersion) {
+                oldDefs.add(def);
+            }
+        }
+        oldDefs.sort(Comparator.comparing(ProcessDefPageResp::getVersion));
         if (oldDefs.isEmpty()) {
             log.info("无旧版本，跳过清理: designCode={}, maxVersion={}", design.getDesignCode(), maxVersion);
             return R.ok(0);
@@ -222,15 +211,23 @@ public class ProcessDesignRest {
             try {
                 removeReq.setId(Long.valueOf(oldDef.getDeployId()));
             } catch (NumberFormatException e) {
-                log.error("旧版本 deployId 非数字: designCode={}, version={}, deployId={}", design.getDesignCode(), oldDef.getVersion(), oldDef.getDeployId());
+                log.warn("旧版本 deployId 非数字: designCode={}, version={}, deployId={}", design.getDesignCode(), oldDef.getVersion(), oldDef.getDeployId());
                 throw ValidationException.of("旧版本 deployId 非数字: " + oldDef.getDeployId());
             }
             flowableClient.getDeploy().remove(removeReq, cascade);
             removed++;
-            log.info("删除旧版本部署: designCode={}, version={}, deployId={}, cascade={}", design.getDesignCode(), oldDef.getVersion(), oldDef.getDeployId(), cascade);
         }
         log.info("清理流程设计旧版本完成: designCode={}, removed={}", design.getDesignCode(), removed);
         return R.ok(removed);
+    }
+
+    /** 按 ID 查询流程设计，不存在抛业务异常 */
+    private FlowableProcessDesign getDesignOrThrow(Long id) {
+        FlowableProcessDesign design = designService.selectById(id);
+        if (design == null) {
+            throw ValidationException.of("设计不存在");
+        }
+        return design;
     }
 
     private String findCategoryName(String categoryCode) {

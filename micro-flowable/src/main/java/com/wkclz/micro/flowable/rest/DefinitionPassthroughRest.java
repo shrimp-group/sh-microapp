@@ -8,21 +8,24 @@ import com.wkclz.flowable.client.bean.resp.*;
 import com.wkclz.flowable.client.config.FlowableClient;
 import com.wkclz.web.bean.RemoveReq;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @Tag(name = "3.管理端-透传查询", description = "透传 flowable 流程定义/部署记录查询")
 @RestController
 @RequestMapping(Route.PREFIX)
 @Validated
 public class DefinitionPassthroughRest {
 
-    @Autowired
+    @Resource
     private FlowableClient flowableClient;
 
     @Operation(summary = "1.流程定义-分页查询")
@@ -33,7 +36,7 @@ public class DefinitionPassthroughRest {
 
     @Operation(summary = "2.流程定义-详情")
     @GetMapping(Route.ADMIN_DEFINITION_INFO)
-    public R<ProcessDefResp> definitionInfo(@RequestParam String definitionId) {
+    public R<ProcessDefResp> definitionInfo(@Parameter(description = "流程定义ID") @RequestParam String definitionId) {
         return flowableClient.getDefinition().info(definitionId);
     }
 
@@ -52,6 +55,7 @@ public class DefinitionPassthroughRest {
     @Operation(summary = "5.部署记录-删除")
     @PostMapping(Route.ADMIN_DEPLOY_REMOVE)
     public R<Integer> deployRemove(@Valid @RequestBody RemoveReq req) {
+        log.info("删除部署记录: id={}", req.getId());
         // 保持级联透传语义（cascade=false）
         return flowableClient.getDeploy().remove(req, false);
     }

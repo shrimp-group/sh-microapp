@@ -8,17 +8,15 @@ import com.wkclz.micro.flowable.bean.resp.DesignPageResp;
 import com.wkclz.micro.flowable.mapper.FlowableProcessDesignMapper;
 import com.wkclz.mybatis.helper.PageQuery;
 import com.wkclz.mybatis.service.BaseService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 @Service
 public class FlowableProcessDesignService extends BaseService<FlowableProcessDesign, FlowableProcessDesignMapper> {
-
-    private static final Logger log = LoggerFactory.getLogger(FlowableProcessDesignService.class);
 
     /** process 标签（兼容 bpmn:/bpmn2: 等命名空间前缀与自闭合写法） */
     private static final Pattern PROCESS_TAG_PATTERN =
@@ -30,6 +28,16 @@ public class FlowableProcessDesignService extends BaseService<FlowableProcessDes
         return PageQuery.page(req, mapper::getDesignPage);
     }
 
+    // 按设计编码查询设计，designCode 为空返回 null
+    public FlowableProcessDesign selectByDesignCode(String designCode) {
+        if (designCode == null || designCode.isEmpty()) {
+            return null;
+        }
+        FlowableProcessDesign param = new FlowableProcessDesign();
+        param.setDesignCode(designCode);
+        return selectOneByEntity(param);
+    }
+
     /**
      * BPMN process id/name 归一化为设计表设置（designCode/designName）：
      * 保存（创建/修改）时统一改写，引擎 definition key/name 由入库 XML process id/name 决定，
@@ -38,12 +46,12 @@ public class FlowableProcessDesignService extends BaseService<FlowableProcessDes
     public String normalizeProcess(String xmlContent, String designCode, String designName) {
         log.info("归一化 BPMN process id/name: designCode={}, designName={}", designCode, designName);
         if (xmlContent == null || xmlContent.isEmpty()) {
-            log.error("BPMN XML 为空: designCode={}", designCode);
+            log.warn("BPMN XML 为空: designCode={}", designCode);
             throw ValidationException.of("BPMN XML 内容为空");
         }
         Matcher tagMatcher = PROCESS_TAG_PATTERN.matcher(xmlContent);
         if (!tagMatcher.find()) {
-            log.error("BPMN XML 缺少 process 节点: designCode={}", designCode);
+            log.warn("BPMN XML 缺少 process 节点: designCode={}", designCode);
             throw ValidationException.of("BPMN XML 缺少 process 节点");
         }
         String tag = tagMatcher.group();
@@ -51,7 +59,7 @@ public class FlowableProcessDesignService extends BaseService<FlowableProcessDes
         // id 改写为 designCode
         Matcher idMatcher = PROCESS_ID_PATTERN.matcher(tag);
         if (!idMatcher.find()) {
-            log.error("BPMN process 节点缺少 id 属性: designCode={}", designCode);
+            log.warn("BPMN process 节点缺少 id 属性: designCode={}", designCode);
             throw ValidationException.of("BPMN process 节点缺少 id 属性");
         }
         String newTag = tag.substring(0, idMatcher.start(2)) + designCode + tag.substring(idMatcher.end(2));
@@ -91,7 +99,7 @@ public class FlowableProcessDesignService extends BaseService<FlowableProcessDes
         log.info("改写 BPMN targetNamespace 为分类编码: category={}", category);
         Matcher tagMatcher = DEFINITIONS_TAG_PATTERN.matcher(xmlContent);
         if (!tagMatcher.find()) {
-            log.error("BPMN XML 缺少 definitions 节点: category={}", category);
+            log.warn("BPMN XML 缺少 definitions 节点: category={}", category);
             throw ValidationException.of("BPMN XML 缺少 definitions 节点");
         }
         String tag = tagMatcher.group();
