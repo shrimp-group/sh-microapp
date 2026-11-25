@@ -24,6 +24,11 @@ public final class DagConstants {
     /** 仅事件唤醒通道 */
     public static final String CHANNEL_PUBSUB = "pubsub";
 
+    // ==================== 系统节点入参快照键（launch 时写入 input_params_json，最后合并，实例参数不可覆盖） ====================
+
+    /** system-timer 定时器节点：直接上游节点编码快照（List&lt;String&gt;，入边 fromCode 去重） */
+    public static final String SNAPSHOT_KEY_UPSTREAMS = "upstreams";
+
     // ==================== 租约与时间换算 ====================
 
     /** 租约时长在节点 timeoutMs 基础上追加的余量 ms（保证租约恒覆盖超时窗口） */

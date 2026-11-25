@@ -16,6 +16,7 @@ import com.wkclz.micro.dag.bean.enums.ProcessStatus;
 import com.wkclz.micro.dag.bean.enums.InstanceStatus;
 import com.wkclz.micro.dag.bean.enums.NodeStatus;
 import com.wkclz.micro.dag.bean.enums.NodeType;
+import com.wkclz.micro.dag.bean.enums.SystemHandler;
 import com.wkclz.micro.dag.bean.req.InstancePageReq;
 import com.wkclz.micro.dag.bean.req.LaunchReq;
 import com.wkclz.micro.dag.bean.resp.InstanceDagViewResp;
@@ -119,6 +120,17 @@ public class DagInstanceService extends BaseService<DagInstance, DagInstanceMapp
                     .filter(e -> nd.getCode().equals(e.getFromCode()) && DagConstants.EDGE_TYPE_CONDITION.equals(e.getType()))
                     .forEach(e -> branches.put(e.getToCode(), e.getWhenExpr()));
             }
+            // system-timer 定时器节点：收集入边上游编码（NORMAL+CONDITION 入边，fromCode 去重）快照进输入参数，
+            // 供执行入口校验上游完成状态；upstreams 最后合并，实例参数不可覆盖定时器系统键
+            List<String> upstreams = List.of();
+            if (SystemHandler.TIMER.getCode().equals(nd.getHandler()) && dagDef.getEdges() != null) {
+                upstreams = dagDef.getEdges().stream()
+                    .filter(e -> nd.getCode().equals(e.getToCode())
+                        && (DagConstants.EDGE_TYPE_NORMAL.equals(e.getType()) || DagConstants.EDGE_TYPE_CONDITION.equals(e.getType())))
+                    .map(EdgeDef::getFromCode)
+                    .distinct()
+                    .collect(Collectors.toList());
+            }
             Map<String, Object> merged = new HashMap<>();
             if (nd.getParams() != null) {
                 merged.putAll(nd.getParams());
@@ -128,6 +140,9 @@ public class DagInstanceService extends BaseService<DagInstance, DagInstanceMapp
             }
             if (!branches.isEmpty()) {
                 merged.putAll(branches);
+            }
+            if (!upstreams.isEmpty()) {
+                merged.put(DagConstants.SNAPSHOT_KEY_UPSTREAMS, upstreams);
             }
             n.setInputParamsJson(JsonUtils.toJsonStrict(merged));
             n.setInterruptFlag(0);

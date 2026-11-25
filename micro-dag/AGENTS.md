@@ -64,7 +64,7 @@ START/END/BRANCH 节点统一走 worker 执行链路；存量定义（特殊节�
 | system-start | 系统-开始节点 | 透传入参供下游 `${out.<node>.*}` 引用；支持时间驱动；参数定义 triggerType/cron/triggerParams | 节点 params | 入参透传 |
 | system-end | 系统-结束节点 | 直接成功 | 任意 | `{}` |
 | system-branch | 系统-分支节点 | 出边条件求值明细（launch 时 branches 快照进 inputParams；下游就绪判断逻辑不变） | branches（toCode→whenExpr，launch 自动写入） | `{branches: {toCode: bool}, selected: [toCode]}` |
-| system-timer | 系统-定时器 | 等待到点后成功（分片 sleep + 协作式中断），全局定时器节点无需业务实现；参数定义 delayMs/delayUntil | delayMs（0~86400000）/ delayUntil（ISO-8601） | `{waitedMs, targetTime}` |
+| system-timer | 系统-定时器 | 等待到点后成功（分片 sleep + 协作式中断），全局定时器节点无需业务实现；触发前校验直接上游完成状态（SUCCESS/SKIPPED 视为完成，存在未完成置失败等人工干预，launch 时 upstreams 快照进 inputParams）；到点时间 24h 有效期（24h 内错过立即执行 waitedMs=0，超期置失败等人工干预）；参数定义 delayMs/delayUntil | delayMs（0~86400000）/ delayUntil（ISO-8601）/ upstreams（launch 自动写入，实例参数不可覆盖） | `{waitedMs, targetTime}` |
 
 ### 开始节点时间驱动
 
@@ -105,6 +105,7 @@ GraalJS 依赖为 optional，classpath 缺失时 `demo-script-exec` 自动跳过
 - 故障转移：租约过期（lease_expire_time < now）→ attempt ≤ maxRetry 重置 PENDING 重派，attempt 耗尽置 FAILED（error_msg=租约过期回收，重试次数已耗尽）
 - 重试：失败且 attempt ≤ maxRetry → RETRYING + next_retry_time，到期由调度提升
 - 分支：上游完成后对出边求值（`${ctx.*}` / `${out.<node>.*}` + 比较 + and/or），不满足级联 SKIPPED；级联跳过仅在全部入边确定性不满足（SUCCESS 上游条件求值 false、链式 SKIPPED）时触发；上游 FAILED/MANUAL_STOPPED/PENDING/RUNNING/RETRYING 属未定状态，下游保持 PENDING 等待不跳过
+- 定时器触发语义：system-timer 执行入口校验直接上游完成状态（SUCCESS/SKIPPED 视为完成，存在未完成置失败等人工干预，上游编码由 launch 快照进 inputParams 的 upstreams 键，实例参数不可覆盖）；到点时间 24h 有效期——24h 内错过立即执行（waitedMs=0），超期置失败等人工干预
 - 失败等待：节点 FAILED/MANUAL_STOPPED 后下游保持 PENDING 等待，实例在无在途节点（RUNNING/RETRYING）时置 FAILED；人工 rerun / rerun-from 恢复后下游继续推进
 - 跳过补救：skip 非运行态节点 → 下游闭包内凭级联原因（上游分支条件不满足）识别被连锁 SKIPPED 的节点重置 PENDING 重新调度（跳过视为上游满足，下游继续执行），FAILED 实例回 RUNNING；人工跳过的下游节点不受影响。注意 SKIPPED 上游 satisfiesDownstream=true，实例 RUNNING 时手动 skip PENDING 节点本就不级联
 - 特殊节点直达：仅 START/END/BRANCH 且 handler 为空（存量兼容）领取后直达成功；有 handler 一律走 worker

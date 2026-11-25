@@ -4,10 +4,13 @@ import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.dag.api.NodeContext;
 import com.wkclz.micro.dag.api.NodeResult;
 import com.wkclz.micro.dag.bean.dto.NodeParamDef;
+import com.wkclz.micro.dag.bean.entity.DagNodeInstance;
 import com.wkclz.micro.dag.bean.enums.NodeCategory;
 import com.wkclz.micro.dag.bean.enums.NodeParamType;
+import com.wkclz.micro.dag.bean.enums.NodeStatus;
 import com.wkclz.micro.dag.bean.enums.SystemHandler;
 import com.wkclz.micro.dag.core.DagExpressionEvaluator;
+import com.wkclz.micro.dag.mapper.DagNodeInstanceMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -17,9 +20,12 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * 系统 handler 单元测试（system-start/end/branch/timer）
@@ -35,6 +41,22 @@ class SystemHandlersTest {
         SystemBranchHandler handler = new SystemBranchHandler();
         ReflectionTestUtils.setField(handler, "evaluator", new DagExpressionEvaluator());
         return handler;
+    }
+
+    /** system-timer 手工装配（mapper 可为 null：无 upstreams 参数时不触发 Mapper 调用） */
+    private SystemTimerHandler timerHandler(DagNodeInstanceMapper mapper) {
+        SystemTimerHandler handler = new SystemTimerHandler();
+        if (mapper != null) {
+            ReflectionTestUtils.setField(handler, "nodeInstanceMapper", mapper);
+        }
+        return handler;
+    }
+
+    private DagNodeInstance node(String code, String status) {
+        DagNodeInstance n = new DagNodeInstance();
+        n.setNodeCode(code);
+        n.setStatus(status);
+        return n;
     }
 
     // ---------- system-start ----------
@@ -123,6 +145,50 @@ class SystemHandlersTest {
     void timerInvalidDelayUntilRejected() {
         SystemTimerHandler handler = new SystemTimerHandler();
         assertThrows(ValidationException.class, () -> handler.execute(ctx("{\"delayUntil\":\"not-a-time\"}", null)));
+    }
+
+    @Test
+    void timerUpstreamSkippedCountsAsDone() throws Exception {
+        DagNodeInstanceMapper mapper = mock(DagNodeInstanceMapper.class);
+        when(mapper.listByInstanceCode("INS-1")).thenReturn(List.of(node("u1", NodeStatus.SKIPPED.name())));
+        String past = LocalDateTime.now().minusHours(2).toString();
+        NodeResult result = timerHandler(mapper)
+            .execute(ctx("{\"upstreams\":[\"u1\"],\"delayUntil\":\"" + past + "\"}", null));
+        // 上游 SKIPPED 视为完成，到点时间 2h 前在 24h 内 → 立即成功
+        assertEquals(0L, result.getOutput().get("waitedMs"));
+    }
+
+    @Test
+    void timerUpstreamNotDoneFails() throws Exception {
+        DagNodeInstanceMapper mapper = mock(DagNodeInstanceMapper.class);
+        when(mapper.listByInstanceCode("INS-1")).thenReturn(List.of(
+            node("nodeA", NodeStatus.RUNNING.name()), node("nodeB", NodeStatus.FAILED.name())));
+        NodeResult result = timerHandler(mapper)
+            .execute(ctx("{\"upstreams\":[\"nodeA\",\"nodeB\"]}", null));
+        assertFalse(result.isSuccess());
+        String msg = String.valueOf(result.getOutput().get("msg"));
+        assertTrue(msg.contains("nodeA=RUNNING"));
+        assertTrue(msg.contains("nodeB=FAILED"));
+    }
+
+    @Test
+    void timerExpiredTargetFails() throws Exception {
+        String expired = LocalDateTime.now().minusDays(2).toString();
+        NodeResult result = timerHandler(null)
+            .execute(ctx("{\"delayUntil\":\"" + expired + "\"}", null));
+        assertFalse(result.isSuccess());
+        assertTrue(String.valueOf(result.getOutput().get("msg")).contains("定时任务已过期超过 1 天"));
+    }
+
+    @Test
+    void timerUpstreamsMissingBehavesAsBefore() throws Exception {
+        // upstreams 缺失或为空 → 与现状一致，走正常等待路径
+        long start = System.currentTimeMillis();
+        NodeResult result = timerHandler(null).execute(ctx("{\"delayMs\":50}", null));
+        assertTrue(System.currentTimeMillis() - start >= 50);
+        assertTrue((Long) result.getOutput().get("waitedMs") >= 50);
+        NodeResult result2 = timerHandler(null).execute(ctx("{\"upstreams\":[],\"delayMs\":50}", null));
+        assertTrue((Long) result2.getOutput().get("waitedMs") >= 50);
     }
 
     // ---------- 参数 schema 声明 ----------

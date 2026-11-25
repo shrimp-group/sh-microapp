@@ -4,12 +4,17 @@ import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.dag.api.NodeContext;
 import com.wkclz.micro.dag.api.NodeHandler;
 import com.wkclz.micro.dag.api.NodeResult;
+import com.wkclz.micro.dag.bean.constant.DagConstants;
 import com.wkclz.micro.dag.bean.dto.NodeParamDef;
+import com.wkclz.micro.dag.bean.entity.DagNodeInstance;
 import com.wkclz.micro.dag.bean.enums.NodeCategory;
 import com.wkclz.micro.dag.bean.enums.NodeParamType;
+import com.wkclz.micro.dag.bean.enums.NodeStatus;
 import com.wkclz.micro.dag.bean.enums.SystemHandler;
+import com.wkclz.micro.dag.mapper.DagNodeInstanceMapper;
 import com.wkclz.micro.dag.utils.ParamUtils;
 import com.wkclz.micro.dag.utils.TimeUtils;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -18,18 +23,23 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
- * system-timer 定时器节点：按 delayMs / delayUntil 等待到点后成功
+ * system-timer 定时器节点：触发前校验直接上游完成状态（SUCCESS/SKIPPED 视为完成），
+ * 按 delayMs / delayUntil 等待到点后成功；到点时间具 24h 有效期——24h 内错过立即执行，超期置失败等人工干预
  * 分片 sleep（200ms 步长）+ 协作式中断检查；等待时长以 nanoTime 单调时钟计量，不受系统时钟抖动影响
  */
 @Slf4j
 @Component
 public class SystemTimerHandler implements NodeHandler {
 
-    /** 上限 24h */
+    /** 上限 24h（兼作到点有效期窗口） */
     private static final long MAX_DELAY_MS = 86400000L;
     private static final long STEP_MS = 200;
+
+    @Resource
+    private DagNodeInstanceMapper nodeInstanceMapper;
 
     @Override
     public String nodeCode() {
@@ -51,14 +61,26 @@ public class SystemTimerHandler implements NodeHandler {
         Map<String, Object> params = ctx.inputParams();
         log.info("system-timer: instance={} node={} attempt={} params={}",
             ctx.getInstanceCode(), ctx.getNodeCode(), ctx.getAttempt(), params);
+        // 触发前上游校验：SUCCESS/SKIPPED 视为完成，存在未完成上游置失败等人工干预（分支级联 SKIPPED 的定时器不会被领取，无需在此处理）
+        NodeResult upstreamFail = checkUpstreams(ctx, params);
+        if (upstreamFail != null) {
+            return upstreamFail;
+        }
         long delayMs = resolveDelayMs(params.get("delayMs"));
         long waitMs = delayMs;
-        LocalDateTime target = LocalDateTime.now().plus(delayMs, ChronoUnit.MILLIS);
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime target = now.plus(delayMs, ChronoUnit.MILLIS);
         if (params.get("delayUntil") != null) {
             LocalDateTime until = resolveDelayUntil(params.get("delayUntil").toString());
+            // 到点有效期：绝对到点错过超 24h 置失败等人工干预；24h 内错过走现有等待循环自然立即成功（waitedMs=0）
+            if (until.isBefore(now.minus(Duration.ofMillis(MAX_DELAY_MS)))) {
+                log.warn("system-timer: 定时任务已过期超过 1 天 instance={} node={} target={}",
+                    ctx.getInstanceCode(), ctx.getNodeCode(), until);
+                return NodeResult.fail(Map.of("msg", "定时任务已过期超过 1 天: target=" + until));
+            }
             if (until.isAfter(target)) {
                 target = until;
-                waitMs = Math.max(waitMs, Duration.between(LocalDateTime.now(), until).toMillis());
+                waitMs = Math.max(waitMs, Duration.between(now, until).toMillis());
             }
         }
         long startNanos = System.nanoTime();
@@ -75,6 +97,28 @@ public class SystemTimerHandler implements NodeHandler {
         long waitedMs = waitMs <= 0 ? 0 : Math.min((System.nanoTime() - startNanos) / 1_000_000L, waitMs);
         log.info("system-timer: waited={}ms target={}", waitedMs, target);
         return NodeResult.ok(Map.of("waitedMs", waitedMs, "targetTime", target.toString()));
+    }
+
+    /** 上游校验：SUCCESS/SKIPPED 视为完成（手动跳过算成功）；存在未完成状态上游返回 fail 结果（不进入等待），全部完成返回 null */
+    private NodeResult checkUpstreams(NodeContext ctx, Map<String, Object> params) {
+        Object raw = params.get(DagConstants.SNAPSHOT_KEY_UPSTREAMS);
+        if (!(raw instanceof List<?> upstreams) || upstreams.isEmpty()) {
+            return null;
+        }
+        Map<String, String> statusMap = nodeInstanceMapper.listByInstanceCode(ctx.getInstanceCode()).stream()
+            .collect(Collectors.toMap(DagNodeInstance::getNodeCode, DagNodeInstance::getStatus, (a, b) -> a));
+        String unfinished = upstreams.stream()
+            .map(String::valueOf)
+            .filter(code -> !NodeStatus.SUCCESS.name().equals(statusMap.get(code))
+                && !NodeStatus.SKIPPED.name().equals(statusMap.get(code)))
+            .map(code -> code + "=" + statusMap.get(code))
+            .collect(Collectors.joining(", "));
+        if (unfinished.isEmpty()) {
+            return null;
+        }
+        log.warn("system-timer: 上游节点未完成 instance={} node={} unfinished={}",
+            ctx.getInstanceCode(), ctx.getNodeCode(), unfinished);
+        return NodeResult.fail(Map.of("msg", "上游节点未完成: " + unfinished));
     }
 
     @Override

@@ -195,6 +195,68 @@ class DagInstanceServiceTest {
     }
 
     @Test
+    void launch_timerNode_snapshotsUpstreamsIntoInput() {
+        when(mapper.selectCountByEntity(any())).thenReturn(0L);
+        when(versionService.load("d1", 3)).thenReturn(timerDefModel());
+        LaunchReq req = launchReq();
+        // 实例参数携带与快照键同名的 key，验证不可覆盖 upstreams 系统键
+        req.setParams(Map.of("sourceType", "api", "upstreams", "override"));
+
+        service.launch(req);
+
+        ArgumentCaptor<List<DagNodeInstance>> nodeCap = ArgumentCaptor.captor();
+        verify(nodeInstanceMapper).insertBatch(nodeCap.capture());
+        DagNodeInstance t = nodeCap.getValue().stream()
+            .filter(n -> "t".equals(n.getNodeCode())).findFirst().orElseThrow();
+        Map<String, Object> input = parseMap(t.getInputParamsJson());
+        // 入边 fromCode（NORMAL+CONDITION）去重快照，实例参数不可覆盖
+        assertEquals(List.of("a", "b"), input.get("upstreams"));
+        assertEquals("api", input.get("sourceType"));
+        // 非 timer 节点不写入 upstreams 快照（该键仅来自实例参数透传，保持原值）
+        DagNodeInstance a = nodeCap.getValue().stream()
+            .filter(n -> "a".equals(n.getNodeCode())).findFirst().orElseThrow();
+        assertEquals("override", parseMap(a.getInputParamsJson()).get("upstreams"));
+    }
+
+    /** 组装 d1 v3 的定时器定义：a --普通边--> t 与 a --条件边--> t（重复上游验证去重）、b --条件边--> t */
+    private DagDefModel timerDefModel() {
+        NodeDef a = new NodeDef();
+        a.setCode("a");
+        a.setName("a");
+        a.setHandler("h1");
+        NodeDef b = new NodeDef();
+        b.setCode("b");
+        b.setName("b");
+        b.setHandler("h1");
+        NodeDef t = new NodeDef();
+        t.setCode("t");
+        t.setName("t");
+        t.setHandler("system-timer");
+        EdgeDef at = new EdgeDef();
+        at.setEdgeCode("a->t");
+        at.setFromCode("a");
+        at.setToCode("t");
+        at.setType(DagConstants.EDGE_TYPE_NORMAL);
+        EdgeDef at2 = new EdgeDef();
+        at2.setEdgeCode("a->t-cond");
+        at2.setFromCode("a");
+        at2.setToCode("t");
+        at2.setType(DagConstants.EDGE_TYPE_CONDITION);
+        EdgeDef bt = new EdgeDef();
+        bt.setEdgeCode("b->t");
+        bt.setFromCode("b");
+        bt.setToCode("t");
+        bt.setType(DagConstants.EDGE_TYPE_CONDITION);
+        bt.setWhenExpr("${ctx.sourceType} == 'x'");
+        DagDefModel def = new DagDefModel();
+        def.setDagCode("d1");
+        def.setDagVersion(3);
+        def.setNodes(List.of(a, b, t));
+        def.setEdges(List.of(at, at2, bt));
+        return def;
+    }
+
+    @Test
     void launch_noPublishedDefinition_throws() {
         when(mapper.selectCountByEntity(any())).thenReturn(0L);
         when(versionService.selectByEntity(any())).thenReturn(List.of());
