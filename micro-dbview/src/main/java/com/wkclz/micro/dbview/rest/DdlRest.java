@@ -1,11 +1,9 @@
 package com.wkclz.micro.dbview.rest;
 
 import com.wkclz.core.base.R;
-import com.wkclz.micro.dbview.bean.dto.ColumnDefinition;
 import com.wkclz.micro.dbview.bean.dto.DdlExecuteRequest;
 import com.wkclz.micro.dbview.bean.dto.DdlPreview;
 import com.wkclz.micro.dbview.bean.dto.DdlRequest;
-import com.wkclz.micro.dbview.bean.dto.IndexDefinition;
 import com.wkclz.micro.dbview.bean.enums.DdlType;
 import com.wkclz.micro.dbview.service.DbviewDdlService;
 import io.swagger.v3.oas.annotations.Operation;

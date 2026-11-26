@@ -2,9 +2,7 @@ package com.wkclz.micro.report.rest;
 
 import com.wkclz.core.base.R;
 import com.wkclz.micro.report.bean.dto.ReportDefinitionDto;
-import com.wkclz.micro.report.bean.req.ReportExecExportReq;
 import com.wkclz.micro.report.bean.req.ReportExecInfoReq;
-import com.wkclz.micro.report.bean.req.ReportExecQueryReq;
 import com.wkclz.micro.report.bean.resp.ReportDefinitionParamResp;
 import com.wkclz.micro.report.bean.resp.ReportDefinitionResultResp;
 import com.wkclz.micro.report.bean.resp.ReportExecInfoResp;

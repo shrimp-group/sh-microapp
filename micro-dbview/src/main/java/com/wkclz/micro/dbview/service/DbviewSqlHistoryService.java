@@ -7,8 +7,6 @@ import com.wkclz.mybatis.helper.PageQuery;
 import com.wkclz.mybatis.service.BaseService;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 public class DbviewSqlHistoryService extends BaseService<DbviewSqlHistory, DbviewSqlHistoryMapper> {
 

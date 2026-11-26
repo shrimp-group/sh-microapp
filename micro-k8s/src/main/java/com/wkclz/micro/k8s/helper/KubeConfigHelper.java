@@ -30,9 +30,9 @@ public class KubeConfigHelper {
 
     private static final Logger log = LoggerFactory.getLogger(KubeConfigHelper.class);
 
-    private final static long CACHE_TIME = 10 * 60 * 1000L;
-    private final static Map<String, Long> LAST_CACHE_TIME = new HashMap<>();
-    private final static Map<String, ApiClient> CACHE_CLIENT = new HashMap<>();
+    private static final long CACHE_TIME = 10 * 60 * 1000L;
+    private static final Map<String, Long> LAST_CACHE_TIME = new HashMap<>();
+    private static final Map<String, ApiClient> CACHE_CLIENT = new HashMap<>();
 
     @Autowired
     private K8sConfigMapper k8sConfigMapper;

@@ -4,7 +4,6 @@ import com.wkclz.micro.fileos.bean.entity.MdmFileosMultipart;
 import com.wkclz.mybatis.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import software.amazon.awssdk.services.s3.endpoints.internal.Value;
 
 import java.util.Date;
 import java.util.List;

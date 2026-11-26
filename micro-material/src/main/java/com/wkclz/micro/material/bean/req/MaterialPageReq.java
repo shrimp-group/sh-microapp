@@ -2,7 +2,6 @@ package com.wkclz.micro.material.bean.req;
 
 import com.wkclz.web.bean.PageReq;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
