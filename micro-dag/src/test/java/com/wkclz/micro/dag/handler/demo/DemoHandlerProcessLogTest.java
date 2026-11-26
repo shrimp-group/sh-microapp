@@ -3,7 +3,6 @@ package com.wkclz.micro.dag.handler.demo;
 import com.wkclz.micro.dag.api.NodeContext;
 import org.junit.jupiter.api.Test;
 
-import java.util.Map;
 import java.util.function.BooleanSupplier;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;

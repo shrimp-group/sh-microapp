@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+        "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+        "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<!--
+  sh-microapp Checkstyle 规则（方向 1：质量门禁落地）
+  原则：初始阶段规则克制，error 阻断 + warning 提示，逐步收紧。
+  参照：sh-harness/docs/harness-spec.md（Pre-commit lint）、docs/coding-standards/java.md
+-->
+<module name="Checker">
+    <property name="charset" value="UTF-8"/>
+    <property name="severity" value="error"/>
+    <property name="fileExtensions" value="java"/>
+
+    <!-- warning 级：不阻断，仅提示 -->
+    <module name="NewlineAtEndOfFile">
+        <property name="severity" value="warning"/>
+    </module>
+    <module name="FileTabCharacter">
+        <property name="severity" value="warning"/>
+        <property name="eachLine" value="true"/>
+    </module>
+
+    <module name="TreeWalker">
+        <!-- 文件与导入 -->
+        <module name="OuterTypeFilename"/>
+        <module name="OneTopLevelClass"/>
+        <module name="UnusedImports"/>
+        <module name="RedundantImport"/>
+        <module name="IllegalImport"/>
+        <module name="AvoidStarImport">
+            <property name="severity" value="warning"/>
+        </module>
+
+        <!-- 异常与基础质量 -->
+        <!-- EmptyCatchBlock 降为 warning：存量 1 处空 catch 归方向 3 处理，避免本方向阻断构建 -->
+        <module name="EmptyCatchBlock">
+            <property name="severity" value="warning"/>
+        </module>
+        <module name="EqualsHashCode"/>
+        <module name="ModifierOrder"/>
+
+        <!-- 命名规范（对齐 P3C） -->
+        <module name="TypeName">
+            <property name="format" value="^[A-Z][a-zA-Z0-9]*$"/>
+        </module>
+        <module name="MethodName">
+            <property name="format" value="^[a-z][a-zA-Z0-9_]*$"/>
+        </module>
+        <module name="MemberName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
+        <module name="ParameterName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
+        <module name="LocalVariableName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
+        <module name="PackageName">
+            <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
+        </module>
+        <module name="ConstantName">
+            <!-- 允许 serialVersionUID 与常见小写 logger 命名（log/logger） -->
+            <property name="format" value="^serialVersionUID$|^log$|^logger$|^LOG$|^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$"/>
+        </module>
+    </module>
+</module>
