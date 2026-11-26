@@ -346,9 +346,11 @@ sh-flowable-client ← micro-flowable (流程引擎对接，外部工程 com.wkc
 5. **Req/Resp 封装**：所有请求参数封装 Req 对象（除非参数只有一个值），所有返回内容封装 Resp 对象（除非返回只有一个值）
 
 ## 质量门禁
+- lint: `mvn checkstyle:check`（规则见 [config/checkstyle.xml](config/checkstyle.xml)，已绑定 validate 阶段自动执行）
 - test: `mvn test`
 - build: `mvn package -DskipTests`
 - typecheck: `mvn compile`
+- coverage: `mvn verify` 后查看各模块 `target/site/jacoco/index.html`（JaCoCo 报告，暂不设阈值）
 
 ## 代码规范
 详见 [docs/coding-standards/java.md](docs/coding-standards/java.md)
