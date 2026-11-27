@@ -186,3 +186,15 @@ CI 流水线规范详见 [harness-spec.md](harness-spec.md#四质量门禁规范
 - 新增/修改数据模型 → 更新"数据模型"
 - 新增/升级依赖 → 更新"外部依赖"
 - 任何变更 → 在"变更日志"添加记录
+
+### 技术债务管理
+
+发现技术债务时，按以下流程登记（参照 harness 规范 `tech-debt-conventions.md` 与本地模板 `docs/tech-debts/templates/common/`）：
+
+1. **取序号**：序号 = `docs/tech-debts/INDEX.md` 现有条目最大序号 + 1（INDEX 中有"下一可用序号"提示）
+2. **建文件**：按本地模板 `docs/tech-debts/templates/common/tech-debt.md.template` 创建文件，放入对应分类子目录（性能风险/内存隐患/线程与并发风险/安全风险/其他潜在风险），命名 `{3位序号}-{2-6中文简述}.md`
+3. **填字段**：ID、标题、状态、严重程度、所属模块、发现日期为必填；解决日期/当前解决方案留占位
+4. **更新索引**：在 `docs/tech-debts/INDEX.md` 的 Open 债务表添加行，并同步刷新统计概览与"最后更新"日期
+5. **状态流转**：open → in-progress → resolved；解决时填写解决日期与当前解决方案，并移动到 Resolved 表
+
+债务索引入口：[docs/tech-debts/INDEX.md](tech-debts/INDEX.md)
