@@ -8,6 +8,7 @@ import com.wkclz.micro.fileos.bean.entity.MdmFileosBucket;
 import com.wkclz.micro.fileos.bean.entity.MdmFileosRecord;
 import com.wkclz.micro.fileos.helper.ImageProcessHelper;
 import com.wkclz.micro.fileos.service.FileosService;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -35,6 +36,8 @@ public class FileosSignApiImpl extends AbstractFileosApi implements FileosSignAp
     private static final Pattern IMG_SRC_PATTERN = Pattern.compile("<img[^>]+src\\s*=\\s*['\"]([^'\"]+)['\"][^>]*>");
 
     private static final Pattern URL_CANDIDATE_PATTERN = Pattern.compile("https?://[^\\s\"'<>\\\\,]+");
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Autowired
     private ImageProcessHelper imageProcessHelper;
@@ -313,31 +316,20 @@ public class FileosSignApiImpl extends AbstractFileosApi implements FileosSignAp
             return null;
         }
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.readValue(imageProcess, ImageProcessParam.class);
+            return OBJECT_MAPPER.readValue(imageProcess, ImageProcessParam.class);
         } catch (Exception e) {
             log.warn("解析图片处理参数失败: {}", e.getMessage());
             return null;
         }
     }
 
+    @Data
     private static class SignRecord {
         private String orgValue;
         private String fileId;
         private MdmFileosRecord record;
         private String bucketName;
         private String signedUrl;
-
-        public String getOrgValue() { return orgValue; }
-        public void setOrgValue(String orgValue) { this.orgValue = orgValue; }
-        public String getFileId() { return fileId; }
-        public void setFileId(String fileId) { this.fileId = fileId; }
-        public MdmFileosRecord getRecord() { return record; }
-        public void setRecord(MdmFileosRecord record) { this.record = record; }
-        public String getBucketName() { return bucketName; }
-        public void setBucketName(String bucketName) { this.bucketName = bucketName; }
-        public String getSignedUrl() { return signedUrl; }
-        public void setSignedUrl(String signedUrl) { this.signedUrl = signedUrl; }
     }
 
 }

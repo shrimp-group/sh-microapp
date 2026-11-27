@@ -42,7 +42,7 @@ description: "LiteFlow 规则引擎模块。当需要管理规则链(Chain)和�
 ┌──────────────▼────────────────▼─────────────────────────────┐
 │                    LiteFlow 引擎层                            │
 │  FlowExecutor ← liteflow-rule-sql (数据库规则源)              │
-│  NodeComponent 子类 (ACmp / BCmp / CCmp 等业务节点)          │
+│  NodeComponent 子类 (业务节点由宿主应用实现)                  │
 │  脚本引擎: Groovy / Javax(JS) / Aviator                      │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -60,8 +60,8 @@ description: "LiteFlow 规则引擎模块。当需要管理规则链(Chain)和�
 
 | 类名 | 父类 | 说明 |
 |------|------|------|
-| `LiteflowChainDto` | `LiteflowChain` | 规则链扩展 DTO，提供 `copy(LiteflowChain)` 静态转换 |
-| `LiteflowScriptDto` | `LiteflowScript` | 脚本扩展 DTO，提供 `copy(LiteflowScript)` 静态转换 |
+| `LiteflowChainDto` | `LiteflowChain` | 规则链扩展 DTO（对象拷贝统一使用 `BeanUtil.cpAll/cpNotNull`） |
+| `LiteflowScriptDto` | `LiteflowScript` | 脚本扩展 DTO（对象拷贝统一使用 `BeanUtil.cpAll/cpNotNull`） |
 
 ### Mapper 接口
 
@@ -84,16 +84,6 @@ description: "LiteFlow 规则引擎模块。当需要管理规则链(Chain)和�
 | `LiteflowChainRest` | `/micro-liteflow` | GET `/chain/page`, GET `/chain/info`, POST `/chain/create`, POST `/chain/update`, POST `/chain/remove` |
 | `LiteflowScriptRest` | `/micro-liteflow` | GET `/script/page`, GET `/script/info`, POST `/script/create`, POST `/script/update`, POST `/script/remove` |
 | `CommonLiteFlowRest` | `/micro-liteflow` | 扩展预留（当前为空） |
-| `LiteFlowTestRest` | `/micro-liteflow` | GET `/public/liteflow/test` (演示用) |
-
-### Demo 组件
-
-| 类名 | 继承 | @Component 名 | 说明 |
-|------|------|---------------|------|
-| `ACmp` | `NodeComponent` | `"a"` | 演示节点 A |
-| `BCmp` | `NodeComponent` | `"b"` | 演示节点 B |
-| `CCmp` | `NodeComponent` | `"c"` | 演示节点 C |
-| `LiteFlowDemo` | — | — | 演示执行器，注入 `FlowExecutor` 执行 chain1 |
 
 ### 自动配置
 

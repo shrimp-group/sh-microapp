@@ -93,7 +93,7 @@ public class MdmXxxEnt extends BaseEntity {
 **要点：**
 - 继承 `BaseEntity`（自动获得 id/sort/createTime/createBy/updateTime/updateBy/remark/version/deleted）
 - `@EqualsAndHashCode(callSuper = false)`——不调用父类 equals
-- `copy()` 全量复制，`copyIfNotNull()` 增量复制——用于 update 场景
+- `copy()` 全量复制，`copyIfNotNull()` 增量复制——用于 update 场景；实体拷贝统一用实体自带静态方法，禁止换 BeanUtil（仅 Dto/Resp 转换用 BeanUtil）
 - 业务字段加 `@FieldDesc` 注解
 
 ---

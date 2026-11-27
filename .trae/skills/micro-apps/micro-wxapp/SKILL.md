@@ -49,7 +49,6 @@ description: "微信小程序模块。小程序登录/用户管理/手机号绑�
 ┌─────────────────────────────────────────────────────────────────┐
 │                    配置 & 辅助层                                  │
 │  WxMaConfiguration  (多租户 WxMaService 管理 + 消息路由)         │
-│  Checker            (appId 格式校验)                             │
 │  MicroAppAutoConfig (自动配置 @ComponentScan + @MapperScan)      │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -113,7 +112,6 @@ description: "微信小程序模块。小程序登录/用户管理/手机号绑�
 | 类 | 说明 |
 |----|------|
 | `WxMaConfiguration` | 多租户 WxMaService 管理：按 appid/tenantCode 懒加载初始化，消息路由（log/text/pic/qrcode/template） |
-| `Checker` | appId 格式校验：正则 `^wx[a-fA-F0-9]{16}$` |
 | `MicroAppAutoConfig` | 自动配置类：`@ComponentScan("com.wkclz.micro.wxapp")` + `@MapperScan("com.wkclz.micro.wxapp.mapper")` |
 
 ---
@@ -126,9 +124,8 @@ description: "微信小程序模块。小程序登录/用户管理/手机号绑�
 前端 → POST /micro-wxapp/public/miniapp/login
      → WxMaUserRest.customerMiniappLogin()
      → WxMiniappService.miniappLogin()
-         1. 校验 appId 格式 (Checker.isValidWxAppId)
-         2. 校验用户信息参数完整性 (encryptedData/iv/rawData/signature 要么全传要么不传)
-         3. 获取 WxMaService → jscode2session 获取 openid/unionid/sessionKey
+         1. 校验用户信息参数完整性 (encryptedData/iv/rawData/signature 要么全传要么不传)
+         2. 获取 WxMaService → jscode2session 获取 openid/unionid/sessionKey
          4. 若传了用户信息 → 校验签名 + 解密用户信息
          5. 查询/创建 WxappUser (首次登录自动注册)
          6. 记录 WxappLoginLog
@@ -272,7 +269,6 @@ iam-contract-api      ← micro-wxapp (JWT 生成、Session 管理、用户上�
 
 | 问题 | 原因/解决 |
 |------|----------|
-| 小程序登录报 "appId 格式错误" | appId 须匹配正则 `^wx[a-fA-F0-9]{16}$`，由 `Checker.isValidWxAppId()` 校验 |
 | 配置详情返回 "******" | `getConfigInfo()` 对敏感字段（appSecret/appToken/aesKey/certPem/keyPem）脱敏，前端需原值时需单独获取 |
 | 更新配置后敏感字段被清空 | 前端传 "******" 时 `update()` 会保留原值；传空则置 null。确保前端回传脱敏占位符 |
 | WxMaService 未初始化 | `WxMaConfiguration` 懒加载，首次访问自动从 `wxapp_config` 表加载；确认表中已配置对应 tenantCode/appId |

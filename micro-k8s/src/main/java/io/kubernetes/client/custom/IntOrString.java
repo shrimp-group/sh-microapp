@@ -9,6 +9,11 @@ import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
 import java.util.Objects;
 
+/**
+ * 覆盖自 io.kubernetes:client-java v26 同名类（vendored patch），
+ * 修复 getStrValue/getIntValue 对 null 值的 NPE。
+ * 升级 client-java 版本时必须重新比对此补丁与上游差异。
+ */
 @JsonAdapter(IntOrString.IntOrStringAdapter.class)
 @JsonSerialize(using = IntOrStringJacksonSerializer.class)
 public class IntOrString {

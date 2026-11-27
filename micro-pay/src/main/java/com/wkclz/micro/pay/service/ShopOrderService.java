@@ -306,7 +306,7 @@ public class ShopOrderService {
                     }
                 }
 
-                // TODO 其他支付方式取消
+                // TODO(待业务确认): 其他支付方式（UNION_PAY 等）关单逻辑暂未实现，待业务确认是否补充（2026-11-27 技术债确认）
             } else {
                 // 不更换支付方式，一切保留
                 model = PayOrder.copy(lastOrder, model);
@@ -360,7 +360,7 @@ public class ShopOrderService {
                 return wxpayHelper.pay(model, req, rep);
             }
             if (PayMethod.MOCK_PAY == payMethod) {
-                // TODO 模拟支付，修改数据
+                // TODO(mock 支付): 待业务确认是否保留联调链路，PROD 已拦截（2026-11-27 技术债确认）
                 return PayOrderDto.copy(model);
             }
         } catch (Exception e) {
