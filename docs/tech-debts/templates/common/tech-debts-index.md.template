@@ -1,0 +1,37 @@
+# 技术债务索引
+
+> 最后更新：{{LAST_UPDATED}}
+
+## 统计概览
+| 状态 | 数量 |
+|------|------|
+| Open | {{OPEN_COUNT}} |
+| In Progress | {{IN_PROGRESS_COUNT}} |
+| Resolved | {{RESOLVED_COUNT}} |
+| **合计** | {{TOTAL_COUNT}} |
+
+## 按严重程度分布
+| 严重程度 | Open | In Progress | Resolved | 合计 |
+|----------|------|-------------|----------|------|
+| Critical | {{CRITICAL_OPEN}} | {{CRITICAL_IP}} | {{CRITICAL_RESOLVED}} | {{CRITICAL_TOTAL}} |
+| High | {{HIGH_OPEN}} | {{HIGH_IP}} | {{HIGH_RESOLVED}} | {{HIGH_TOTAL}} |
+| Medium | {{MEDIUM_OPEN}} | {{MEDIUM_IP}} | {{MEDIUM_RESOLVED}} | {{MEDIUM_TOTAL}} |
+| Low | {{LOW_OPEN}} | {{LOW_IP}} | {{LOW_RESOLVED}} | {{LOW_TOTAL}} |
+
+## Open 债务
+<!-- 文件路径格式：分类目录/序号-简述.md，如 性能风险/001-慢查询.md -->
+| ID | 分类 | 严重程度 | 简述 | 文件（分类目录/序号-简述.md） |
+|----|------|----------|------|------|
+{{OPEN_TABLE_ROWS}}
+
+## In Progress 债务
+<!-- 文件路径格式：分类目录/序号-简述.md，如 性能风险/001-慢查询.md -->
+| ID | 分类 | 严重程度 | 简述 | 文件（分类目录/序号-简述.md） |
+|----|------|----------|------|------|
+{{IN_PROGRESS_TABLE_ROWS}}
+
+## Resolved 债务
+<!-- 文件路径格式：分类目录/序号-简述.md，如 性能风险/001-慢查询.md -->
+| ID | 分类 | 严重程度 | 简述 | 解决日期 | 文件（分类目录/序号-简述.md） |
+|----|------|----------|------|----------|------|
+{{RESOLVED_TABLE_ROWS}}

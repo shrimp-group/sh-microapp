@@ -1,0 +1,44 @@
+# TD-{{ID}}: {{TITLE}}
+
+## 元信息
+| 字段 | 值 |
+|------|-----|
+| ID | TD-{{ID}} |
+| 分类 | {{CATEGORY}} / {{SUB_CATEGORY}} |
+| 严重程度 | {{SEVERITY}} |
+| 状态 | {{STATUS}} |
+| 发现日期 | {{DISCOVERED_DATE}} |
+| 解决日期 | {{RESOLVED_DATE}} |
+
+### 分类可选值
+| 分类代码 | 分类名称 | 子类 |
+|----------|----------|------|
+| 性能风险 | 性能风险 | 高并发瓶颈, 查询效率, IO阻塞, 资源竞争 |
+| 内存隐患 | 内存隐患 | 内存泄漏, 内存溢出, 大对象分配, GC压力 |
+| 线程与并发风险 | 线程与并发风险 | 死锁, 竞态条件, 线程池配置, 上下文切换 |
+| 安全风险 | 安全风险 | OWASP漏洞, 数据泄露, 权限缺失 |
+| 其他潜在风险 | 其他潜在风险 | 可观测性, 业务连续性, 数据一致性, 合规, 代码质量 |
+
+### 严重程度可选值
+critical / high / medium / low
+
+## 描述
+{{DESCRIPTION}}
+
+## 影响范围
+{{IMPACT_SCOPE}}
+
+## 复现条件
+{{REPRODUCE_CONDITIONS}}
+
+## 当前解决方案（如有）
+{{CURRENT_WORKAROUND}}
+
+## 建议解决方案
+{{PROPOSED_SOLUTION}}
+
+## 关联模块
+{{RELATED_MODULES}}
+
+## 关联 Story
+{{RELATED_STORY}}
