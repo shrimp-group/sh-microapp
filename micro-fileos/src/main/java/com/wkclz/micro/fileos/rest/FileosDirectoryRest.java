@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import com.wkclz.tool.utils.BeanUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping(Route.PREFIX)
 @Tag(name = "目录管理")
@@ -33,6 +35,7 @@ public class FileosDirectoryRest {
     @GetMapping(Route.DIRECTORY_LIST)
     @Operation(summary = "目录列表")
     public R<List<DirectoryResp>> list(@Valid DirectoryListReq req) {
+        log.info("查询目录列表, req={}", req);
         List<MdmFileosDirectory> list = mdmFileosDirectoryService.getDirectoryList(req.getParentPath(), req.getBucketName(), null);
         List<DirectoryResp> cp = BeanUtil.cp(list, DirectoryResp.class);
         return R.ok(cp);
@@ -41,6 +44,7 @@ public class FileosDirectoryRest {
     @GetMapping(Route.DIRECTORY_TREE)
     @Operation(summary = "目录树")
     public R<List<DirectoryTreeResp>> tree(@Valid DirectoryTreeReq req) {
+        log.info("查询目录树, req={}", req);
         List<MdmFileosDirectory> directories = mdmFileosDirectoryService.getDirectoryTree(req.getBucketName(), null);
         List<DirectoryTreeResp> tree = buildTree(directories);
         return R.ok(tree);
@@ -49,6 +53,7 @@ public class FileosDirectoryRest {
     @GetMapping(Route.DIRECTORY_INFO)
     @Operation(summary = "目录详情")
     public R<DirectoryResp> info(@Valid DirectoryInfoReq req) {
+        log.info("查询目录详情, req={}", req);
         MdmFileosDirectory directory = mdmFileosDirectoryService.getDirectoryByPath(req.getDirPath(), req.getBucketName(), null);
         DirectoryResp resp = BeanUtil.cp(directory, DirectoryResp.class);
         return R.ok(resp);

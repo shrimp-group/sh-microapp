@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
  * @table mdm_form_rule (表单校验规则) 示例rest 接口，代码重新生成会覆盖
  */
 @Tag(name = "2.表单校验规则", description = "表单校验规则管理接口")
+@Slf4j
 @Validated
 @RestController
 @RequestMapping(Route.PREFIX)
@@ -39,6 +41,7 @@ public class FormRuleRest {
     @Operation(summary = "1.表单校验规则-分页查询", description = "根据条件分页查询表单校验规则列表")
     @GetMapping(Route.FORM_RULE_PAGE)
     public R<PageData<MdmFormRuleResp>> mdmFormRulePage(@Valid MdmFormRulePageReq req) {
+        log.info("表单校验规则分页查询, req={}", req);
         MdmFormRuleDto dto = BeanUtil.cp(req, MdmFormRuleDto.class);
         PageData<MdmFormRuleDto> page = mdmFormRuleService.customPage(dto);
         PageData<MdmFormRuleResp> newPage = page.convert(MdmFormRuleResp.class);
@@ -48,6 +51,7 @@ public class FormRuleRest {
     @Operation(summary = "2.表单校验规则-详情", description = "根据ID查询表单校验规则详情")
     @GetMapping(Route.FORM_RULE_INFO)
     public R<MdmFormRuleResp> mdmFormRuleInfo(@Valid MdmFormRuleInfoReq req) {
+        log.info("表单校验规则详情查询, req={}", req);
         MdmFormRule entity = mdmFormRuleService.selectById(req.getId());
         if (entity == null) {
             return R.error("id is error");
@@ -59,6 +63,7 @@ public class FormRuleRest {
     @Operation(summary = "3.表单校验规则-创建", description = "新增表单校验规则")
     @PostMapping(Route.FORM_RULE_CREATE)
     public R<MdmFormRuleResp> mdmFormRuleCreate(@RequestBody MdmFormRuleCreateReq req) {
+        log.info("表单校验规则创建, req={}", req);
         MdmFormRule entity = BeanUtil.cp(req, MdmFormRule.class);
         entity = mdmFormRuleService.create(entity);
         formRuleCache.clearCache();
@@ -69,6 +74,7 @@ public class FormRuleRest {
     @Operation(summary = "4.表单校验规则-修改", description = "修改表单校验规则")
     @PostMapping(Route.FORM_RULE_UPDATE)
     public R<MdmFormRuleResp> mdmFormRuleUpdate(@RequestBody MdmFormRuleUpdateReq req) {
+        log.info("表单校验规则修改, req={}", req);
         MdmFormRule entity = BeanUtil.cp(req, MdmFormRule.class);
         entity = mdmFormRuleService.update(entity);
         formRuleCache.clearCache();
@@ -79,6 +85,7 @@ public class FormRuleRest {
     @Operation(summary = "5.表单校验规则-删除", description = "删除表单校验规则")
     @PostMapping(Route.FORM_RULE_REMOVE)
     public R<Integer> mdmFormRuleRemove(@RequestBody RemoveReq req) {
+        log.info("表单校验规则删除, req={}", req);
         MdmFormRule entity = new MdmFormRule();
         entity.setId(req.getId());
         Integer i = mdmFormRuleService.customRemove(entity);

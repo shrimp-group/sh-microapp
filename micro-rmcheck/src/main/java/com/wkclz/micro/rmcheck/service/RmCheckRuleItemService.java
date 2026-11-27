@@ -9,6 +9,7 @@ import com.wkclz.mybatis.bean.ColumnQuery;
 import com.wkclz.mybatis.config.ShMyBatisConfig;
 import com.wkclz.mybatis.service.BaseService;
 import com.wkclz.mybatis.service.TableInfoService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,8 @@ import java.util.List;
  * @author wangkaicun
  * @table rm_check_rule_item (删除检查规则-检查项) 单表服务类，代码重新生成不覆盖. 只建议完成单表的逻辑，或主表为 rm_check_rule_item 的逻辑. 其他逻辑放 custom 中
  */
- 
+
+@Slf4j
 @Service
 public class RmCheckRuleItemService extends BaseService<RmCheckRuleItem, RmCheckRuleItemMapper> {
 
@@ -35,6 +37,7 @@ public class RmCheckRuleItemService extends BaseService<RmCheckRuleItem, RmCheck
     }
 
     public RmCheckRuleItem create(RmCheckRuleItem entity) {
+        log.info("检查项创建, entity={}", entity);
         duplicateCheck(entity);
         columnCheck(entity);
         mapper.insert(entity);
@@ -42,6 +45,7 @@ public class RmCheckRuleItemService extends BaseService<RmCheckRuleItem, RmCheck
     }
 
     public RmCheckRuleItem update(RmCheckRuleItem entity) {
+        log.info("检查项修改, entity={}", entity);
         duplicateCheck(entity);
         columnCheck(entity);
         RmCheckRuleItem oldEntity = selectById(entity.getId());

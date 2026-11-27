@@ -5,10 +5,12 @@ import com.ql.util.express.ExpressRunner;
 import com.ql.util.express.IExpressContext;
 import com.wkclz.micro.fun.engine.ScriptEngine;
 import com.wkclz.micro.fun.bean.entity.FunFunction;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author shrimp
  */
+@Slf4j
 public class QLExpressEngineImpl extends ScriptEngine {
 
     private ExpressRunner runner;
@@ -25,6 +27,7 @@ public class QLExpressEngineImpl extends ScriptEngine {
         try {
             return runner.execute(this.getFunBody(), context, null, true, false);
         } catch (Exception e) {
+            log.error("QLExpress 脚本执行失败, funCode: {}", this.getFunCode(), e);
             throw new RuntimeException("Failed to execute QLExpress script", e);
         }
     }
@@ -53,7 +56,7 @@ public class QLExpressEngineImpl extends ScriptEngine {
         FunFunction fun = getDemo();
         QLExpressEngineImpl engine = new QLExpressEngineImpl(fun);
         Object value = engine.exec("GraalVM, I'm QLExpress");
-        System.out.println(value);
+        log.info("{}", value);
     }
 
 }

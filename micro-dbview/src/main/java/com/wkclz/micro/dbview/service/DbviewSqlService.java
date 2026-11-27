@@ -45,6 +45,9 @@ public class DbviewSqlService {
     @Autowired
     private DbviewConfig dbviewConfig;
 
+    /**
+     * 动态 SQL 执行：经权限与单语句校验后在目标数据源执行，无论成败均落执行历史便于审计
+     */
     public SqlResult execute(SqlExecuteRequest request) {
         Long datasourceId = request.getDatasourceId();
         String sql = request.getSql().trim();
@@ -64,6 +67,7 @@ public class DbviewSqlService {
                 request.getMaxRows() != null ? request.getMaxRows() : dbviewConfig.getMaxRows(),
                 dbviewConfig.getMaxRowsLimit()
         );
+        log.info("动态 SQL 执行, datasourceId={}, sqlType={}, maxRows={}", datasourceId, sqlType, maxRows);
 
         DbviewDatasource ds = datasourceMapper.selectById(datasourceId);
         if (ds == null) {
@@ -84,6 +88,7 @@ public class DbviewSqlService {
                 try (Connection conn = DataSourceInfo.getConnect(info)) {
                     return doExecute(conn, sql, sqlType, maxRows);
                 } catch (SQLException e) {
+                    log.error("SQL 执行失败, datasourceId: {}, sqlType: {}", datasourceId, sqlType, e);
                     throw new RuntimeException(e.getMessage(), e);
                 } finally {
                     DynamicDataSourceHolder.clear();

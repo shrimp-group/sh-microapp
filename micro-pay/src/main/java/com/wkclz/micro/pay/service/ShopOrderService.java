@@ -383,6 +383,11 @@ public class ShopOrderService {
     }
 
 
+    /**
+     * 商家发起退款入口：校验订单已支付后按资金规则编排退款。
+     * 总单退款（subOrderNo 为空）：按开关回退/释放整单冻结与已扣积分，并向支付通道发起全额退款，资金敏感。
+     * 子单退款（subOrderNo 非空）：按子单积分退还积分离散金额，并按退款金额向支付通道发起部分退款，资金敏感。
+     */
     public String managerPayRefund(PayOrder entity, BigDecimal refundAmount, String refundNo, String reason, String subOrderNo) {
         if (entity == null || entity.getOrderNo() == null) {
             throw ValidationException.of("orderNo 不能为空");

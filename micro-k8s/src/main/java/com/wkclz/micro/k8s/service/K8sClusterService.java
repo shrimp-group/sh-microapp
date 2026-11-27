@@ -22,6 +22,7 @@ public class K8sClusterService {
     private KubeConfigHelper kubeConfigHelper;
 
     public V1NodeList getNodes(K8sParam param) {
+        log.info("获取集群节点, clusterName={}", param.getClusterName());
         try {
             CoreV1Api api = kubeConfigHelper.getCoreV1Api(param.getClusterName());
             return api.listNode().execute();
@@ -32,6 +33,7 @@ public class K8sClusterService {
     }
 
     public V1NamespaceList getNamespaces(K8sParam param) {
+        log.info("获取集群命名空间, clusterName={}", param.getClusterName());
         try {
             CoreV1Api api = kubeConfigHelper.getCoreV1Api(param.getClusterName());
             return api.listNamespace().execute();

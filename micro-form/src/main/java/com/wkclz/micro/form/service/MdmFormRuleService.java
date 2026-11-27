@@ -15,6 +15,7 @@ import com.wkclz.mybatis.helper.PageQuery;
 import com.wkclz.mybatis.service.BaseService;
 import com.wkclz.redis.helper.RedisIdGenerator;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -28,7 +29,8 @@ import java.util.List;
  * @author wangkaicun
  * @table mdm_form_rule (表单校验规则) 单表服务类，代码重新生成不覆盖. 只建议完成单表的逻辑，或主表为 mdm_form_rule 的逻辑. 其他逻辑放 custom 中
  */
- 
+
+@Slf4j
 @Service
 public class MdmFormRuleService extends BaseService<MdmFormRule, MdmFormRuleMapper> {
 
@@ -44,6 +46,7 @@ public class MdmFormRuleService extends BaseService<MdmFormRule, MdmFormRuleMapp
     }
 
     public MdmFormRule create(MdmFormRule entity) {
+        log.info("表单校验规则创建, entity={}", entity);
         duplicateCheck(entity);
         if (StringUtils.isBlank(entity.getFormRuleCode())) {
             entity.setFormRuleCode(redisIdGenerator.generateIdWithPrefix("form_rule_"));
@@ -53,6 +56,7 @@ public class MdmFormRuleService extends BaseService<MdmFormRule, MdmFormRuleMapp
     }
 
     public MdmFormRule update(MdmFormRule entity) {
+        log.info("表单校验规则修改, entity={}", entity);
         duplicateCheck(entity);
         MdmFormRule oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
@@ -65,6 +69,7 @@ public class MdmFormRuleService extends BaseService<MdmFormRule, MdmFormRuleMapp
 
     @Transactional(rollbackFor = Exception.class)
     public Integer customRemove(MdmFormRule entity) {
+        log.info("表单校验规则删除, entity={}", entity);
         entity = selectById(entity.getId());
         if (entity == null) {
             throw ValidationException.of(ResultCode.RECORD_NOT_EXIST);

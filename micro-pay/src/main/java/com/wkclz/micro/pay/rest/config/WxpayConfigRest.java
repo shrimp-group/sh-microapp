@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
  */
 
 @Tag(name = "1.微信支付配置", description = "微信支付配置管理接口")
+@Slf4j
 @RestController
 @RequestMapping(Route.PREFIX)
 @Validated
@@ -43,6 +45,7 @@ public class WxpayConfigRest {
     @Operation(summary = "1.微信支付配置-分页查询", description = "分页查询微信支付配置列表")
     @GetMapping(Route.WXPAY_CONFIG_PAGE)
     public R<PageData<WxpayConfigPageResp>> payWxpayConfigPage(@Valid WxpayConfigPageReq req) {
+        log.info("分页查询微信支付配置, req={}", req);
         PayWxpayConfigDto dto = BeanUtil.cp(req, PayWxpayConfigDto.class);
         PageData<PayWxpayConfigDto> page = payWxpayConfigService.getWxpayConfigPage(dto);
         PageData<WxpayConfigPageResp> newPage = page.convert(WxpayConfigPageResp.class);
@@ -52,6 +55,7 @@ public class WxpayConfigRest {
     @Operation(summary = "2.微信支付配置-详情", description = "根据ID查询微信支付配置详情")
     @GetMapping(Route.WXPAY_CONFIG_INFO)
     public R<WxpayConfigInfoResp> payWxpayConfigInfo(@Valid WxpayConfigInfoReq req) {
+        log.info("查询微信支付配置详情, req={}", req);
         PayWxpayConfig entity = new PayWxpayConfig();
         entity.setId(req.getId());
         entity.setTenantCode(IdentityContext.getTenantCode());
@@ -63,6 +67,7 @@ public class WxpayConfigRest {
     @Operation(summary = "3.微信支付配置-创建", description = "新增微信支付配置")
     @PostMapping(Route.WXPAY_CONFIG_CREATE)
     public R<WxpayConfigCreateResp> payWxpayConfigCreate(@Valid @RequestBody WxpayConfigCreateReq req) {
+        log.info("创建微信支付配置, req={}", req);
         PayWxpayConfig entity = BeanUtil.cp(req, PayWxpayConfig.class);
         if (StringUtils.isBlank(entity.getTenantCode())) {
             entity.setTenantCode(IdentityContext.getTenantCode());
@@ -75,6 +80,7 @@ public class WxpayConfigRest {
     @Operation(summary = "4.微信支付配置-更新", description = "更新微信支付配置")
     @PostMapping(Route.WXPAY_CONFIG_UPDATE)
     public R<WxpayConfigUpdateResp> payWxpayConfigUpdate(@Valid @RequestBody WxpayConfigUpdateReq req) {
+        log.info("更新微信支付配置, req={}", req);
         PayWxpayConfig entity = BeanUtil.cp(req, PayWxpayConfig.class);
         if (StringUtils.isBlank(entity.getTenantCode())) {
             entity.setTenantCode(IdentityContext.getTenantCode());
@@ -88,6 +94,7 @@ public class WxpayConfigRest {
     @Operation(summary = "5.微信支付配置-删除", description = "删除微信支付配置")
     @PostMapping(Route.WXPAY_CONFIG_REMOVE)
     public R<Integer> payWxpayConfigRemove(@Valid @RequestBody WxpayConfigRemoveReq req) {
+        log.info("删除微信支付配置, req={}", req);
         PayWxpayConfig entity = new PayWxpayConfig();
         entity.setId(req.getId());
         payWxpayConfigService.deleteById(entity);
@@ -95,9 +102,13 @@ public class WxpayConfigRest {
         return R.ok(1);
     }
 
+    /**
+     * 文件下载流输出，豁免 Resp 封装
+     */
     @Operation(summary = "6.微信支付配置-域名验证", description = "微信支付服务器域名验证")
     @GetMapping(Route.WXPAY_CONFIG_VERIFY)
     public String wxpayConfigVerify(HttpServletRequest req, @PathVariable("verifySign") String verifySign) {
+        log.info("微信支付域名验证, verifySign={}", verifySign);
         if (StringUtils.isBlank(verifySign)) {
             return "have no verify sign";
         }

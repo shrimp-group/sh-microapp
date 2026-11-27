@@ -12,6 +12,7 @@ import com.wkclz.micro.dict.mapper.MdmDictItemMapper;
 import com.wkclz.micro.dict.mapper.MdmDictMapper;
 import com.wkclz.mybatis.helper.PageQuery;
 import com.wkclz.mybatis.service.BaseService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
  * @table mdm_dict (字典) 单表服务类，代码重新生成不覆盖. 只建议完成单表的逻辑，或主表为 mdm_dict 的逻辑. 其他逻辑放 custom 中
  */
 
+@Slf4j
 @Service
 public class MdmDictService extends BaseService<MdmDict, MdmDictMapper> {
 
@@ -45,6 +47,7 @@ public class MdmDictService extends BaseService<MdmDict, MdmDictMapper> {
 
     @Transactional(rollbackFor = Exception.class)
     public MdmDict dictCreate(MdmDict entity) {
+        log.info("字典类型创建, entity={}", entity);
         entity.setId(null);
         MdmDict param = new MdmDict();
         param.setDictType(entity.getDictType());
@@ -59,6 +62,7 @@ public class MdmDictService extends BaseService<MdmDict, MdmDictMapper> {
 
     @Transactional(rollbackFor = Exception.class)
     public MdmDict dictUpdate(MdmDict entity) {
+        log.info("字典类型修改, entity={}", entity);
         MdmDict mdmDict = selectById(entity.getId());
         if (mdmDict == null) {
             throw ValidationException.of("数据不存在");
@@ -82,6 +86,7 @@ public class MdmDictService extends BaseService<MdmDict, MdmDictMapper> {
 
     @Transactional(rollbackFor = Exception.class)
     public Integer dictRemove(Long id) {
+        log.info("字典类型删除, id={}", id);
         MdmDict mdmDict = selectById(id);
         if (mdmDict == null) {
             throw ValidationException.of("数据不存在");
@@ -102,6 +107,7 @@ public class MdmDictService extends BaseService<MdmDict, MdmDictMapper> {
     }
 
     public List<MdmDictDto> copy(MdmDictDto dto) {
+        log.info("字典复制导出, dto={}", dto);
         MdmDictDto param = new MdmDictDto();
         MdmDictItemDto itemParam = new MdmDictItemDto();
         List<String> dictTypes = new ArrayList<>();
@@ -125,8 +131,12 @@ public class MdmDictService extends BaseService<MdmDict, MdmDictMapper> {
         return dicts;
     }
 
+    /**
+     * 字典粘贴导入：按 dictType/dictValue 与存量数据做 diff，存在则按字段差异更新、不存在则新增，完成后清缓存以保证字典一致性
+     */
     @Transactional(rollbackFor = Exception.class)
     public Integer paste(List<MdmDictDto> dtos) {
+        log.info("字典粘贴导入, size={}", dtos.size());
         if (CollectionUtils.isEmpty(dtos)) {
             return 0;
         }
@@ -278,6 +288,8 @@ public class MdmDictService extends BaseService<MdmDict, MdmDictMapper> {
             }
         }
 
+        log.info("字典粘贴 diff 结果, dictInsert={}, dictUpdate={}, itemInsert={}, itemUpdate={}",
+            dicts2Insert.size(), dicts2Update.size(), items2Insert.size(), items2Update.size());
         int count = 0;
         if (CollectionUtils.isNotEmpty(dicts2Insert)) {
             count += mapper.insertBatch(dicts2Insert);

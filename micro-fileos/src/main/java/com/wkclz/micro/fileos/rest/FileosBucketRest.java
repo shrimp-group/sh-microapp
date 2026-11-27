@@ -10,6 +10,7 @@ import com.wkclz.tool.utils.BeanUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping(Route.PREFIX)
 @Tag(name = "Bucket管理")
@@ -29,6 +31,7 @@ public class FileosBucketRest {
     @GetMapping(Route.BUCKET_PAGE)
     @Operation(summary = "Bucket分页查询")
     public R<PageData<BucketResp>> page(@Valid BucketPageReq req) {
+        log.info("分页查询Bucket, req={}", req);
         MdmFileosBucket entity = BeanUtil.cp(req, MdmFileosBucket.class);
         PageData<MdmFileosBucket> page = mdmFileosBucketService.getBucketPage(entity);
         PageData<BucketResp> convert = page.convert(BucketResp.class);
@@ -43,6 +46,7 @@ public class FileosBucketRest {
     @GetMapping(Route.BUCKET_INFO)
     @Operation(summary = "Bucket详情")
     public R<BucketResp> info(@Valid BucketInfoReq req) {
+        log.info("查询Bucket详情, req={}", req);
         MdmFileosBucket entity = mdmFileosBucketService.selectById(req.getId());
         if (entity == null) {
             return R.ok();
@@ -57,6 +61,7 @@ public class FileosBucketRest {
     @PostMapping(Route.BUCKET_CREATE)
     @Operation(summary = "Bucket创建")
     public R<BucketResp> create(@Valid @RequestBody BucketCreateReq req) {
+        log.info("创建Bucket, req={}", req);
         MdmFileosBucket entity = BeanUtil.cp(req, MdmFileosBucket.class);
         if (entity.getDefaultFlag() != null && entity.getDefaultFlag() == 1) {
             mdmFileosBucketService.setDefaultFlag(entity);
@@ -72,6 +77,7 @@ public class FileosBucketRest {
     @PostMapping(Route.BUCKET_UPDATE)
     @Operation(summary = "Bucket修改")
     public R<BucketResp> update(@Valid @RequestBody BucketUpdateReq req) {
+        log.info("更新Bucket, req={}", req);
         MdmFileosBucket entity = BeanUtil.cp(req, MdmFileosBucket.class);
         if ("******".equals(entity.getSecretKey()) || StringUtils.isBlank(entity.getSecretKey())) {
             entity.setSecretKey(null);
@@ -88,6 +94,7 @@ public class FileosBucketRest {
     @PostMapping(Route.BUCKET_REMOVE)
     @Operation(summary = "Bucket删除")
     public R<Void> remove(@Valid @RequestBody BucketRemoveReq req) {
+        log.info("删除Bucket, req={}", req);
         MdmFileosBucket bucket = mdmFileosBucketService.selectById(req.getId());
         if (bucket == null) {
             return R.error("记录不存在");
@@ -103,6 +110,7 @@ public class FileosBucketRest {
     @GetMapping(Route.BUCKET_OPTIONS)
     @Operation(summary = "Bucket选项")
     public R<List<BucketResp>> options(@Valid BucketOptionsReq req) {
+        log.info("查询Bucket选项, req={}", req);
         MdmFileosBucket entity = BeanUtil.cp(req, MdmFileosBucket.class);
         List<MdmFileosBucket> list = mdmFileosBucketService.getBucketOptions(entity);
         List<BucketResp> cp = BeanUtil.cp(list, BucketResp.class);

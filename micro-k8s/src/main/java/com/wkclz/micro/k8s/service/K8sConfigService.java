@@ -8,6 +8,7 @@ import com.wkclz.micro.k8s.bean.entity.K8sConfig;
 import com.wkclz.micro.k8s.mapper.K8sConfigMapper;
 import com.wkclz.mybatis.helper.PageQuery;
 import com.wkclz.mybatis.service.BaseService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +19,8 @@ import java.util.List;
  * @author shrimp
  * @table k8s_config (k8s配置) 单表服务类，代码重新生成不覆盖. 只建议完成单表的逻辑，或主表为 k8s_config 的逻辑. 其他逻辑放 custom 中
  */
- 
+
+@Slf4j
 @Service
 public class K8sConfigService extends BaseService<K8sConfig, K8sConfigMapper> {
 
@@ -31,12 +33,14 @@ public class K8sConfigService extends BaseService<K8sConfig, K8sConfigMapper> {
     }
 
     public K8sConfig create(K8sConfig entity) {
+        log.info("创建 K8s 集群配置, req={}", entity);
         duplicateCheck(entity);
         mapper.insert(entity);
         return entity;
     }
 
     public K8sConfig update(K8sConfig entity) {
+        log.info("更新 K8s 集群配置, req={}", entity);
         duplicateCheck(entity);
         K8sConfig oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
@@ -52,6 +56,7 @@ public class K8sConfigService extends BaseService<K8sConfig, K8sConfigMapper> {
     }
 
     public K8sConfig remove(K8sConfig entity) {
+        log.info("删除 K8s 集群配置, req={}", entity);
         K8sConfig oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
             throw ValidationException.of(ResultCode.RECORD_NOT_EXIST);

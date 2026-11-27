@@ -105,6 +105,7 @@ public class ReportExecService {
      * 获取报表数据（用于导出）
      */
     public List<LinkedHashMap<String, Object>> getReportData(String reportCode, Map<String, Object> params) {
+        log.info("报表数据导出查询, reportCode={}", reportCode);
         ReportDefinition definition = reportCache.get(reportCode);
         if (definition == null) {
             throw ValidationException.of("报表不存在或未启用: " + reportCode);

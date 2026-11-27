@@ -8,6 +8,7 @@ import com.wkclz.micro.msg.bean.entity.MsgUserRecord;
 import com.wkclz.micro.msg.mapper.MsgUserRecordMapper;
 import com.wkclz.mybatis.helper.PageQuery;
 import com.wkclz.mybatis.service.BaseService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import java.util.List;
  * @table msg_user_record (用户消息记录) 单表服务类，代码重新生成不覆盖. 只建议完成单表的逻辑，或主表为 msg_user_record 的逻辑. 其他逻辑放 custom 中
  */
 
+@Slf4j
 @Service
 public class MsgUserRecordService extends BaseService<MsgUserRecord, MsgUserRecordMapper> {
 
@@ -35,6 +37,7 @@ public class MsgUserRecordService extends BaseService<MsgUserRecord, MsgUserReco
     }
 
     public MsgUserRecordDto getNotice(String noticeNo) {
+        log.info("个人消息详情查询并计数, noticeNo={}", noticeNo);
         if (StringUtils.isBlank(noticeNo)) {
             return null;
         }
@@ -51,6 +54,7 @@ public class MsgUserRecordService extends BaseService<MsgUserRecord, MsgUserReco
     }
 
     public MsgUserRecordDto getNoticeById(Long id) {
+        log.info("个人消息详情查询并计数, id={}", id);
         if (id == null) {
             return null;
         }
@@ -67,6 +71,7 @@ public class MsgUserRecordService extends BaseService<MsgUserRecord, MsgUserReco
     }
 
     public Integer userMarkRecodeReaded(MsgUserRecord entity) {
+        log.info("个人消息批量已读, entity={}", entity);
         List<Long> ids = new ArrayList<>();
         if (entity.getId() != null) {
             ids.add(entity.getId());

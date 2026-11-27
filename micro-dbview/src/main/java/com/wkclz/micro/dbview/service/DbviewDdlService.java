@@ -9,6 +9,7 @@ import com.wkclz.micro.dbview.bean.enums.SqlType;
 import com.wkclz.micro.dbview.config.DbviewConfig;
 import com.wkclz.micro.dbview.mapper.DbviewDatasourceMapper;
 import com.wkclz.mybatis.bean.DataSourceInfo;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class DbviewDdlService {
 
@@ -41,6 +43,7 @@ public class DbviewDdlService {
     private DbviewConfig dbviewConfig;
 
     public DdlPreview preview(DdlRequest request) {
+        log.info("DDL 预览生成, request={}", request);
         String ddl = generateDdl(request);
         DdlPreview preview = new DdlPreview();
         preview.setDdl(ddl);
@@ -51,6 +54,7 @@ public class DbviewDdlService {
     }
 
     public void execute(DdlRequest request) {
+        log.info("DDL 操作执行, request={}", request);
         String userCode = IdentityContext.getUserCode();
         permissionService.check(request.getDatasourceId(), "ALTER TABLE", true);
 
@@ -59,6 +63,7 @@ public class DbviewDdlService {
     }
 
     public void executeDdl(Long datasourceId, String schemaName, String ddl, Boolean confirmDangerous) {
+        log.info("DDL 语句执行, datasourceId={}, schemaName={}", datasourceId, schemaName);
         String userCode = IdentityContext.getUserCode();
         permissionService.check(datasourceId, ddl, confirmDangerous);
         executeDdlInternal(datasourceId, ddl, userCode);
@@ -83,6 +88,7 @@ public class DbviewDdlService {
                      Statement stmt = conn.createStatement()) {
                     stmt.execute(ddl);
                 } catch (Exception e) {
+                    log.error("DDL 执行失败, datasourceId: {}", datasourceId, e);
                     throw new RuntimeException(e.getMessage(), e);
                 } finally {
                     DynamicDataSourceHolder.clear();

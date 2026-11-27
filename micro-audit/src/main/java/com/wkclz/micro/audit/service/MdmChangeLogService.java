@@ -25,12 +25,14 @@ public class MdmChangeLogService extends BaseService<MdmChangeLog, MdmChangeLogM
     }
 
     public MdmChangeLog create(MdmChangeLog entity) {
+        log.info("变更记录创建, entity={}", entity);
         duplicateCheck(entity);
         mapper.insert(entity);
         return entity;
     }
 
     public MdmChangeLog update(MdmChangeLog entity) {
+        log.info("变更记录修改, entity={}", entity);
         duplicateCheck(entity);
         MdmChangeLog oldEntity = selectById(entity.getId());
         if (oldEntity == null) {

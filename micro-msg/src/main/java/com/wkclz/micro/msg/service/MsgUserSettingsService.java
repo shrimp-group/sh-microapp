@@ -4,6 +4,7 @@ import com.wkclz.core.identity.IdentityContext;
 import com.wkclz.micro.msg.bean.entity.MsgUserSettings;
 import com.wkclz.micro.msg.mapper.MsgUserSettingsMapper;
 import com.wkclz.mybatis.service.BaseService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @table msg_user_settings (用户消息设置) 单表服务类，代码重新生成不覆盖. 只建议完成单表的逻辑，或主表为 msg_user_settings 的逻辑. 其他逻辑放 custom 中
  */
 
+@Slf4j
 @Service
 public class MsgUserSettingsService extends BaseService<MsgUserSettings, MsgUserSettingsMapper> {
 
@@ -25,6 +27,7 @@ public class MsgUserSettingsService extends BaseService<MsgUserSettings, MsgUser
 
     @Transactional(rollbackFor = Exception.class)
     public MsgUserSettings getUserSettings(String userCode) {
+        log.info("查询用户消息设置, userCode={}", userCode);
         if (StringUtils.isBlank(userCode)) {
             userCode = IdentityContext.getUserCode();
         }
@@ -44,6 +47,7 @@ public class MsgUserSettingsService extends BaseService<MsgUserSettings, MsgUser
 
     @Transactional(rollbackFor = Exception.class)
     public Integer setUserSettings(MsgUserSettings settings) {
+        log.info("保存用户消息设置, settings={}", settings);
         MsgUserSettings userSettings = getUserSettings();
         userSettings.setNotifySystem(settings.getNotifySystem());
         userSettings.setNotifyEvent(settings.getNotifyEvent());

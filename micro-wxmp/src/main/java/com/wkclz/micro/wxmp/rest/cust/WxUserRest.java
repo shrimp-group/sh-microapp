@@ -11,12 +11,14 @@ import com.wkclz.tool.utils.BeanUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "4.H5用户", description = "H5端用户信息")
+@Slf4j
 @RestController
 @RequestMapping(Route.PREFIX)
 @Validated
@@ -31,6 +33,7 @@ public class WxUserRest {
     @GetMapping(Route.H5_MINE_USERINFO)
     public R<WxUserResp> h5MineUserinfo() {
         String userCode = IdentityContext.getUserCode();
+        log.info("查询 H5 用户信息, userCode={}", userCode);
         WxmpUser user = wxmpUserService.getUserByUserCode(userCode);
         WxUserResp resp = BeanUtil.cp(user, WxUserResp.class);
         resp.setAvatar(fileosSignApi.sign(user.getAvatar()));

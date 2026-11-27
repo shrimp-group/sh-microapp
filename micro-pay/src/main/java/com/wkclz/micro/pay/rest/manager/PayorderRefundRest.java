@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "4.退款管理", description = "支付订单退款管理接口")
+@Slf4j
 @RestController
 @RequestMapping(Route.PREFIX)
 @Validated
@@ -28,6 +30,7 @@ public class PayorderRefundRest {
     @Operation(summary = "1.退款-申请", description = "申请支付订单退款（subOrderNo 为空表示总单退款，非空表示子单退款）")
     @PostMapping(Route.PAYORDER_REFUND)
     public R<String> refund(@Valid @RequestBody PayOrderRefundReq req) {
+        log.info("申请支付订单退款, req={}", req);
         PayOrder entity = BeanUtil.cp(req, PayOrder.class);
         String reason = req.getReason() != null ? req.getReason() : "商家退款";
         String s = shopOrderService.managerPayRefund(entity, req.getRefundAmount(), req.getRefundNo(), reason, req.getSubOrderNo());

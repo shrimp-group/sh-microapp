@@ -13,6 +13,7 @@ import com.wkclz.micro.wxapp.bean.vo.WxMaAppInfo;
 import com.wkclz.micro.wxapp.service.WxappConfigService;
 import me.chanjar.weixin.common.bean.result.WxMediaUploadResult;
 import me.chanjar.weixin.common.error.WxErrorException;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +24,7 @@ import java.util.Map;
 /**
  * @author <a href="https://github.com/binarywang">Binary Wang</a>
  */
+@Slf4j
 @Configuration
 public class WxMaConfiguration {
 
@@ -124,20 +126,12 @@ public class WxMaConfiguration {
     }
 
     private final WxMaMessageHandler templateMsgHandler = (wxMessage, context, service, sessionManager) -> {
-        /* TODO 新版本不再支持，需要找解决方案
-        service.getMsgService().sendTemplateMsg(WxMaTemplateMessage.builder()
-            .templateId("此处更换为自己的模板id")
-            .formId("自己替换可用的formid")
-            .data(Lists.newArrayList(
-                new WxMaTemplateData("keyword1", "339208499", "#173177")))
-            .toUser(wxMessage.getFromUser())
-            .build());
-        */
+        // TODO: 模板消息发送已废弃，新版本微信不再支持
         return null;
     };
 
     private final WxMaMessageHandler logHandler = (wxMessage, context, service, sessionManager) -> {
-        System.out.println("收到消息：" + wxMessage.toString());
+        log.info("收到消息：{}", wxMessage);
         service.getMsgService().sendKefuMsg(WxMaKefuMessage.newTextBuilder().content("收到信息为：" + wxMessage.toJson())
             .toUser(wxMessage.getFromUser()).build());
         return null;
@@ -161,7 +155,7 @@ public class WxMaConfiguration {
                     .toUser(wxMessage.getFromUser())
                     .build());
         } catch (WxErrorException e) {
-            e.printStackTrace();
+            log.error("上传示例图片媒体文件失败, fromUser: {}", wxMessage.getFromUser(), e);
         }
 
         return null;
@@ -178,7 +172,7 @@ public class WxMaConfiguration {
                     .toUser(wxMessage.getFromUser())
                     .build());
         } catch (WxErrorException e) {
-            e.printStackTrace();
+            log.error("创建二维码并发送失败, fromUser: {}", wxMessage.getFromUser(), e);
         }
 
         return null;

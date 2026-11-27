@@ -8,12 +8,14 @@ import com.wkclz.micro.dbview.bean.entity.DbviewDatasource;
 import com.wkclz.micro.dbview.mapper.DbviewDatasourceMapper;
 import com.wkclz.mybatis.helper.PageQuery;
 import com.wkclz.mybatis.service.BaseService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class DbviewDatasourceService extends BaseService<DbviewDatasource, DbviewDatasourceMapper> {
 
@@ -29,6 +31,7 @@ public class DbviewDatasourceService extends BaseService<DbviewDatasource, Dbvie
     }
 
     public DbviewDatasource create(DbviewDatasource entity) {
+        log.info("数据源新增, entity={}", entity);
         duplicateCheck(entity);
         if (entity.getPort() == null) {
             entity.setPort(3306);
@@ -45,6 +48,7 @@ public class DbviewDatasourceService extends BaseService<DbviewDatasource, Dbvie
     }
 
     public DbviewDatasource update(DbviewDatasource entity) {
+        log.info("数据源更新, entity={}", entity);
         duplicateCheck(entity);
         DbviewDatasource oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
@@ -63,6 +67,7 @@ public class DbviewDatasourceService extends BaseService<DbviewDatasource, Dbvie
     }
 
     public DbviewDatasource remove(DbviewDatasource entity) {
+        log.info("数据源删除, entity={}", entity);
         DbviewDatasource oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
             throw ValidationException.of(ResultCode.RECORD_NOT_EXIST);

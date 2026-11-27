@@ -63,8 +63,8 @@ public class RmCheckApi {
                 Method getter = clazz.getDeclaredMethod(getterName);
                 value = getter.invoke(data);
             } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
-                log.error("所需删除校验的字段配置异常，无法获取字段值");
-                throw new RuntimeException(e);
+                log.error("所需删除校验的字段配置异常，无法获取字段值, ruleCode: {}, columnName: {}", rule.getRuleCode(), columnName, e);
+                throw new ValidationException("删除校验字段配置异常: " + rule.getRuleCode() + ":" + columnName, e);
             }
 
             // 使用核验规则项，到其他表去检查内容是否存在

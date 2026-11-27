@@ -6,6 +6,7 @@ import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.form.mapper.MdmFormRuleFieldMapper;
 import com.wkclz.micro.form.bean.entity.MdmFormRuleField;
 import com.wkclz.mybatis.service.BaseService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 /**
@@ -13,18 +14,21 @@ import org.springframework.stereotype.Service;
  * @author shrimp
  * @table mdm_form_rule_field (表单校验规则-校验项) 单表服务类，代码重新生成不覆盖. 只建议完成单表的逻辑，或主表为 mdm_form_rule_field 的逻辑. 其他逻辑放 custom 中
  */
- 
+
+@Slf4j
 @Service
 public class MdmFormRuleFieldService extends BaseService<MdmFormRuleField, MdmFormRuleFieldMapper> {
 
 
     public MdmFormRuleField create(MdmFormRuleField entity) {
+        log.info("表单校验项创建, entity={}", entity);
         duplicateCheck(entity);
         mapper.insert(entity);
         return entity;
     }
 
     public MdmFormRuleField update(MdmFormRuleField entity) {
+        log.info("表单校验项修改, entity={}", entity);
         duplicateCheck(entity);
         MdmFormRuleField oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
@@ -40,6 +44,7 @@ public class MdmFormRuleFieldService extends BaseService<MdmFormRuleField, MdmFo
     }
 
     public MdmFormRuleField remove(MdmFormRuleField entity) {
+        log.info("表单校验项删除, entity={}", entity);
         MdmFormRuleField oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
             throw ValidationException.of(ResultCode.RECORD_NOT_EXIST);

@@ -48,6 +48,9 @@ public class WxpayNotifyRest {
 
 
 
+    /**
+     * 微信/支付宝异步通知协议要求原生 XML/表单响应，豁免 Req/Resp 封装
+     */
     @Operation(summary = "1. 微信支付异步通知")
     @PostMapping(Route.PUBLIC_WXPAY_NOTIFY_TENANT)
     @Transactional(rollbackFor = Exception.class)
@@ -105,6 +108,9 @@ public class WxpayNotifyRest {
         return WxPayNotifyResponse.success("success");
     }
 
+    /**
+     * 微信/支付宝异步通知协议要求原生 XML/表单响应，豁免 Req/Resp 封装
+     */
     @Operation(summary = "2. 微信退款异步通知")
     @PostMapping(Route.PUBLIC_WXPAY_REFUND_NOTIFY_TENANT)
     @Transactional(rollbackFor = Exception.class)

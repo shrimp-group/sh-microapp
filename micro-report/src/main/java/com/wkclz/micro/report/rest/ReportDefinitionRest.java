@@ -17,12 +17,14 @@ import com.wkclz.web.bean.RemoveReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "1.报表定义", description = "报表定义管理接口")
+@Slf4j
 @Validated
 @RestController
 @RequestMapping(Route.PREFIX)
@@ -34,6 +36,7 @@ public class ReportDefinitionRest {
     @Operation(summary = "1.报表定义-分页查询", description = "根据条件分页查询报表定义列表")
     @GetMapping(Route.DEFINITION_PAGE)
     public R<PageData<ReportDefinitionPageResp>> definitionPage(@Valid ReportDefinitionPageReq req) {
+        log.info("报表定义分页查询, req={}", req);
         ReportDefinition entity = BeanUtil.cp(req, ReportDefinition.class);
         PageData<ReportDefinitionDto> page = reportDefinitionService.getDefinitionPage(entity);
         PageData<ReportDefinitionPageResp> newPage = page.convert(ReportDefinitionPageResp.class);
@@ -43,6 +46,7 @@ public class ReportDefinitionRest {
     @Operation(summary = "2.报表定义-详情", description = "根据ID查询报表定义详情")
     @GetMapping(Route.DEFINITION_DETAIL)
     public R<ReportDefinitionResp> definitionDetail(@Valid ReportDefinitionInfoReq req) {
+        log.info("报表定义详情查询, req={}", req);
         ReportDefinition entity = reportDefinitionService.getDefinitionDetail(req.getId());
         if (entity == null) {
             return R.error("数据不存在");
@@ -55,6 +59,7 @@ public class ReportDefinitionRest {
     @PostMapping(Route.DEFINITION_CREATE)
     @Transactional(rollbackFor = Exception.class)
     public R<ReportDefinitionResp> definitionCreate(@Valid @RequestBody ReportDefinitionCreateReq req) {
+        log.info("报表定义创建, req={}", req);
         ReportDefinition entity = BeanUtil.cp(req, ReportDefinition.class);
         entity = reportDefinitionService.definitionCreate(entity);
         ReportDefinitionResp resp = BeanUtil.cp(entity, ReportDefinitionResp.class);
@@ -65,6 +70,7 @@ public class ReportDefinitionRest {
     @PostMapping(Route.DEFINITION_UPDATE)
     @Transactional(rollbackFor = Exception.class)
     public R<ReportDefinitionResp> definitionUpdate(@Valid @RequestBody ReportDefinitionUpdateReq req) {
+        log.info("报表定义修改, req={}", req);
         ReportDefinition entity = BeanUtil.cp(req, ReportDefinition.class);
         entity = reportDefinitionService.definitionUpdate(entity);
         ReportDefinitionResp resp = BeanUtil.cp(entity, ReportDefinitionResp.class);
@@ -75,6 +81,7 @@ public class ReportDefinitionRest {
     @PostMapping(Route.DEFINITION_REMOVE)
     @Transactional(rollbackFor = Exception.class)
     public R<Integer> definitionRemove(@Valid @RequestBody RemoveReq req) {
+        log.info("报表定义删除, req={}", req);
         ReportDefinition entity = new ReportDefinition();
         entity.setId(req.getId());
         Integer result = reportDefinitionService.definitionRemove(entity);
@@ -84,6 +91,7 @@ public class ReportDefinitionRest {
     @Operation(summary = "6.报表定义-SQL测试", description = "测试SQL脚本执行")
     @PostMapping(Route.DEFINITION_TEST)
     public R<Object> definitionTest(@Valid @RequestBody ReportDefinitionTestReq req) {
+        log.info("报表 SQL 测试执行, req={}", req);
         Integer current = req.getCurrent() != null ? req.getCurrent() : 1;
         Integer size = req.getSize() != null ? req.getSize() : 10;
         Object result = reportDefinitionService.definitionTest(

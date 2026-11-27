@@ -5,10 +5,12 @@ import com.wkclz.micro.fun.bean.entity.FunFunction;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author shrimp
  */
+@Slf4j
 public class GroovyEngineImpl extends ScriptEngine {
 
     private Script script;
@@ -58,7 +60,7 @@ public class GroovyEngineImpl extends ScriptEngine {
         FunFunction fun = getDemo();
         GroovyEngineImpl engine = new GroovyEngineImpl(fun);
         Object value = engine.exec("GraalVM, I'm Groovy");
-        System.out.println(value);
+        log.info("{}", value);
     }
 
 }

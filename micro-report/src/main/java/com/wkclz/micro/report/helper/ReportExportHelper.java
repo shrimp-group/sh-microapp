@@ -64,7 +64,7 @@ public class ReportExportHelper {
 
             log.info("报表导出成功: {}, 数据行数: {}", fileName, dataList.size());
         } catch (IOException e) {
-            log.error("报表导出失败: {}", e.getMessage());
+            log.error("报表导出失败, fileName: {}", fileName, e);
             throw new RuntimeException("报表导出失败: " + e.getMessage(), e);
         }
     }

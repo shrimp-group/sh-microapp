@@ -12,6 +12,7 @@ import com.wkclz.micro.audit.service.MdmChangeLogService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import com.wkclz.tool.utils.BeanUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @Tag(name = "1.变更记录", description = "变更记录查询接口")
+@Slf4j
 @RestController
 @RequestMapping(Route.PREFIX)
 @Validated
@@ -34,6 +36,7 @@ public class ChangeLogRest {
     @Operation(summary = "1.变更记录-分页查询", description = "根据条件分页查询变更记录列表")
     @GetMapping(Route.CHANGE_LOG_PAGE)
     public R<PageData<ChangeLogPageResp>> mdmChangeLogPage(@Valid ChangeLogPageReq req) {
+        log.info("变更记录分页查询, req={}", req);
         MdmChangeLog entity = BeanUtil.cp(req, MdmChangeLog.class);
         PageData<MdmChangeLog> page = mdmChangeLogService.getChangeLogPage(entity);
         List<ChangeLogPageResp> respList = page.getRecords().stream().map(e -> {
@@ -53,6 +56,7 @@ public class ChangeLogRest {
     @Operation(summary = "2.变更记录-详情", description = "根据ID查询变更记录详情")
     @GetMapping(Route.CHANGE_LOG_INFO)
     public R<ChangeLogInfoResp> mdmChangeLogInfo(@Valid ChangeLogInfoReq req) {
+        log.info("变更记录详情查询, req={}", req);
         MdmChangeLog entity = mdmChangeLogService.selectById(req.getId());
         ChangeLogInfoResp resp = BeanUtil.cp(entity, ChangeLogInfoResp.class);
         if (StringUtils.isNotBlank(entity.getDataFrom())) {

@@ -10,6 +10,7 @@ import com.wkclz.tool.utils.BeanUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Tag(name = "数据源权限管理", description = "数据源权限管理接口")
+@Slf4j
 @Validated
 @RestController
 @RequestMapping(Route.PREFIX)
@@ -28,6 +30,7 @@ public class PermissionRest {
     @Operation(summary = "1. 权限-分页查询")
     @GetMapping(Route.PERMISSION_PAGE)
     public R<PageData<PermissionResp>> page(@Valid PermissionPageReq req) {
+        log.info("数据源权限分页查询, req={}", req);
         DbviewDatasourcePermission entity = BeanUtil.cp(req, DbviewDatasourcePermission.class);
         PageData<DbviewDatasourcePermission> page = permissionService.getPermissionPage(entity);
         PageData<PermissionResp> newPage = page.convert(PermissionResp.class);
@@ -37,6 +40,7 @@ public class PermissionRest {
     @Operation(summary = "2. 权限-新增")
     @PostMapping(Route.PERMISSION_CREATE)
     public R<PermissionResp> create(@Valid @RequestBody PermissionCreateReq req) {
+        log.info("数据源权限新增, req={}", req);
         DbviewDatasourcePermission entity = BeanUtil.cp(req, DbviewDatasourcePermission.class);
         entity = permissionService.create(entity);
         PermissionResp resp = BeanUtil.cp(entity, PermissionResp.class);
@@ -46,6 +50,7 @@ public class PermissionRest {
     @Operation(summary = "3. 权限-更新")
     @PostMapping(Route.PERMISSION_UPDATE)
     public R<PermissionResp> update(@Valid @RequestBody PermissionUpdateReq req) {
+        log.info("数据源权限更新, req={}", req);
         DbviewDatasourcePermission entity = BeanUtil.cp(req, DbviewDatasourcePermission.class);
         entity = permissionService.update(entity);
         PermissionResp resp = BeanUtil.cp(entity, PermissionResp.class);
@@ -55,6 +60,7 @@ public class PermissionRest {
     @Operation(summary = "4. 权限-删除")
     @PostMapping(Route.PERMISSION_REMOVE)
     public R<Integer> remove(@Valid @RequestBody PermissionRemoveReq req) {
+        log.info("数据源权限删除, req={}", req);
         DbviewDatasourcePermission entity = new DbviewDatasourcePermission();
         entity.setId(req.getId());
         permissionService.remove(entity);
@@ -64,6 +70,7 @@ public class PermissionRest {
     @Operation(summary = "5. 权限-当前用户权限列表")
     @GetMapping(Route.PERMISSION_MY)
     public R<List<PermissionResp>> myPermissions() {
+        log.info("查询当前用户数据源权限列表");
         List<DbviewDatasourcePermission> permissions = permissionService.getMyPermissions();
         List<PermissionResp> respList = BeanUtil.cp(permissions, PermissionResp.class);
         return R.ok(respList);

@@ -224,6 +224,7 @@ public class ReportSqlHelper {
      */
     public Object sqlExecutor(String resultType, String sql, Map<String, Object> params, boolean toCamel,
                               String countSql, Integer current, Integer size) {
+        log.info("报表 SQL 执行, resultType={}, paramCount={}", resultType, params == null ? 0 : params.size());
         if (!isPureSelect(sql)) {
             throw ValidationException.of("仅允许SELECT查询语句");
         }
@@ -308,7 +309,7 @@ public class ReportSqlHelper {
         } catch (Exception e) {
             // 可能已被其他线程注册
             if (!configuration.hasStatement(statementId)) {
-                log.error("注册动态SQL失败: {}", e.getMessage());
+                log.error("注册动态SQL失败, statementId: {}", statementId, e);
                 throw new RuntimeException("注册动态SQL失败: " + e.getMessage(), e);
             }
         }

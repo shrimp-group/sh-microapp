@@ -2,12 +2,14 @@ package com.wkclz.micro.fun.engine.impl;
 
 import com.wkclz.micro.fun.engine.ScriptEngine;
 import com.wkclz.micro.fun.bean.entity.FunFunction;
+import lombok.extern.slf4j.Slf4j;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
 
 /**
  * @author shrimp
  */
+@Slf4j
 public class RubyEngineImpl extends ScriptEngine {
 
     private Context context;
@@ -65,7 +67,7 @@ public class RubyEngineImpl extends ScriptEngine {
         FunFunction fun = getDemo();
         RubyEngineImpl engine = new RubyEngineImpl(fun);
         Object value = engine.exec("GraalVM, I'm Ruby");
-        System.out.println(value);
+        log.info("{}", value);
     }
 
 }

@@ -7,6 +7,7 @@ import com.wkclz.micro.msg.mapper.MsgTemplateMapper;
 import com.wkclz.micro.msg.bean.entity.MsgTemplate;
 import com.wkclz.mybatis.service.BaseService;
 import com.wkclz.redis.helper.RedisIdGenerator;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,8 @@ import org.springframework.stereotype.Service;
  * @author shrimp
  * @table msg_template (消息模板) 单表服务类，代码重新生成不覆盖. 只建议完成单表的逻辑，或主表为 msg_template 的逻辑. 其他逻辑放 custom 中
  */
- 
+
+@Slf4j
 @Service
 public class MsgTemplateService extends BaseService<MsgTemplate, MsgTemplateMapper> {
 
@@ -29,6 +31,7 @@ public class MsgTemplateService extends BaseService<MsgTemplate, MsgTemplateMapp
     }
 
     public MsgTemplate create(MsgTemplate entity) {
+        log.info("消息模板创建, entity={}", entity);
         duplicateCheck(entity);
         if (StringUtils.isBlank(entity.getTemplateCode())) {
             entity.setTemplateCode(redisIdGenerator.generateIdWithPrefix("msg_"));
@@ -38,6 +41,7 @@ public class MsgTemplateService extends BaseService<MsgTemplate, MsgTemplateMapp
     }
 
     public MsgTemplate update(MsgTemplate entity) {
+        log.info("消息模板修改, entity={}", entity);
         duplicateCheck(entity);
         MsgTemplate oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
@@ -54,6 +58,7 @@ public class MsgTemplateService extends BaseService<MsgTemplate, MsgTemplateMapp
     }
 
     public MsgTemplate remove(MsgTemplate entity) {
+        log.info("消息模板删除, entity={}", entity);
         MsgTemplate oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
             throw ValidationException.of(ResultCode.RECORD_NOT_EXIST);

@@ -121,7 +121,8 @@ public class KubeConfigHelper {
                 LAST_CACHE_TIME.put(clusterName, now);
                 CACHE_CLIENT.put(clusterName, apiClient);
             } catch (Exception e) {
-                throw new RuntimeException("创建集群 " + clusterName + " 的 ApiClient 失败", e);
+                log.error("创建集群 ApiClient 失败, clusterName: {}", clusterName, e);
+                throw new ValidationException("创建集群 " + clusterName + " 的 ApiClient 失败", e);
             }
         }
         if (apiClient == null) {
@@ -354,7 +355,8 @@ public class KubeConfigHelper {
             lastException = e;
         }
 
-        throw new RuntimeException("无法解析私钥，请确保私钥为 PKCS#8 格式", lastException);
+        log.error("无法解析私钥，请确保私钥为 PKCS#8 格式", lastException);
+        throw new ValidationException("无法解析私钥，请确保私钥为 PKCS#8 格式", lastException);
     }
 
     private static byte[] wrapRsaPkcs1ToPkcs8(byte[] pkcs1Bytes) throws IOException {
@@ -418,12 +420,13 @@ public class KubeConfigHelper {
             writer.write(ctx);
             writer.flush();
         } catch (IOException e) {
+            log.warn("写入 kube 配置文件失败, filePath: {}", filePath, e);
         } finally {
             if (writer != null) {
                 try {
                     writer.close();
                 } catch (IOException e) {
-                    //
+                    log.warn("关闭 kube 配置文件失败, filePath: {}", filePath, e);
                 }
             }
         }

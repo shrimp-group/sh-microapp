@@ -9,6 +9,7 @@ import com.wkclz.micro.form.mapper.MdmFormRuleValidatorTemplateMapper;
 import com.wkclz.micro.form.bean.entity.MdmFormRuleValidatorTemplate;
 import com.wkclz.mybatis.helper.PageQuery;
 import com.wkclz.mybatis.service.BaseService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +18,8 @@ import org.springframework.stereotype.Service;
  * @author shrimp
  * @table mdm_form_rule_validator_template (表单校验规则-模板) 单表服务类，代码重新生成不覆盖. 只建议完成单表的逻辑，或主表为 mdm_form_rule_validator_template 的逻辑. 其他逻辑放 custom 中
  */
- 
+
+@Slf4j
 @Service
 public class MdmFormRuleValidatorTemplateService extends BaseService<MdmFormRuleValidatorTemplate, MdmFormRuleValidatorTemplateMapper> {
 
@@ -30,6 +32,7 @@ public class MdmFormRuleValidatorTemplateService extends BaseService<MdmFormRule
 
 
     public MdmFormRuleValidatorTemplate create(MdmFormRuleValidatorTemplate entity) {
+        log.info("表单校验规则模板创建, entity={}", entity);
         duplicateCheck(entity);
         mapper.insert(entity);
         formRuleCache.clearCache();
@@ -37,6 +40,7 @@ public class MdmFormRuleValidatorTemplateService extends BaseService<MdmFormRule
     }
 
     public MdmFormRuleValidatorTemplate update(MdmFormRuleValidatorTemplate entity) {
+        log.info("表单校验规则模板修改, entity={}", entity);
         duplicateCheck(entity);
         MdmFormRuleValidatorTemplate oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
@@ -50,6 +54,7 @@ public class MdmFormRuleValidatorTemplateService extends BaseService<MdmFormRule
 
 
     public MdmFormRuleValidatorTemplate remove(MdmFormRuleValidatorTemplate entity) {
+        log.info("表单校验规则模板删除, entity={}", entity);
         MdmFormRuleValidatorTemplate oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
             throw ValidationException.of(ResultCode.RECORD_NOT_EXIST);

@@ -57,7 +57,8 @@ public class WxMiniappService {
         try {
             session = wxService.getUserService().getSessionInfo(req.getCode());
         } catch (WxErrorException e) {
-            throw new RuntimeException(e);
+            log.error("小程序登录获取 session 失败, appId: {}, code: {}", req.getAppId(), req.getCode(), e);
+            throw new ValidationException("微信登录获取 session 失败: " + e.getMessage(), e);
         }
 
         String openid = session.getOpenid();
@@ -223,7 +224,8 @@ public class WxMiniappService {
         try {
             phoneNumberInfo = wxMaService.getUserService().getPhoneNumber(req.getCode());
         } catch (WxErrorException e) {
-            throw new RuntimeException(e);
+            log.error("获取微信绑定手机号失败, appId: {}, userCode: {}", req.getAppId(), userCode, e);
+            throw new ValidationException("获取微信绑定手机号失败: " + e.getMessage(), e);
         }
         String mobile = phoneNumberInfo.getPhoneNumber();
         log.info("user wxapp mobile: appId: {}, userCode: {}, mobile: {}", req.getAppId(), userCode, mobile);

@@ -8,6 +8,7 @@ import com.wkclz.micro.mask.bean.entity.MdmMaskRule;
 import com.wkclz.mybatis.helper.PageQuery;
 import com.wkclz.mybatis.service.BaseService;
 import com.wkclz.redis.helper.RedisIdGenerator;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,8 @@ import org.springframework.stereotype.Service;
  * @author wangkaicun
  * @table mdm_mask_rule (脱敏规则) 单表服务类，代码重新生成不覆盖. 只建议完成单表的逻辑，或主表为 mdm_mask_rule 的逻辑. 其他逻辑放 custom 中
  */
- 
+
+@Slf4j
 @Service
 public class MdmMaskRuleService extends BaseService<MdmMaskRule, MdmMaskRuleMapper> {
 
@@ -29,6 +31,7 @@ public class MdmMaskRuleService extends BaseService<MdmMaskRule, MdmMaskRuleMapp
     }
 
     public MdmMaskRule create(MdmMaskRule entity) {
+        log.info("脱敏规则创建, entity={}", entity);
         duplicateCheck(entity);
         if (StringUtils.isBlank(entity.getMaskRuleCode())) {
             entity.setMaskRuleCode(redisIdGenerator.generateIdWithPrefix("mask_rule_"));
@@ -38,6 +41,7 @@ public class MdmMaskRuleService extends BaseService<MdmMaskRule, MdmMaskRuleMapp
     }
 
     public MdmMaskRule update(MdmMaskRule entity) {
+        log.info("脱敏规则修改, entity={}", entity);
         duplicateCheck(entity);
         MdmMaskRule oldEntity = selectById(entity.getId());
         if (oldEntity == null) {

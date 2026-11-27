@@ -11,6 +11,7 @@ import com.wkclz.tool.utils.BeanUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +23,7 @@ import java.util.List;
  * Created: wangkaicun @ 2018-10-30 15:11:51
  */
 @Tag(name = "2.字典项", description = "字典项管理接口")
+@Slf4j
 @RestController
 @RequestMapping(Route.PREFIX)
 @Validated
@@ -33,6 +35,7 @@ public class DictItemRest {
     @Operation(summary = "1.字典项-列表", description = "根据字典类型查询字典项列表（不分页）")
     @GetMapping(Route.DICT_ITEM_LIST)
     public R<List<DictItemResp>> dictItemList(@Valid DictItemListReq req) {
+        log.info("字典项列表查询, req={}", req);
         String dictType = req.getDictType();
         List<MdmDictItem> dictItemList = mdmDictItemService.getDictItemList(dictType);
         List<DictItemResp> respList = BeanUtil.cp(dictItemList, DictItemResp.class);
@@ -42,6 +45,7 @@ public class DictItemRest {
     @Operation(summary = "2.字典项-保存", description = "批量保存字典项（diff模式）")
     @PostMapping(Route.DICT_ITEM_SAVE)
     public R<Integer> dictItemSave(@Valid @RequestBody DictItemSaveReq req) {
+        log.info("字典项批量保存, req={}", req);
         MdmDictDto dto = new MdmDictDto();
         dto.setDictType(req.getDictType());
         if (req.getItems() != null) {

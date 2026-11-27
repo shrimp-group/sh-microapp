@@ -5,6 +5,7 @@ import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.form.mapper.MdmFormItemMapper;
 import com.wkclz.micro.form.bean.entity.MdmFormItem;
 import com.wkclz.mybatis.service.BaseService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -13,18 +14,21 @@ import org.springframework.stereotype.Service;
  * @author wangkaicun
  * @table mdm_form_item (表单-输入项) 单表服务类，代码重新生成不覆盖. 只建议完成单表的逻辑，或主表为 mdm_form_item 的逻辑. 其他逻辑放 custom 中
  */
- 
+
+@Slf4j
 @Service
 public class MdmFormItemService extends BaseService<MdmFormItem, MdmFormItemMapper> {
 
 
     public MdmFormItem create(MdmFormItem entity) {
+        log.info("表单输入项创建, entity={}", entity);
         duplicateCheck(entity);
         mapper.insert(entity);
         return entity;
     }
 
     public MdmFormItem update(MdmFormItem entity) {
+        log.info("表单输入项修改, entity={}", entity);
         duplicateCheck(entity);
         MdmFormItem oldEntity = selectById(entity.getId());
         if (oldEntity == null) {

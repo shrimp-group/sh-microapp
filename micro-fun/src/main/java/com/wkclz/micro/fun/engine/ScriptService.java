@@ -4,6 +4,7 @@ import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.fun.engine.impl.*;
 import com.wkclz.micro.fun.bean.entity.FunFunction;
 import com.wkclz.micro.fun.service.FunFunctionService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+@Slf4j
 @Component
 public class ScriptService {
 
@@ -20,6 +22,7 @@ public class ScriptService {
     private FunFunctionService funFunctionService;
 
     public ScriptEngine getEngine(String funCode) {
+        log.info("获取脚本引擎, funCode={}", funCode);
         if (StringUtils.isBlank(funCode)) {
             throw ValidationException.of("请指定函数名！");
         }

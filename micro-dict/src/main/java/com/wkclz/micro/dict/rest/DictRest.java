@@ -13,6 +13,7 @@ import com.wkclz.web.bean.RemoveReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +25,7 @@ import java.util.List;
  * Created: wangkaicun @ 2018-10-30 15:11:51
  */
 @Tag(name = "1.字典类型", description = "字典类型管理接口")
+@Slf4j
 @RestController
 @RequestMapping(Route.PREFIX)
 @Validated
@@ -35,6 +37,7 @@ public class DictRest {
     @Operation(summary = "1.字典类型-分页查询", description = "根据条件分页查询字典类型列表")
     @GetMapping(Route.DICT_PAGE)
     public R<PageData<DictPageResp>> dictPage(@Valid DictPageReq req) {
+        log.info("字典类型分页查询, req={}", req);
         MdmDict entity = BeanUtil.cp(req, MdmDict.class);
         PageData<MdmDict> page = mdmDictService.getDictPage(entity);
         PageData<DictPageResp> newPage = page.convert(DictPageResp.class);
@@ -44,6 +47,7 @@ public class DictRest {
     @Operation(summary = "2.字典类型-详情", description = "根据ID查询字典类型详情")
     @GetMapping(Route.DICT_INFO)
     public R<DictResp> dictInfo(@Valid DictInfoReq req) {
+        log.info("字典类型详情查询, req={}", req);
         MdmDict entity = mdmDictService.selectById(req.getId());
         if (entity == null) {
             return R.error("id is error");
@@ -55,6 +59,7 @@ public class DictRest {
     @Operation(summary = "3.字典类型-创建", description = "新增字典类型")
     @PostMapping(Route.DICT_CREATE)
     public R<DictResp> dictCreate(@RequestBody DictCreateReq req) {
+        log.info("字典类型创建, req={}", req);
         MdmDict entity = BeanUtil.cp(req, MdmDict.class);
         entity = mdmDictService.dictCreate(entity);
         DictResp resp = BeanUtil.cp(entity, DictResp.class);
@@ -64,6 +69,7 @@ public class DictRest {
     @Operation(summary = "4.字典类型-修改", description = "修改字典类型")
     @PostMapping(Route.DICT_UPDATE)
     public R<DictResp> dictUpdate(@RequestBody DictUpdateReq req) {
+        log.info("字典类型修改, req={}", req);
         MdmDict entity = BeanUtil.cp(req, MdmDict.class);
         entity = mdmDictService.dictUpdate(entity);
         DictResp resp = BeanUtil.cp(entity, DictResp.class);
@@ -73,6 +79,7 @@ public class DictRest {
     @Operation(summary = "5.字典类型-删除", description = "删除字典类型")
     @PostMapping(Route.DICT_REMOVE)
     public R<Integer> dictRemove(@RequestBody RemoveReq req) {
+        log.info("字典类型删除, req={}", req);
         Integer rt = mdmDictService.dictRemove(req.getId());
         return R.ok(rt);
     }
@@ -80,6 +87,7 @@ public class DictRest {
     @Operation(summary = "6.字典-复制", description = "复制字典数据为JSON")
     @GetMapping(Route.DICT_COPY)
     public R<List<DictCopyResp>> dictCopy(@Valid DictCopyReq req) {
+        log.info("字典复制导出, req={}", req);
         MdmDictDto dto = BeanUtil.cp(req, MdmDictDto.class);
         List<MdmDictDto> copyList = mdmDictService.copy(dto);
         List<DictCopyResp> respList = copyList.stream().map(d -> {
@@ -96,6 +104,7 @@ public class DictRest {
     @Operation(summary = "7.字典-粘贴", description = "粘贴导入字典数据")
     @PostMapping(Route.DICT_PASTE)
     public R<Integer> dictPaste(@Valid @RequestBody DictPasteReq req) {
+        log.info("字典粘贴导入, req={}", req);
         if (req.getList() == null || req.getList().isEmpty()) {
             return R.error("没有可制作的数据！");
         }
@@ -115,6 +124,7 @@ public class DictRest {
     @Operation(summary = "8.字典类型-选项", description = "获取所有字典类型的选项列表")
     @GetMapping(Route.DICT_OPTIONS)
     public R<List<DictOptionsResp>> dictOptions() {
+        log.info("查询字典类型选项列表");
         List<MdmDict> dicts = mdmDictService.dictOptions();
         List<DictOptionsResp> respList = BeanUtil.cp(dicts, DictOptionsResp.class);
         return R.ok(respList);

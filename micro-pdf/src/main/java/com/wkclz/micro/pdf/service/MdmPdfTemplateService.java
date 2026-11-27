@@ -7,6 +7,7 @@ import com.wkclz.micro.pdf.mapper.MdmPdfTemplateMapper;
 import com.wkclz.micro.pdf.bean.entity.MdmPdfTemplate;
 import com.wkclz.mybatis.helper.PageQuery;
 import com.wkclz.mybatis.service.BaseService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +16,8 @@ import org.springframework.stereotype.Service;
  * @author wangkaicun
  * @table mdm_pdf_template (PDF模板) 单表服务类，代码重新生成不覆盖. 只建议完成单表的逻辑，或主表为 mdm_pdf_template 的逻辑. 其他逻辑放 custom 中
  */
- 
+
+@Slf4j
 @Service
 public class MdmPdfTemplateService extends BaseService<MdmPdfTemplate, MdmPdfTemplateMapper> {
 
@@ -24,12 +26,14 @@ public class MdmPdfTemplateService extends BaseService<MdmPdfTemplate, MdmPdfTem
     }
 
     public MdmPdfTemplate create(MdmPdfTemplate entity) {
+        log.info("PDF 模板新增, entity={}", entity);
         duplicateCheck(entity);
         mapper.insert(entity);
         return entity;
     }
 
     public MdmPdfTemplate update(MdmPdfTemplate entity) {
+        log.info("PDF 模板修改, entity={}", entity);
         duplicateCheck(entity);
         MdmPdfTemplate oldEntity = selectById(entity.getId());
         if (oldEntity == null) {

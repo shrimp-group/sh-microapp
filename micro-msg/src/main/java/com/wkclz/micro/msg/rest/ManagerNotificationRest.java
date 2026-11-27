@@ -19,6 +19,7 @@ import com.wkclz.tool.utils.BeanUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
  * @table msg_notification (消息通知) 示例rest 接口，代码重新生成会覆盖
  */
 @Tag(name = "2.消息通知", description = "消息通知管理接口")
+@Slf4j
 @RestController
 @RequestMapping(Route.PREFIX)
 public class ManagerNotificationRest {
@@ -42,6 +44,7 @@ public class ManagerNotificationRest {
     @Operation(summary = "1.消息通知-分页查询", description = "根据条件分页查询消息通知列表")
     @GetMapping(Route.MANAGER_NOTIFICATION_PAGE)
     public R<PageData<MsgNotificationPageResp>> managerNotificationPage(MsgNotificationPageReq req) {
+        log.info("消息通知分页查询, req={}", req);
         MsgNotificationDto dto = BeanUtil.cp(req, MsgNotificationDto.class);
         PageData<MsgNotificationDto> page = msgNotificationService.getNotificationPage(dto);
         PageData<MsgNotificationPageResp> newPage = page.convert(MsgNotificationPageResp.class);
@@ -51,6 +54,7 @@ public class ManagerNotificationRest {
     @Operation(summary = "2.消息通知-发布", description = "发布消息通知")
     @PostMapping(Route.MANAGER_NOTIFICATION_SENT)
     public R<Integer> managerNotificationSent(@RequestBody MsgNotificationSentReq req) {
+        log.info("消息通知发布, req={}", req);
         if (StringUtils.isBlank(req.getSentToUser()) && CollectionUtils.isEmpty(req.getSentToUsers())) {
             return R.error("请指定发送用户，个人或多人");
         }
@@ -63,6 +67,7 @@ public class ManagerNotificationRest {
     @Operation(summary = "3.消息通知-详情", description = "根据ID查询消息通知详情")
     @GetMapping(Route.MANAGER_NOTIFICATION_INFO)
     public R<MsgNotificationResp> managerNotificationInfo(@Valid MsgNotificationInfoReq req) {
+        log.info("消息通知详情查询, req={}", req);
         MsgNotification entity = msgNotificationService.selectById(req.getId());
         if (entity == null) {
             return R.error("id is error");
@@ -74,6 +79,7 @@ public class ManagerNotificationRest {
     @Operation(summary = "4.消息通知-阅读记录", description = "查询消息通知的阅读记录分页")
     @GetMapping(Route.MANAGER_NOTIFICATION_RECORD_PAGE)
     public R<PageData<MsgNotificationRecordPageResp>> managerNotificationRecordPage(@Valid MsgNotificationRecordPageReq req) {
+        log.info("消息阅读记录分页查询, req={}", req);
         MsgUserRecord entity = BeanUtil.cp(req, MsgUserRecord.class);
         PageData<MsgUserRecord> page = msgUserRecordService.selectPage(entity);
         PageData<MsgNotificationRecordPageResp> newPage = page.convert(MsgNotificationRecordPageResp.class);

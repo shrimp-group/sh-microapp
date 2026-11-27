@@ -7,6 +7,7 @@ import com.wkclz.micro.seq.mapper.MdmSequenceMapper;
 import com.wkclz.micro.seq.bean.entity.MdmSequence;
 import com.wkclz.mybatis.helper.PageQuery;
 import com.wkclz.mybatis.service.BaseService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -20,7 +21,8 @@ import java.util.List;
  * @author wangkaicun
  * @table mdm_sequence (序列生成) 单表服务类，代码重新生成不覆盖. 只建议完成单表的逻辑，或主表为 mdm_sequence 的逻辑. 其他逻辑放 custom 中
  */
- 
+
+@Slf4j
 @Service
 public class MdmSequenceService extends BaseService<MdmSequence, MdmSequenceMapper> {
 
@@ -29,12 +31,14 @@ public class MdmSequenceService extends BaseService<MdmSequence, MdmSequenceMapp
     }
 
     public MdmSequence create(MdmSequence entity) {
+        log.info("序列生成创建, entity={}", entity);
         duplicateCheck(entity);
         mapper.insert(entity);
         return entity;
     }
 
     public MdmSequence update(MdmSequence entity) {
+        log.info("序列生成修改, entity={}", entity);
         duplicateCheck(entity);
         MdmSequence oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
@@ -75,8 +79,12 @@ public class MdmSequenceService extends BaseService<MdmSequence, MdmSequenceMapp
     public List<String> genSequences(String prefix, Integer size, Integer length) {
         return genSequences(prefix, size, length, null);
     }
+    /**
+     * 序列号生成：串行化事务下读取并推进序列计数，保证高并发下序列号不重不漏
+     */
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.SERIALIZABLE)
     public synchronized List<String> genSequences(String prefix, Integer size, Integer length, String seqName) {
+        log.info("序列号生成, prefix={}, size={}, length={}, seqName={}", prefix, size, length, seqName);
         if (StringUtils.isBlank(prefix)) {
             throw ValidationException.of("prefix 不能为空");
         }

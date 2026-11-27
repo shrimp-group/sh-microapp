@@ -56,7 +56,8 @@ micro-fileos/src/main/java/com/wkclz/micro/fileos/
 │       ├── FileosDeleteApiImpl.java
 │       └── FileosPresignUploadApiImpl.java
 ├── bean/
-│   ├── FileosConstant.java            # 常量（PUBLIC_PREFIX = "public/"）
+│   ├── constant/
+│   │   └── FileosConstant.java        # 常量（PUBLIC_PREFIX = "public/"）
 │   ├── entity/
 │   │   ├── MdmFileosBucket.java       # Bucket 配置
 │   │   ├── MdmFileosRecord.java       # 文件记录

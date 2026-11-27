@@ -34,6 +34,7 @@ public class PdfTemplateRest {
     @Operation(summary = "1. PDF-模板-分页", description = "根据条件分页查询PDF模板列表")
     @GetMapping(Route.PDF_TEMPLATE_PAGE)
     public R<PageData<PdfTemplatePageResp>> pdfTemplatePage(@Valid PdfTemplatePageReq req) {
+        log.info("PDF 模板分页查询, req={}", req);
         MdmPdfTemplate entity = BeanUtil.cp(req, MdmPdfTemplate.class);
         PageData<MdmPdfTemplate> page = mdmPdfTemplateService.getPdfTemplatePage(entity);
         PageData<PdfTemplatePageResp> newPage = page.convert(PdfTemplatePageResp.class);
@@ -43,6 +44,7 @@ public class PdfTemplateRest {
     @Operation(summary = "2. PDF-模板-详情", description = "根据ID查询PDF模板详情")
     @GetMapping(Route.PDF_TEMPLATE_INFO)
     public R<PdfTemplateInfoResp> pdfTemplateInfo(@Valid PdfTemplateInfoReq req) {
+        log.info("PDF 模板详情查询, req={}", req);
         MdmPdfTemplate entity = mdmPdfTemplateService.selectById(req.getId());
         PdfTemplateInfoResp resp = BeanUtil.cp(entity, PdfTemplateInfoResp.class);
         return R.ok(resp);
@@ -51,6 +53,7 @@ public class PdfTemplateRest {
     @Operation(summary = "3. PDF-模板-新增", description = "新增PDF模板")
     @PostMapping(Route.PDF_TEMPLATE_CREATE)
     public R<PdfTemplateInfoResp> pdfTemplateCreate(@Valid @RequestBody PdfTemplateCreateReq req) {
+        log.info("PDF 模板新增, req={}", req);
         PdfHelper.getContext(req.getMockData());
         MdmPdfTemplate entity = BeanUtil.cp(req, MdmPdfTemplate.class);
         entity = mdmPdfTemplateService.create(entity);
@@ -61,6 +64,7 @@ public class PdfTemplateRest {
     @Operation(summary = "4. PDF-模板-修改", description = "修改PDF模板")
     @PostMapping(Route.PDF_TEMPLATE_UPDATE)
     public R<PdfTemplateInfoResp> pdfTemplateUpdate(@Valid @RequestBody PdfTemplateUpdateReq req) {
+        log.info("PDF 模板修改, req={}", req);
         PdfHelper.getContext(req.getMockData());
         MdmPdfTemplate entity = BeanUtil.cp(req, MdmPdfTemplate.class);
         entity = mdmPdfTemplateService.update(entity);
@@ -71,6 +75,7 @@ public class PdfTemplateRest {
     @Operation(summary = "5. PDF-模板-删除", description = "删除PDF模板")
     @PostMapping(Route.PDF_TEMPLATE_REMOVE)
     public R<Void> pdfTemplateRemove(@Valid @RequestBody PdfTemplateRemoveReq req) {
+        log.info("PDF 模板删除, req={}", req);
         MdmPdfTemplate entity = new MdmPdfTemplate();
         entity.setId(req.getId());
         mdmPdfTemplateService.deleteById(entity);
@@ -80,6 +85,7 @@ public class PdfTemplateRest {
     @Operation(summary = "6. PDF-模板-Mock", description = "在线预览PDF模板效果")
     @PostMapping(Route.PDF_TEMPLATE_MOCK)
     public void pdfTemplateMock(@Valid @RequestBody PdfTemplateMockReq req, HttpServletResponse response) {
+        log.info("PDF 模板在线预览, req={}", req);
         Context context = PdfHelper.getContext(req.getMockData());
         String htmlContent = PdfHelper.thymeleafRenderer(req.getTemplateContext(), context);
         String pdfPath = pdfHelper.pdfRenderer(htmlContent);

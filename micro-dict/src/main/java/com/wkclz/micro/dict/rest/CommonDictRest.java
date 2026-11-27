@@ -12,6 +12,7 @@ import com.wkclz.tool.utils.StringUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
  * Created: wangkaicun @ 2018-10-30 15:11:51
  */
 @Tag(name = "3.公共字典", description = "公共字典查询接口（无需权限）")
+@Slf4j
 @RestController
 @RequestMapping(Route.PREFIX)
 @Validated
@@ -42,6 +44,7 @@ public class CommonDictRest {
     @Operation(summary = "1.公共字典-单字典查询", description = "根据字典类型查询单个字典项列表")
     @GetMapping(Route.COMMON_DICT_LIST)
     public R<List<DictItemResp>> commonDictList(@Valid CommonDictListReq req) {
+        log.info("公共单字典查询, req={}", req);
         String dictType = req.getDictType();
         if (!dictType.equals(dictType.toUpperCase())) {
             dictType = StringUtil.camelToUnderline(dictType).toUpperCase();
@@ -55,6 +58,7 @@ public class CommonDictRest {
     @Operation(summary = "2.公共字典-多字典查询", description = "根据多个字典类型查询字典项列表（上限50）")
     @GetMapping(Route.COMMON_DICTS_LIST)
     public R<Map<String, List<DictItemResp>>> commonDictsList(@Valid CommonDictsListReq req) {
+        log.info("公共多字典查询, req={}", req);
         String dictType = req.getDictType();
         List<String> dictTypes = Arrays.stream(dictType.split(","))
                 .map(String::trim)

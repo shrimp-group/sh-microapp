@@ -12,11 +12,13 @@ import com.wkclz.tool.utils.BeanUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "2.报表定义历史", description = "报表定义历史版本管理接口")
+@Slf4j
 @Validated
 @RestController
 @RequestMapping(Route.PREFIX)
@@ -28,6 +30,7 @@ public class ReportDefinitionHisRest {
     @Operation(summary = "1.报表定义历史-分页查询", description = "根据条件分页查询报表定义历史列表")
     @GetMapping(Route.DEFINITION_HIS_PAGE)
     public R<PageData<ReportDefinitionHisPageResp>> hisPage(@Valid ReportDefinitionHisPageReq req) {
+        log.info("报表定义历史分页查询, req={}", req);
         ReportDefinitionHis entity = BeanUtil.cp(req, ReportDefinitionHis.class);
         PageData<ReportDefinitionHis> page = reportDefinitionHisService.getHisPage(entity);
         PageData<ReportDefinitionHisPageResp> newPage = page.convert(ReportDefinitionHisPageResp.class);
@@ -37,6 +40,7 @@ public class ReportDefinitionHisRest {
     @Operation(summary = "2.报表定义历史-详情", description = "根据ID查询报表定义历史详情")
     @GetMapping(Route.DEFINITION_HIS_DETAIL)
     public R<ReportDefinitionHisResp> hisDetail(@Valid ReportDefinitionHisInfoReq req) {
+        log.info("报表定义历史详情查询, req={}", req);
         ReportDefinitionHis entity = reportDefinitionHisService.getHisDetail(req.getId());
         if (entity == null) {
             return R.error("数据不存在");

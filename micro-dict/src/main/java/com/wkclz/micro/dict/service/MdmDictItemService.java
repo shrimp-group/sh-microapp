@@ -8,6 +8,7 @@ import com.wkclz.micro.dict.cache.DictCache;
 import com.wkclz.micro.dict.mapper.MdmDictItemMapper;
 import com.wkclz.mybatis.service.BaseService;
 import com.wkclz.tool.utils.StringUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class MdmDictItemService extends BaseService<MdmDictItem, MdmDictItemMapper> {
 
@@ -23,6 +25,7 @@ public class MdmDictItemService extends BaseService<MdmDictItem, MdmDictItemMapp
     private DictCache dictCache;
 
     public List<MdmDictItem> getDictItemList(String dictType) {
+        log.info("字典项列表查询, dictType={}", dictType);
         if (StringUtils.isNotBlank(dictType) && !dictType.equals(dictType.toUpperCase())) {
             dictType = StringUtil.camelToUnderline(dictType).toUpperCase();
         }
@@ -40,8 +43,12 @@ public class MdmDictItemService extends BaseService<MdmDictItem, MdmDictItemMapp
         return mapper.getDictItemsByDictTypes(dictTypes);
     }
 
+    /**
+     * 字典项批量保存（diff 模式）：按 dictValue 与存量做增/删/改 diff，仅当存在变更时清缓存，避免无效缓存刷新
+     */
     @Transactional(rollbackFor = Exception.class)
     public Integer dictItemSave(MdmDictDto dto) {
+        log.info("字典项批量保存, dto={}", dto);
         if (dto.getItems() == null) {
             dto.setItems(new ArrayList<>());
         } else {
@@ -109,6 +116,7 @@ public class MdmDictItemService extends BaseService<MdmDictItem, MdmDictItemMapp
             }
         }
 
+        log.info("字典项 diff 结果, insert={}, update={}, delete={}", inserts.size(), updates.size(), deletes.size());
         if (!CollectionUtils.isEmpty(inserts)) {
             insertBatch(inserts);
         }

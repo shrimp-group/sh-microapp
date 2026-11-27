@@ -14,6 +14,7 @@ import com.wkclz.web.bean.RemoveReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Tag(name = "3.报表参数", description = "报表参数管理接口")
+@Slf4j
 @Validated
 @RestController
 @RequestMapping(Route.PREFIX)
@@ -33,6 +35,7 @@ public class ReportDefinitionParamRest {
     @Operation(summary = "1.报表参数-列表查询", description = "根据报表编码查询参数列表")
     @GetMapping(Route.DEFINITION_PARAM_LIST)
     public R<List<ReportDefinitionParamResp>> paramList(@Valid ReportDefinitionParamListReq req) {
+        log.info("报表参数列表查询, req={}", req);
         ReportDefinitionParam param = BeanUtil.cp(req, ReportDefinitionParam.class);
         List<ReportDefinitionParam> list = reportDefinitionParamService.getParamList(param);
         List<ReportDefinitionParamResp> respList = BeanUtil.cp(list, ReportDefinitionParamResp.class);
@@ -43,6 +46,7 @@ public class ReportDefinitionParamRest {
     @PostMapping(Route.DEFINITION_PARAM_CREATE)
     @Transactional(rollbackFor = Exception.class)
     public R<ReportDefinitionParamResp> paramCreate(@Valid @RequestBody ReportDefinitionParamCreateReq req) {
+        log.info("报表参数创建, req={}", req);
         ReportDefinitionParam entity = BeanUtil.cp(req, ReportDefinitionParam.class);
         entity = reportDefinitionParamService.paramCreate(entity);
         ReportDefinitionParamResp resp = BeanUtil.cp(entity, ReportDefinitionParamResp.class);
@@ -53,6 +57,7 @@ public class ReportDefinitionParamRest {
     @PostMapping(Route.DEFINITION_PARAM_UPDATE)
     @Transactional(rollbackFor = Exception.class)
     public R<ReportDefinitionParamResp> paramUpdate(@Valid @RequestBody ReportDefinitionParamUpdateReq req) {
+        log.info("报表参数修改, req={}", req);
         ReportDefinitionParam entity = BeanUtil.cp(req, ReportDefinitionParam.class);
         entity = reportDefinitionParamService.paramUpdate(entity);
         ReportDefinitionParamResp resp = BeanUtil.cp(entity, ReportDefinitionParamResp.class);
@@ -63,6 +68,7 @@ public class ReportDefinitionParamRest {
     @PostMapping(Route.DEFINITION_PARAM_REMOVE)
     @Transactional(rollbackFor = Exception.class)
     public R<Integer> paramRemove(@Valid @RequestBody RemoveReq req) {
+        log.info("报表参数删除, req={}", req);
         ReportDefinitionParam entity = new ReportDefinitionParam();
         entity.setId(req.getId());
         Integer result = reportDefinitionParamService.paramRemove(entity);
@@ -72,6 +78,7 @@ public class ReportDefinitionParamRest {
     @Operation(summary = "5.报表参数-自动提取", description = "从SQL脚本自动提取参数")
     @PostMapping(Route.DEFINITION_PARAM_EXTRACT)
     public R<List<ReportDefinitionParamResp>> paramExtract(@Valid @RequestBody ReportDefinitionParamExtractReq req) {
+        log.info("报表参数自动提取, req={}", req);
         ReportDefinitionParamDto dto = BeanUtil.cp(req, ReportDefinitionParamDto.class);
         List<ReportDefinitionParam> list = reportDefinitionParamService.paramsExtract(dto);
         List<ReportDefinitionParamResp> respList = BeanUtil.cp(list, ReportDefinitionParamResp.class);

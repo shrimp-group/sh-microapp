@@ -213,6 +213,7 @@ public class DbviewMetadataService {
     }
 
     public void refreshCache(Long datasourceId) {
+        log.info("刷新元数据缓存, datasourceId={}", datasourceId);
         String pattern = CACHE_PREFIX + datasourceId + ":*";
         Set<String> keys = redisTemplate.keys(pattern);
         if (keys != null && !keys.isEmpty()) {
@@ -236,6 +237,7 @@ public class DbviewMetadataService {
             try (Connection conn = DataSourceInfo.getConnect(info)) {
                 return action.apply(conn);
             } catch (SQLException e) {
+                log.error("数据库操作失败, datasourceId: {}", datasourceId, e);
                 throw new RuntimeException("数据库操作失败: " + e.getMessage(), e);
             } finally {
                 DynamicDataSourceHolder.clear();

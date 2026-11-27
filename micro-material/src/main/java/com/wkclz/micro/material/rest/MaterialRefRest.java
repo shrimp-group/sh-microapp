@@ -5,6 +5,7 @@ import com.wkclz.micro.material.bean.entity.MdmMaterialRef;
 import com.wkclz.micro.material.bean.req.MaterialRefBindReq;
 import com.wkclz.micro.material.bean.req.MaterialRefListReq;
 import com.wkclz.micro.material.bean.req.MaterialRefUnbindReq;
+import com.wkclz.micro.material.bean.resp.MaterialRefCheckResp;
 import com.wkclz.micro.material.bean.resp.MaterialRefResp;
 import com.wkclz.micro.material.service.MdmMaterialRefService;
 import com.wkclz.tool.utils.BeanUtil;
@@ -57,8 +58,12 @@ public class MaterialRefRest {
 
     @Operation(summary = "23.引用-检测", description = "检测素材引用状态")
     @GetMapping(Route.REF_CHECK)
-    public R<Map<String, Object>> check(@RequestParam @NotBlank(message = "materialCode 不能为空") String materialCode) {
+    public R<MaterialRefCheckResp> check(@RequestParam @NotBlank(message = "materialCode 不能为空") String materialCode) {
+        log.info("引用-检测, materialCode: {}", materialCode);
         Map<String, Object> result = mdmMaterialRefService.check(materialCode);
-        return R.ok(result);
+        MaterialRefCheckResp resp = new MaterialRefCheckResp();
+        resp.setReferenced((Boolean) result.get("referenced"));
+        resp.setCount((Long) result.get("count"));
+        return R.ok(resp);
     }
 }

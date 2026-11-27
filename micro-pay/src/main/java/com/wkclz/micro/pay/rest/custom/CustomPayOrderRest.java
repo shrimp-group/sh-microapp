@@ -42,6 +42,7 @@ public class CustomPayOrderRest {
     @Operation(summary = "1.支付订单-模拟支付", description = "模拟支付（生产环境禁用）")
     @PostMapping(Route.COMMON_PAYORDER_PAY_MOCK)
     public R<PayOrderMockPayResp> commonPayorderPayMock(@Valid @RequestBody PayOrderMockPayReq req) {
+        log.info("模拟支付, req={}", req);
         if (Sys.getCurrentEnv() == EnvType.PROD) {
             return R.error("非法的支付方式!");
         }
@@ -67,6 +68,7 @@ public class CustomPayOrderRest {
     @Operation(summary = "2.支付订单-发起支付", description = "通过订单号发起支付，订单信息通过 SPI 获取")
     @PostMapping(Route.COMMON_PAYORDER_PAY)
     public R<PayOrderPayResp> commonPayorderPay(@RequestBody PayOrderReq req, HttpServletRequest httpReq, HttpServletResponse httpRep) {
+        log.info("发起支付, req={}", req);
         PayOrderDto dto = shopOrderService.payWithOrderInfo(req, httpReq, httpRep);
 
         PayOrderPayResp resp = new PayOrderPayResp();
@@ -83,6 +85,7 @@ public class CustomPayOrderRest {
     @Operation(summary = "3.支付订单-状态查询", description = "查询支付订单状态")
     @GetMapping(Route.COMMON_PAYORDER_STATUS)
     public R<PayOrderStatusResp> commonPayorderStatus(@Valid PayOrderStatusReq req) {
+        log.info("查询支付订单状态, req={}", req);
         PayOrder payOrder = BeanUtil.cp(req, PayOrder.class);
         payOrder = payOrderService.getPayOrderStatus2Custom(payOrder);
         PayOrderStatusResp resp = BeanUtil.cp(payOrder, PayOrderStatusResp.class);

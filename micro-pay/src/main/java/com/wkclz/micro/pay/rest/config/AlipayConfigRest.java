@@ -17,6 +17,7 @@ import com.wkclz.tool.utils.BeanUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
  * @table pay_alipay_config (支付-支付宝配置) 示例rest 接口，代码重新生成会覆盖
  */
 @Tag(name = "2.支付宝配置", description = "支付宝支付配置管理接口")
+@Slf4j
 @RestController
 @RequestMapping(Route.PREFIX)
 @Validated
@@ -41,6 +43,7 @@ public class AlipayConfigRest {
     @Operation(summary = "1.支付宝配置-分页查询", description = "分页查询支付宝支付配置列表")
     @GetMapping(Route.ALIPAY_CONFIG_PAGE)
     public R<PageData<AlipayConfigPageResp>> payAlipayConfigPage(@Valid AlipayConfigPageReq req) {
+        log.info("分页查询支付宝配置, req={}", req);
         PayAlipayConfigDto dto = BeanUtil.cp(req, PayAlipayConfigDto.class);
         dto.setTenantCode(IdentityContext.getTenantCode());
         PageData<PayAlipayConfigDto> page = payAlipayConfigService.getAlipayConfigPage(dto);
@@ -51,6 +54,7 @@ public class AlipayConfigRest {
     @Operation(summary = "2.支付宝配置-详情", description = "根据ID查询支付宝支付配置详情")
     @GetMapping(Route.ALIPAY_CONFIG_INFO)
     public R<AlipayConfigInfoResp> payAlipayConfigInfo(@Valid AlipayConfigInfoReq req) {
+        log.info("查询支付宝配置详情, req={}", req);
         PayAlipayConfig entity = new PayAlipayConfig();
         entity.setId(req.getId());
         entity.setTenantCode(IdentityContext.getTenantCode());
@@ -62,6 +66,7 @@ public class AlipayConfigRest {
     @Operation(summary = "3.支付宝配置-创建", description = "新增支付宝支付配置")
     @PostMapping(Route.ALIPAY_CONFIG_CREATE)
     public R<AlipayConfigCreateResp> payAlipayConfigCreate(@Valid @RequestBody AlipayConfigCreateReq req) {
+        log.info("创建支付宝配置, req={}", req);
         if (req.getIsProd() == null) {
             req.setIsProd(1);
         }
@@ -77,6 +82,7 @@ public class AlipayConfigRest {
     @Operation(summary = "4.支付宝配置-更新", description = "更新支付宝支付配置")
     @PostMapping(Route.ALIPAY_CONFIG_UPDATE)
     public R<AlipayConfigUpdateResp> payAlipayConfigUpdate(@Valid @RequestBody AlipayConfigUpdateReq req) {
+        log.info("更新支付宝配置, req={}", req);
         if (req.getIsProd() == null) {
             req.setIsProd(1);
         }
@@ -93,6 +99,7 @@ public class AlipayConfigRest {
     @Operation(summary = "5.支付宝配置-删除", description = "删除支付宝支付配置")
     @PostMapping(Route.ALIPAY_CONFIG_REMOVE)
     public R<Integer> payAlipayConfigRemove(@Valid @RequestBody AlipayConfigRemoveReq req) {
+        log.info("删除支付宝配置, req={}", req);
         payAlipayConfigService.deleteById(req.getId());
         alipayClientCache.clearCache();
         return R.ok(1);

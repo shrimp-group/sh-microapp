@@ -1,6 +1,7 @@
 package com.wkclz.micro.form.service;
 
 import com.wkclz.core.base.DbColumnEntity;
+import com.wkclz.core.exception.ValidationException;
 import com.wkclz.micro.form.cache.FormRuleCache;
 import com.wkclz.micro.form.mapper.MdmFormRuleFieldMapper;
 import com.wkclz.micro.form.mapper.MdmFormRuleFieldValidatorMapper;
@@ -9,6 +10,7 @@ import com.wkclz.micro.form.bean.entity.MdmFormRule;
 import com.wkclz.micro.form.bean.entity.MdmFormRuleField;
 import com.wkclz.micro.form.bean.entity.MdmFormRuleFieldValidator;
 import com.wkclz.mybatis.service.BaseService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,7 +23,8 @@ import java.util.*;
  * @author shrimp
  * @table mdm_form_rule_field_validator (表单校验规则-验证器) 单表服务类，代码重新生成不覆盖. 只建议完成单表的逻辑，或主表为 mdm_form_rule_field_validator 的逻辑. 其他逻辑放 custom 中
  */
- 
+
+@Slf4j
 @Service
 public class MdmFormRuleFieldValidatorService extends BaseService<MdmFormRuleFieldValidator, MdmFormRuleFieldValidatorMapper> {
 
@@ -44,7 +47,7 @@ public class MdmFormRuleFieldValidatorService extends BaseService<MdmFormRuleFie
 
     @Transactional(rollbackFor = Exception.class)
     public Integer saveBatch(List<MdmFormRuleFieldValidatorDto> validatorDtos) {
-
+        log.info("字段及验证器批量保存, size={}", validatorDtos.size());
         List<MdmFormRuleField> fields = fetchFields(validatorDtos);
         List<MdmFormRuleFieldValidator> validators = fetchValidators(validatorDtos);
 
@@ -83,7 +86,7 @@ public class MdmFormRuleFieldValidatorService extends BaseService<MdmFormRuleFie
             MdmFormRuleFieldValidator validator = new MdmFormRuleFieldValidator();
             String hashKey = dto.getFormRuleCode() + ":" + dto.getFieldCode() + ":" + dto.getValidatorType();
             if (set.contains(hashKey)) {
-                throw new RuntimeException("表单校验规则-验证器重复:" + hashKey);
+                throw ValidationException.of("表单校验规则-验证器重复: {}", hashKey);
             }
             validator.setFormRuleCode(dto.getFormRuleCode());
             validator.setFieldCode(dto.getFieldCode());

@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
  * @table msg_template (消息模板) 示例rest 接口，代码重新生成会覆盖
  */
 @Tag(name = "1.消息模板", description = "消息模板管理接口")
+@Slf4j
 @RestController
 @RequestMapping(Route.PREFIX)
 public class ManagerMsgTemplateRest {
@@ -34,6 +36,7 @@ public class ManagerMsgTemplateRest {
     @Operation(summary = "1.消息模板-分页查询", description = "根据条件分页查询消息模板列表")
     @GetMapping(Route.MANAGER_TEMPLATE_PAGE)
     public R<PageData<MsgTemplatePageResp>> msgTemplatePage(MsgTemplatePageReq req) {
+        log.info("消息模板分页查询, req={}", req);
         MsgTemplate entity = BeanUtil.cp(req, MsgTemplate.class);
         PageData<MsgTemplate> page = msgTemplateService.selectPage(entity);
         PageData<MsgTemplatePageResp> newPage = page.convert(MsgTemplatePageResp.class);
@@ -43,6 +46,7 @@ public class ManagerMsgTemplateRest {
     @Operation(summary = "2.消息模板-详情", description = "根据ID查询消息模板详情")
     @GetMapping(Route.MANAGER_TEMPLATE_INFO)
     public R<MsgTemplateResp> msgTemplateInfo(@Valid MsgTemplateInfoReq req) {
+        log.info("消息模板详情查询, req={}", req);
         MsgTemplate entity = msgTemplateService.selectById(req.getId());
         if (entity == null) {
             return R.error("id is error");
@@ -54,6 +58,7 @@ public class ManagerMsgTemplateRest {
     @Operation(summary = "3.消息模板-创建", description = "新增消息模板")
     @PostMapping(Route.MANAGER_TEMPLATE_CREATE)
     public R<MsgTemplateResp> msgTemplateCreate(@RequestBody MsgTemplateCreateReq req) {
+        log.info("消息模板创建, req={}", req);
         MsgTemplate entity = BeanUtil.cp(req, MsgTemplate.class);
         entity = msgTemplateService.create(entity);
         MsgTemplateResp resp = BeanUtil.cp(entity, MsgTemplateResp.class);
@@ -63,6 +68,7 @@ public class ManagerMsgTemplateRest {
     @Operation(summary = "4.消息模板-修改", description = "修改消息模板")
     @PostMapping(Route.MANAGER_TEMPLATE_UPDATE)
     public R<MsgTemplateResp> msgTemplateUpdate(@RequestBody MsgTemplateUpdateReq req) {
+        log.info("消息模板修改, req={}", req);
         MsgTemplate entity = BeanUtil.cp(req, MsgTemplate.class);
         entity = msgTemplateService.update(entity);
         MsgTemplateResp resp = BeanUtil.cp(entity, MsgTemplateResp.class);
@@ -72,6 +78,7 @@ public class ManagerMsgTemplateRest {
     @Operation(summary = "5.消息模板-删除", description = "删除消息模板")
     @PostMapping(Route.MANAGER_TEMPLATE_REMOVE)
     public R<Integer> msgTemplateRemove(@Valid @RequestBody RemoveReq req) {
+        log.info("消息模板删除, req={}", req);
         MsgTemplate entity = new MsgTemplate();
         entity.setId(req.getId());
         msgTemplateService.deleteById(entity);

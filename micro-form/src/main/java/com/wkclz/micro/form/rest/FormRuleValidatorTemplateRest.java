@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
  * @table mdm_form_rule_validator_template (表单校验规则-模板) 示例rest 接口，代码重新生成会覆盖
  */
 @Tag(name = "4.表单校验规则模板", description = "表单校验规则模板管理接口")
+@Slf4j
 @Validated
 @RestController
 @RequestMapping(Route.PREFIX)
@@ -35,6 +37,7 @@ public class FormRuleValidatorTemplateRest {
     @Operation(summary = "1.表单校验规则模板-分页查询", description = "根据条件分页查询表单校验规则模板列表")
     @GetMapping(Route.FORM_RULE_VALIDATOR_TEMPLATE_PAGE)
     public R<PageData<MdmFormRuleValidatorTemplateResp>> mdmFormRuleValidatorTemplatePage(@Valid MdmFormRuleValidatorTemplatePageReq req) {
+        log.info("表单校验规则模板分页查询, req={}", req);
         MdmFormRuleValidatorTemplate entity = BeanUtil.cp(req, MdmFormRuleValidatorTemplate.class);
         PageData<MdmFormRuleValidatorTemplate> page = mdmFormRuleValidatorTemplateService.getValidatorTemplatePage(entity);
         PageData<MdmFormRuleValidatorTemplateResp> newPage = page.convert(MdmFormRuleValidatorTemplateResp.class);
@@ -44,6 +47,7 @@ public class FormRuleValidatorTemplateRest {
     @Operation(summary = "2.表单校验规则模板-详情", description = "根据ID查询表单校验规则模板详情")
     @GetMapping(Route.FORM_RULE_VALIDATOR_TEMPLATE_INFO)
     public R<MdmFormRuleValidatorTemplateResp> mdmFormRuleValidatorTemplateInfo(MdmFormRuleValidatorTemplateInfoReq req) {
+        log.info("表单校验规则模板详情查询, req={}", req);
         MdmFormRuleValidatorTemplate entity = mdmFormRuleValidatorTemplateService.selectById(req.getId());
         if (entity == null) {
             return R.error("id is error");
@@ -55,6 +59,7 @@ public class FormRuleValidatorTemplateRest {
     @Operation(summary = "3.表单校验规则模板-创建", description = "新增表单校验规则模板")
     @PostMapping(Route.FORM_RULE_VALIDATOR_TEMPLATE_CREATE)
     public R<MdmFormRuleValidatorTemplateResp> mdmFormRuleValidatorTemplateCreate(@RequestBody MdmFormRuleValidatorTemplateCreateReq req) {
+        log.info("表单校验规则模板创建, req={}", req);
         MdmFormRuleValidatorTemplate entity = BeanUtil.cp(req, MdmFormRuleValidatorTemplate.class);
         entity = mdmFormRuleValidatorTemplateService.create(entity);
         MdmFormRuleValidatorTemplateResp resp = BeanUtil.cp(entity, MdmFormRuleValidatorTemplateResp.class);
@@ -64,6 +69,7 @@ public class FormRuleValidatorTemplateRest {
     @Operation(summary = "4.表单校验规则模板-修改", description = "修改表单校验规则模板")
     @PostMapping(Route.FORM_RULE_VALIDATOR_TEMPLATE_UPDATE)
     public R<MdmFormRuleValidatorTemplateResp> mdmFormRuleValidatorTemplateUpdate(@RequestBody MdmFormRuleValidatorTemplateUpdateReq req) {
+        log.info("表单校验规则模板修改, req={}", req);
         MdmFormRuleValidatorTemplate entity = BeanUtil.cp(req, MdmFormRuleValidatorTemplate.class);
         entity = mdmFormRuleValidatorTemplateService.update(entity);
         MdmFormRuleValidatorTemplateResp resp = BeanUtil.cp(entity, MdmFormRuleValidatorTemplateResp.class);
@@ -73,6 +79,7 @@ public class FormRuleValidatorTemplateRest {
     @Operation(summary = "5.表单校验规则模板-删除", description = "删除表单校验规则模板")
     @PostMapping(Route.FORM_RULE_VALIDATOR_TEMPLATE_REMOVE)
     public R<Integer> mdmFormRuleValidatorTemplateRemove(@RequestBody RemoveReq req) {
+        log.info("表单校验规则模板删除, req={}", req);
         mdmFormRuleValidatorTemplateService.deleteById(req.getId());
         return R.ok(1);
     }

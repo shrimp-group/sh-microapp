@@ -16,6 +16,7 @@ import com.wkclz.web.bean.RemoveReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
  * @table rm_check_rule (删除检查规则) 示例rest 接口，代码重新生成会覆盖
  */
 @Tag(name = "1.删除检查规则", description = "删除检查规则管理接口")
+@Slf4j
 @Validated
 @RestController
 @RequestMapping(Route.PREFIX)
@@ -37,6 +39,7 @@ public class RmCheckRuleRest {
     @Operation(summary = "1.删除检查规则-分页查询", description = "根据条件分页查询删除检查规则列表")
     @GetMapping(Route.RM_CHECK_RULE_PAGE)
     public R<PageData<RmCheckRulePageResp>> rmCheckRulePage(@Valid RmCheckRulePageReq req) {
+        log.info("删除检查规则分页查询, req={}", req);
         RmCheckRuleDto dto = BeanUtil.cp(req, RmCheckRuleDto.class);
         PageData<RmCheckRuleDto> page = rmCheckRuleService.getRmCheckRulePage(dto);
         PageData<RmCheckRulePageResp> newPage = page.convert(RmCheckRulePageResp.class);
@@ -46,6 +49,7 @@ public class RmCheckRuleRest {
     @Operation(summary = "2.删除检查规则-详情", description = "根据ID查询删除检查规则详情")
     @GetMapping(Route.RM_CHECK_RULE_INFO)
     public R<RmCheckRuleResp> rmCheckRuleInfo(@Valid RmCheckRuleInfoReq req) {
+        log.info("删除检查规则详情查询, req={}", req);
         RmCheckRule entity = rmCheckRuleService.selectById(req.getId());
         if (entity == null) {
             return R.error("id is error");
@@ -57,6 +61,7 @@ public class RmCheckRuleRest {
     @Operation(summary = "3.删除检查规则-创建", description = "新增删除检查规则")
     @PostMapping(Route.RM_CHECK_RULE_CREATE)
     public R<RmCheckRuleResp> rmCheckRuleCreate(@Valid @RequestBody RmCheckRuleCreateReq req) {
+        log.info("删除检查规则创建, req={}", req);
         RmCheckRule entity = BeanUtil.cp(req, RmCheckRule.class);
         if (entity.getEnableFlag() == null) {
             entity.setEnableFlag(1);
@@ -69,6 +74,7 @@ public class RmCheckRuleRest {
     @Operation(summary = "4.删除检查规则-修改", description = "修改删除检查规则")
     @PostMapping(Route.RM_CHECK_RULE_UPDATE)
     public R<RmCheckRuleResp> rmCheckRuleUpdate(@Valid @RequestBody RmCheckRuleUpdateReq req) {
+        log.info("删除检查规则修改, req={}", req);
         RmCheckRule entity = BeanUtil.cp(req, RmCheckRule.class);
         if (entity.getEnableFlag() == null) {
             entity.setEnableFlag(1);
@@ -81,6 +87,7 @@ public class RmCheckRuleRest {
     @Operation(summary = "5.删除检查规则-删除", description = "删除删除检查规则")
     @PostMapping(Route.RM_CHECK_RULE_REMOVE)
     public R<Integer> rmCheckRuleRemove(@Valid @RequestBody RemoveReq req) {
+        log.info("删除检查规则删除, req={}", req);
         RmCheckRule entity = new RmCheckRule();
         entity.setId(req.getId());
         Integer i = rmCheckRuleService.customRemove(entity);

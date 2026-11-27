@@ -33,6 +33,7 @@ public class FileosPresignRest {
     @PostMapping(Route.PRESIGN_UPLOAD)
     @Operation(summary = "预签名简单上传")
     public R<PresignUploadResp> presignUpload(@Valid @RequestBody PresignUploadReq req) {
+        log.info("预签名简单上传, req={}", req);
         PresignUploadResp resp = fileosPresignUploadApi.presignUpload(req);
         return R.ok(resp);
     }
@@ -40,6 +41,7 @@ public class FileosPresignRest {
     @PostMapping(Route.PRESIGN_UPLOAD_BATCH)
     @Operation(summary = "批量预签名简单上传")
     public R<List<PresignUploadResp>> presignUploadBatch(@Valid @RequestBody List<PresignUploadReq> reqs) {
+        log.info("批量预签名简单上传, count={}", reqs.size());
         List<PresignUploadResp> respList = fileosPresignUploadApi.presignUploadBatch(reqs);
         return R.ok(respList);
     }

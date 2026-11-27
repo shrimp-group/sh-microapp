@@ -41,6 +41,7 @@ public class DbviewConnectionService {
     }
 
     public boolean testConnection(Long datasourceId) {
+        log.info("数据源连接测试, datasourceId={}", datasourceId);
         DbviewDatasource ds = datasourceMapper.selectById(datasourceId);
         if (ds == null) {
             return false;
@@ -63,6 +64,7 @@ public class DbviewConnectionService {
     }
 
     public boolean testConnection(DbviewDatasource ds) {
+        log.info("数据源连接测试, jdbcUrl={}", ds.getJdbcUrl());
         String password = decryptPassword(ds.getPassword());
         DataSourceInfo info = new DataSourceInfo();
         info.setUrl(ds.getJdbcUrl());
@@ -81,6 +83,7 @@ public class DbviewConnectionService {
     }
 
     public void destroyDatasource(Long datasourceId) {
+        log.info("销毁数据源连接池, datasourceId={}", datasourceId);
         try {
             DynamicDataSource ds = SpringContextHolder.getBean(DynamicDataSource.class);
             ds.destroyDataSource(String.valueOf(datasourceId));

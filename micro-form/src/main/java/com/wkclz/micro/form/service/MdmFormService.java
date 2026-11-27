@@ -12,6 +12,7 @@ import com.wkclz.micro.form.bean.entity.MdmFormItem;
 import com.wkclz.mybatis.helper.PageQuery;
 import com.wkclz.mybatis.service.BaseService;
 import com.wkclz.redis.helper.RedisIdGenerator;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,8 @@ import java.util.stream.Collectors;
  * @author wangkaicun
  * @table mdm_form (表单) 单表服务类，代码重新生成不覆盖. 只建议完成单表的逻辑，或主表为 mdm_form 的逻辑. 其他逻辑放 custom 中
  */
- 
+
+@Slf4j
 @Service
 public class MdmFormService extends BaseService<MdmForm, MdmFormMapper> {
 
@@ -54,6 +56,7 @@ public class MdmFormService extends BaseService<MdmForm, MdmFormMapper> {
     }
 
     public MdmForm create(MdmFormDto dto) {
+        log.info("表单创建, dto={}", dto);
         duplicateCheck(dto);
         if (StringUtils.isBlank(dto.getFormCode())) {
             dto.setFormCode(redisIdGenerator.generateIdWithPrefix("form_"));
@@ -74,6 +77,7 @@ public class MdmFormService extends BaseService<MdmForm, MdmFormMapper> {
     }
 
     public MdmForm update(MdmFormDto dto) {
+        log.info("表单修改, dto={}", dto);
         duplicateCheck(dto);
         MdmForm oldEntity = selectById(dto.getId());
         if (oldEntity == null) {
@@ -167,6 +171,7 @@ public class MdmFormService extends BaseService<MdmForm, MdmFormMapper> {
             return modify;
         }).collect(Collectors.toList());
 
+        log.info("表单输入项 diff 结果, insert={}, update={}, delete={}", insertItems.size(), updateItems.size(), deleteItemIds.size());
         if (!CollectionUtils.isEmpty(insertItems)) {
             for (MdmFormItem item : insertItems) {
                 item.setItemCode(redisIdGenerator.generateIdWithPrefix("form_item_"));
@@ -185,6 +190,7 @@ public class MdmFormService extends BaseService<MdmForm, MdmFormMapper> {
     }
 
     public Integer customRemove(MdmForm entity) {
+        log.info("表单删除, entity={}", entity);
         entity = selectById(entity.getId());
         if (entity == null) {
             throw ValidationException.of("数据不存在，或无权限操作!");
@@ -202,6 +208,7 @@ public class MdmFormService extends BaseService<MdmForm, MdmFormMapper> {
     }
 
     public MdmFormDto getCustomFormDetail(MdmForm entity) {
+        log.info("通用表单详情查询, formCode={}", entity.getFormCode());
         MdmFormDto dto = mdmFormMapper.getCustomFormInfo(entity.getFormCode());
         if (dto == null) {
             throw ValidationException.of(ResultCode.RECORD_NOT_EXIST);

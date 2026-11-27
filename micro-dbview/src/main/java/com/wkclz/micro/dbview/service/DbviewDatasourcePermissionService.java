@@ -11,11 +11,13 @@ import com.wkclz.micro.dbview.bean.enums.SqlType;
 import com.wkclz.micro.dbview.mapper.DbviewDatasourcePermissionMapper;
 import com.wkclz.mybatis.helper.PageQuery;
 import com.wkclz.mybatis.service.BaseService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class DbviewDatasourcePermissionService extends BaseService<DbviewDatasourcePermission, DbviewDatasourcePermissionMapper> {
 
@@ -24,6 +26,7 @@ public class DbviewDatasourcePermissionService extends BaseService<DbviewDatasou
     }
 
     public DbviewDatasourcePermission create(DbviewDatasourcePermission entity) {
+        log.info("数据源权限新增, entity={}", entity);
         duplicateCheck(entity);
         validatePermissionLevel(entity.getPermissionLevel());
         mapper.insert(entity);
@@ -31,6 +34,7 @@ public class DbviewDatasourcePermissionService extends BaseService<DbviewDatasou
     }
 
     public DbviewDatasourcePermission update(DbviewDatasourcePermission entity) {
+        log.info("数据源权限更新, entity={}", entity);
         validatePermissionLevel(entity.getPermissionLevel());
         DbviewDatasourcePermission oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
@@ -42,6 +46,7 @@ public class DbviewDatasourcePermissionService extends BaseService<DbviewDatasou
     }
 
     public DbviewDatasourcePermission remove(DbviewDatasourcePermission entity) {
+        log.info("数据源权限删除, entity={}", entity);
         DbviewDatasourcePermission oldEntity = selectById(entity.getId());
         if (oldEntity == null) {
             throw ValidationException.of(ResultCode.RECORD_NOT_EXIST);
@@ -70,6 +75,7 @@ public class DbviewDatasourcePermissionService extends BaseService<DbviewDatasou
 
     public void check(Long datasourceId, String sql, Boolean confirmDangerous) {
         String userCode = IdentityContext.getUserCode();
+        log.info("数据源 SQL 权限校验, datasourceId={}, userCode={}", datasourceId, userCode);
         if (StringUtils.isBlank(userCode)) {
             throw ValidationException.of("用户未登录，无法执行SQL");
         }

@@ -7,6 +7,7 @@ import com.wkclz.micro.dbview.service.DbviewDiffService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "结构对比", description = "表结构对比接口")
+@Slf4j
 @Validated
 @RestController
 @RequestMapping(Route.PREFIX)
@@ -26,6 +28,7 @@ public class DiffRest {
     @Operation(summary = "1. 结构对比-执行对比")
     @PostMapping(Route.DIFF_EXECUTE)
     public R<SchemaDiffResp> diff(@Valid @RequestBody SchemaDiffReq req) {
+        log.info("表结构对比执行, req={}", req);
         return R.ok(diffService.diff(req));
     }
 }

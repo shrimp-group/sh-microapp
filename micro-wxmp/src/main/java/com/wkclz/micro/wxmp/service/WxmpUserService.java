@@ -4,6 +4,7 @@ import com.wkclz.micro.wxmp.mapper.WxmpUserMapper;
 import com.wkclz.micro.wxmp.bean.entity.WxmpUser;
 import com.wkclz.mybatis.service.BaseService;
 import com.wkclz.redis.helper.RedisIdGenerator;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,13 +14,15 @@ import org.springframework.stereotype.Service;
  * @author wangkaicun
  * @table wxmp_user (微信用户) 单表服务类，代码重新生成不覆盖. 只建议完成单表的逻辑，或主表为 wxmp_user 的逻辑. 其他逻辑放 custom 中
  */
- 
+
+@Slf4j
 @Service
 public class WxmpUserService extends BaseService<WxmpUser, WxmpUserMapper> {
     @Autowired
     private RedisIdGenerator redisIdGenerator;
 
     public WxmpUser initUser(WxmpUser user) {
+        log.info("初始化微信用户, req={}", user);
         String openId = user.getOpenId();
 
         WxmpUser u = mapper.getWxmpUserByOpenId(openId);
@@ -72,6 +75,7 @@ public class WxmpUserService extends BaseService<WxmpUser, WxmpUserMapper> {
 
 
     public void userSubscribe(WxmpUser user) {
+        log.info("微信用户关注, req={}", user);
         WxmpUser u = mapper.getWxmpUserByOpenId(user.getOpenId());
         if (u == null) {
             u = user;
@@ -90,6 +94,7 @@ public class WxmpUserService extends BaseService<WxmpUser, WxmpUserMapper> {
     }
 
     public void userUnSbscribe(String openId) {
+        log.info("微信用户取消关注, openId={}", openId);
         if (StringUtils.isBlank(openId)) {
             return;
         }

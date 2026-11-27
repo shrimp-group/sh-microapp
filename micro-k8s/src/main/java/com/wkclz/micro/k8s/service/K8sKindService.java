@@ -25,6 +25,7 @@ public class K8sKindService {
     );
 
     public KubernetesListObject list(K8sParam param) {
+        log.info("查询 Kind 资源列表, kind={}, clusterName={}, namespace={}", param.getKind(), param.getClusterName(), param.getNamespace());
         try {
             validateNamespace(param);
             K8sApi api = K8sHelper.getImplByKind(param.getKind());
@@ -37,6 +38,7 @@ public class K8sKindService {
     }
 
     public String yaml(K8sParam param) {
+        log.info("查询 Kind 资源 YAML, kind={}, name={}, clusterName={}", param.getKind(), param.getName(), param.getClusterName());
         try {
             validateNamespace(param);
             K8sApi api = K8sHelper.getImplByKind(param.getKind());
@@ -49,6 +51,7 @@ public class K8sKindService {
     }
 
     public String create(K8sParam param) {
+        log.info("创建 Kind 资源, kind={}, clusterName={}, namespace={}", param.getKind(), param.getClusterName(), param.getNamespace());
         try {
             validateNamespace(param);
             K8sApi api = K8sHelper.getImplByKind(param.getKind());
@@ -61,6 +64,7 @@ public class K8sKindService {
     }
 
     public String update(K8sParam param) {
+        log.info("更新 Kind 资源, kind={}, name={}, clusterName={}", param.getKind(), param.getName(), param.getClusterName());
         try {
             validateNamespace(param);
             K8sApi api = K8sHelper.getImplByKind(param.getKind());
@@ -77,6 +81,7 @@ public class K8sKindService {
     }
 
     public String delete(K8sParam param) {
+        log.info("删除 Kind 资源, kind={}, name={}, clusterName={}", param.getKind(), param.getName(), param.getClusterName());
         try {
             validateNamespace(param);
             K8sApi api = K8sHelper.getImplByKind(param.getKind());

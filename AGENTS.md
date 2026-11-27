@@ -183,6 +183,8 @@ public class MdmXxx extends BaseEntity {
 }
 ```
 
+> 命名前缀约定：新模块不再强制 `Mdm` 前缀，可按业务域自由命名（如 `DagInstance`、`PayOrder`）；存量模块两种风格（Mdm 前缀派与无前缀派）共存，不再批量重命名。
+
 ### Mapper 定义
 
 ```java

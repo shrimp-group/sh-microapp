@@ -1,7 +1,7 @@
 package com.wkclz.micro.fileos.helper;
 
 import cn.hutool.core.date.DateUtil;
-import com.wkclz.micro.fileos.bean.FileosConstant;
+import com.wkclz.micro.fileos.bean.constant.FileosConstant;
 import com.wkclz.micro.fileos.bean.entity.MdmFileosDirectory;
 import com.wkclz.micro.fileos.config.FileosConfig;
 import com.wkclz.micro.fileos.utils.OssUtil;

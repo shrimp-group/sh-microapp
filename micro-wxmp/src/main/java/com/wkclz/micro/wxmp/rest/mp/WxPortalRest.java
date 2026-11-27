@@ -27,6 +27,9 @@ public class WxPortalRest {
     @Resource
     private WxMpConfiguration wxMpConfiguration;
 
+    /**
+     * 微信服务器回调协议固定签名（GET 验证 echostr / POST XML 报文），豁免 Req/Resp 封装
+     */
     @Operation(summary = "1.消息回调-验签", description = "微信服务器验证签名")
     @GetMapping(value = Route.PUBLIC_WXMP_PORTAL_APPID, produces = "text/plain;charset=utf-8")
     public String wxmpPortalAppidGet(
@@ -54,6 +57,9 @@ public class WxPortalRest {
         return "非法请求";
     }
 
+    /**
+     * 微信服务器回调协议固定签名（GET 验证 echostr / POST XML 报文），豁免 Req/Resp 封装
+     */
     @Operation(summary = "2.消息回调-消息路由", description = "接收微信消息并路由到对应处理器")
     @PostMapping(value = Route.PUBLIC_WXMP_PORTAL_APPID, produces = "text/plain;charset=utf-8")
     public String wxmpPortalAppidPost(

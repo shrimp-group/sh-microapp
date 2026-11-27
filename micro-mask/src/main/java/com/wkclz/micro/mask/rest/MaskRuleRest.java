@@ -17,6 +17,7 @@ import com.wkclz.web.bean.RemoveReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.*;
  * @table mdm_mask_rule (脱敏规则) 示例rest 接口，代码重新生成会覆盖
  */
 @Tag(name = "1.脱敏规则", description = "脱敏规则管理接口")
+@Slf4j
 @Validated
 @RestController
 @RequestMapping(Route.PREFIX)
@@ -40,6 +42,7 @@ public class MaskRuleRest {
     @Operation(summary = "1.脱敏规则-分页查询", description = "根据条件分页查询脱敏规则列表")
     @GetMapping(Route.RULE_PAGE)
     public R<PageData<MaskRulePageResp>> maskRulePage(@Valid MaskRulePageReq req) {
+        log.info("脱敏规则分页查询, req={}", req);
         MdmMaskRule entity = BeanUtil.cp(req, MdmMaskRule.class);
         PageData<MdmMaskRule> page = mdmMaskRuleService.getMaskRulePage(entity);
         PageData<MaskRulePageResp> newPage = page.convert(MaskRulePageResp.class);
@@ -49,6 +52,7 @@ public class MaskRuleRest {
     @Operation(summary = "2.脱敏规则-详情", description = "根据ID查询脱敏规则详情")
     @GetMapping(Route.RULE_INFO)
     public R<MaskRuleResp> maskRuleInfo(@Valid MaskRuleInfoReq req) {
+        log.info("脱敏规则详情查询, req={}", req);
         MdmMaskRule entity = mdmMaskRuleService.selectById(req.getId());
         if (entity == null) {
             return R.error("id is error");
@@ -60,6 +64,7 @@ public class MaskRuleRest {
     @Operation(summary = "3.脱敏规则-创建", description = "新增脱敏规则")
     @PostMapping(Route.RULE_CREATE)
     public R<MaskRuleResp> maskRuleCreate(@Valid @RequestBody MaskRuleCreateReq req) {
+        log.info("脱敏规则创建, req={}", req);
         MdmMaskRule entity = BeanUtil.cp(req, MdmMaskRule.class);
         if (entity.getEnableFlag() == null) {
             entity.setEnableFlag(1);
@@ -74,6 +79,7 @@ public class MaskRuleRest {
     @Operation(summary = "4.脱敏规则-修改", description = "修改脱敏规则")
     @PostMapping(Route.RULE_UPDATE)
     public R<MaskRuleResp> maskRuleUpdate(@Valid @RequestBody MaskRuleUpdateReq req) {
+        log.info("脱敏规则修改, req={}", req);
         MdmMaskRule entity = BeanUtil.cp(req, MdmMaskRule.class);
         if (entity.getEnableFlag() == null) {
             entity.setEnableFlag(1);
@@ -88,6 +94,7 @@ public class MaskRuleRest {
     @Operation(summary = "5.脱敏规则-删除", description = "删除脱敏规则")
     @PostMapping(Route.RULE_REMOVE)
     public R<Integer> maskRuleRemove(@Valid @RequestBody RemoveReq req) {
+        log.info("脱敏规则删除, req={}", req);
         mdmMaskRuleService.deleteById(req.getId());
         maskCache.clearCache();
         MaskResponseAdvice.clearCache();

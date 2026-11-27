@@ -1,7 +1,7 @@
 package com.wkclz.micro.fileos.service.impl;
 
 import com.wkclz.core.exception.ValidationException;
-import com.wkclz.micro.fileos.bean.FileosConstant;
+import com.wkclz.micro.fileos.bean.constant.FileosConstant;
 import com.wkclz.micro.fileos.bean.dto.CompletedPartInfo;
 import com.wkclz.micro.fileos.bean.dto.PresignedPartInfo;
 import com.wkclz.micro.fileos.bean.entity.MdmFileosBucket;
@@ -66,6 +66,7 @@ public class S3ServiceImpl implements FileosService {
 
     @Override
     public RecordResp upload(MultipartFile file, MdmFileosBucket bucket, String fileId, String category, Boolean isPublic) {
+        log.info("上传文件到 S3, fileId={}, bucketName={}", fileId, bucket.getBucketName());
         return uploadCommon(file, bucket, fileId);
     }
 
@@ -111,6 +112,7 @@ public class S3ServiceImpl implements FileosService {
 
     @Override
     public List<String> sign(List<String> fileIds, MdmFileosBucket bucket, Integer expire, TimeUnit timeUnit) {
+        log.info("生成 S3 签名 URL, fileIds={}", fileIds);
         List<String> result = new ArrayList<>();
         String endpointOuter = bucket.getEndpointOuter();
 
@@ -155,6 +157,7 @@ public class S3ServiceImpl implements FileosService {
 
     @Override
     public Integer delete(List<String> fileIds, MdmFileosBucket bucket) {
+        log.info("删除 S3 文件, fileIds={}", fileIds);
         S3Client s3 = getOrCreateS3Client(bucket);
         try {
             List<ObjectIdentifier> objectIdentifiers = fileIds.stream()

@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import com.wkclz.tool.utils.BeanUtil;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @Tag(name = "2.K8s集群", description = "K8s集群查询接口")
+@Slf4j
 @RestController
 @RequestMapping(Route.PREFIX)
 @Validated
@@ -31,6 +33,7 @@ public class K8sRest {
     @Operation(summary = "1.集群-获取节点", description = "获取指定集群的Node节点列表")
     @GetMapping(Route.CLUSTER_NODES)
     public R<V1NodeList> clusterNodes(@Valid K8sClusterReq req) {
+        log.info("查询集群节点列表, req={}", req);
         K8sParam param = BeanUtil.cp(req, K8sParam.class);
         V1NodeList nodeList = k8sClusterService.getNodes(param);
         return R.ok(nodeList);
@@ -39,6 +42,7 @@ public class K8sRest {
     @Operation(summary = "2.集群-获取命名空间", description = "获取指定集群的Namespace列表")
     @GetMapping(Route.CLUSTER_NAMESPACES)
     public R<V1NamespaceList> clusterNamespaces(@Valid K8sClusterReq req) {
+        log.info("查询集群命名空间列表, req={}", req);
         K8sParam param = BeanUtil.cp(req, K8sParam.class);
         V1NamespaceList namespaceList = k8sClusterService.getNamespaces(param);
         return R.ok(namespaceList);
@@ -47,6 +51,7 @@ public class K8sRest {
     @Operation(summary = "3.集群-获取命名空间(简要)", description = "获取指定集群的Namespace名称列表")
     @GetMapping(Route.CLUSTER_NAMESPACES_BRIEFLY)
     public R<List<String>> clusterNamespacesBriefly(@Valid K8sClusterReq req) {
+        log.info("查询集群命名空间名称列表, req={}", req);
         K8sParam param = BeanUtil.cp(req, K8sParam.class);
         List<String> namespaces = k8sClusterService.getNamespacesBriefly(param);
         return R.ok(namespaces);

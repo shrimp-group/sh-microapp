@@ -9,11 +9,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.mp.bean.material.WxMpMaterialFileBatchGetResult;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "5.素材与菜单", description = "微信公众号素材与菜单管理")
+@Slf4j
 @RestController
 @RequestMapping(Route.PREFIX)
 @Validated
@@ -26,6 +28,7 @@ public class WxMaterialRest {
     @GetMapping(Route.WXMP_MATERIAL_BATCHGET_MATERIAL)
     public R<WxMpMaterialFileBatchGetResult> wxmpMaterialBatchgetMaterial(
             @PathVariable("appid") String appid, @Valid WxMaterialPageReq req) throws WxErrorException {
+        log.info("获取永久素材列表, appid={}, req={}", appid, req);
         req.init();
         int offset = req.getOffset().intValue();
         int count = req.getSize().intValue();
@@ -36,6 +39,7 @@ public class WxMaterialRest {
     @Operation(summary = "2.菜单-设置", description = "设置微信公众号菜单")
     @PostMapping(Route.WXMP_MENU_UPDATE)
     public R<String> wxmpMenuUpdate(@PathVariable("appid") String appid) throws WxErrorException {
+        log.info("设置公众号菜单, appid={}", appid);
         String result = wxMaterialService.updateMenu(appid);
         return R.ok(result);
     }
@@ -43,6 +47,7 @@ public class WxMaterialRest {
     @Operation(summary = "3.菜单-删除", description = "删除微信公众号菜单")
     @PostMapping(Route.WXMP_MENU_DELETE)
     public R<Void> wxmpMenuDelete(@PathVariable("appid") String appid) throws WxErrorException {
+        log.info("删除公众号菜单, appid={}", appid);
         wxMaterialService.deleteMenu(appid);
         return R.ok();
     }

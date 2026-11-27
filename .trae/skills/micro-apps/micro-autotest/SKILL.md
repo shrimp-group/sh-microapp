@@ -5,13 +5,14 @@ micro-autotest 是 sh-microapp 的自动化 REST API 测试模块，基于 Sprin
 ## 包结构
 
 ```
-com.wkclz.auto
-├── AutoTestAutoConfig              # 自动配置（@ComponentScan("com.wkclz.auto")）
+com.wkclz.micro.autotest
+├── AutoTestAutoConfig              # 自动配置（@ComponentScan("com.wkclz.micro.autotest")）
 ├── bean/
-│   ├── ApiInfo                     # 接口信息（controllerClass, method, uri, params, returnType）
-│   ├── ApiParamInfo                # 参数信息（name, type, requestBody, pathVariable, requestParam）
-│   ├── TestCaseResult              # 测试用例结果（uri, method, httpStatus, costTimeMs, errorMessage）
-│   └── TestReport                  # 测试报告（startTime, endTime, totalApiCount, successCount, results）
+│   ├── dto/
+│   │   ├── ApiInfo                 # 接口信息（controllerClass, method, uri, params, returnType）
+│   │   ├── ApiParamInfo            # 参数信息（name, type, requestBody, pathVariable, requestParam）
+│   │   ├── TestCaseResult          # 测试用例结果（uri, method, httpStatus, costTimeMs, errorMessage）
+│   │   └── TestReport              # 测试报告（startTime, endTime, totalApiCount, successCount, results）
 ├── scanner/
 │   └── ApiScanner                  # 运行时接口扫描器
 ├── mock/
@@ -96,9 +97,9 @@ com.wkclz.auto
 
 ## 自动配置
 
-- `AutoTestAutoConfig`：@ComponentScan("com.wkclz.auto")
+- `AutoTestAutoConfig`：@ComponentScan("com.wkclz.micro.autotest")
 - 注册文件：`META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`
-- 内容：`com.wkclz.auto.AutoTestAutoConfig`
+- 内容：`com.wkclz.micro.autotest.AutoTestAutoConfig`
 
 ## 依赖
 

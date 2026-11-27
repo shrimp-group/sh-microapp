@@ -7,6 +7,7 @@ import com.wkclz.micro.wxmp.rest.Route;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.bean.WxJsapiSignature;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.mp.api.WxMpService;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author shrimp
  */
 @Tag(name = "7.JSAPI签名", description = "微信公众号JSAPI签名")
+@Slf4j
 @RestController
 @RequestMapping(Route.PREFIX)
 @Validated
@@ -31,6 +33,7 @@ public class WxSignRest {
     @Operation(summary = "1.JSAPI签名", description = "获取微信公众号JSAPI签名")
     @GetMapping(Route.H5_WX_SIGN)
     public R<WxJsapiSignature> h5WxSign(@Valid WxSignReq req) throws WxErrorException {
+        log.info("获取 JSAPI 签名, req={}", req);
         WxMpService mpService = wxMpConfiguration.getMpService(req.getAppId());
         WxJsapiSignature ws = mpService.createJsapiSignature(req.getUrl());
         return R.ok(ws);

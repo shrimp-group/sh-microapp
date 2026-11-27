@@ -12,6 +12,7 @@ import com.wkclz.tool.utils.BeanUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,6 +27,7 @@ import java.util.List;
  * @table mdm_form (表单) 示例rest 接口，代码重新生成会覆盖
  */
 @Tag(name = "5.通用表单", description = "通用表单查询接口")
+@Slf4j
 @Validated
 @RestController
 @RequestMapping(Route.PREFIX)
@@ -37,6 +39,7 @@ public class CommonFormRest {
     @Operation(summary = "11.通用表单-列表", description = "获取表单选项列表，用于生成下拉选项")
     @GetMapping(Route.COMMON_FORM_LIST)
     public R<List<CommonFormResp>> commonFormList(@Valid CommonFormListReq req) {
+        log.info("查询表单选项列表");
         List<MdmForm> list = mdmFormService.getFormOptions();
         List<CommonFormResp> respList = BeanUtil.cp(list, CommonFormResp.class);
         return R.ok(respList);
@@ -45,6 +48,7 @@ public class CommonFormRest {
     @Operation(summary = "12.通用表单-详情", description = "根据表单编码获取表单详情，用于构造输入表单")
     @GetMapping(Route.COMMON_FORM_DETAIL)
     public R<CommonFormResp> commonFormInfo(@Valid CommonFormInfoReq req) {
+        log.info("通用表单详情查询, req={}", req);
         MdmForm entity = new MdmForm();
         entity.setFormCode(req.getFormCode());
         MdmFormDto dto = mdmFormService.getCustomFormDetail(entity);

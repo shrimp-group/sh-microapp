@@ -10,6 +10,7 @@ import com.wkclz.tool.utils.BeanUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
  * @table mdm_mask_rule (脱敏规则) 示例rest 接口，代码重新生成会覆盖
  */
 @Tag(name = "2.脱敏测试", description = "脱敏规则测试接口")
+@Slf4j
 @Validated
 @RestController
 @RequestMapping(Route.PREFIX)
@@ -28,6 +30,7 @@ public class MaskMockRest {
     @Operation(summary = "1.脱敏规则-测试", description = "测试脱敏规则效果")
     @PostMapping(Route.RULE_TEST)
     public R<MaskRuleTestResp> maskRuleTest(@Valid @RequestBody MaskRuleTestReq req) {
+        log.info("脱敏规则测试, req={}", req);
         String mockValue = req.getMockValue();
         MdmMaskRule rule = BeanUtil.cp(req, MdmMaskRule.class);
         String maskValue = MaskResponseAdvice.maskByString(mockValue, rule);
@@ -48,6 +51,7 @@ public class MaskMockRest {
     @Operation(summary = "2.脱敏规则-验证", description = "验证脱敏规则对JSON数据的脱敏效果")
     @GetMapping(Route.RULE_VERIFY)
     public R<JSONObject> maskRuleVerify() {
+        log.info("脱敏规则验证");
         JSONObject jsonObject = mockJson();
         return R.ok(jsonObject);
     }

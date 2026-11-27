@@ -20,6 +20,7 @@ import com.wkclz.web.bean.RemoveReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Tag(name = "1.表单管理", description = "表单管理接口")
+@Slf4j
 @Validated
 @RestController
 @RequestMapping(Route.PREFIX)
@@ -43,6 +45,7 @@ public class FormRest {
     @Operation(summary = "1.表单-分页查询", description = "根据条件分页查询表单列表")
     @GetMapping(Route.FORM_PAGE)
     public R<PageData<MdmFormPageResp>> mdmFormPage(@Valid MdmFormPageReq req) {
+        log.info("表单分页查询, req={}", req);
         MdmFormDto dto = BeanUtil.cp(req, MdmFormDto.class);
         PageData<MdmFormDto> page = mdmFormService.getFormPage(dto);
         PageData<MdmFormPageResp> newPage = page.convert(MdmFormPageResp.class);
@@ -52,6 +55,7 @@ public class FormRest {
     @Operation(summary = "2.表单-详情", description = "根据ID查询表单详情")
     @GetMapping(Route.FORM_INFO)
     public R<MdmFormResp> mdmFormInfo(@Valid MdmFormInfoReq req) {
+        log.info("表单详情查询, req={}", req);
         MdmForm entity = new MdmForm();
         entity.setId(req.getId());
         MdmFormDto dto = mdmFormService.getFormInfo(entity);
@@ -66,6 +70,7 @@ public class FormRest {
     @Operation(summary = "3.表单-创建", description = "新增表单")
     @PostMapping(Route.FORM_CREATE)
     public R<MdmFormResp> mdmFormCreate(@RequestBody MdmFormCreateReq req) {
+        log.info("表单创建, req={}", req);
         MdmFormDto dto = BeanUtil.cp(req, MdmFormDto.class);
         parmCheck(dto);
         MdmForm entity = mdmFormService.create(dto);
@@ -77,6 +82,7 @@ public class FormRest {
     @Operation(summary = "4.表单-修改", description = "修改表单")
     @PostMapping(Route.FORM_UPDATE)
     public R<MdmFormResp> mdmFormUpdate(@RequestBody MdmFormUpdateReq req) {
+        log.info("表单修改, req={}", req);
         MdmFormDto dto = BeanUtil.cp(req, MdmFormDto.class);
         dto.setFormCode(null);
         parmCheck(dto);
@@ -89,6 +95,7 @@ public class FormRest {
     @Operation(summary = "5.表单-删除", description = "删除表单")
     @PostMapping(Route.FORM_REMOVE)
     public R<Integer> mdmFormRemove(@Valid @RequestBody RemoveReq req) {
+        log.info("表单删除, req={}", req);
         MdmForm entity = new MdmForm();
         entity.setId(req.getId());
         mdmFormService.customRemove(entity);
@@ -99,6 +106,7 @@ public class FormRest {
     @Operation(summary = "7.表单-数据库字段", description = "获取表单输入项数据库字段信息")
     @GetMapping(Route.FORM_DB_COLUMNS)
     public R<List<ColumnQuery>> formDbColumns() {
+        log.info("查询表单数据库字段信息");
         List<ColumnQuery> infos = formTableInfoService.getColumnInfos();
         return R.ok(infos);
     }

@@ -2,9 +2,11 @@ package com.wkclz.micro.fun.engine.impl;
 
 import com.wkclz.micro.fun.engine.ScriptEngine;
 import com.wkclz.micro.fun.bean.entity.FunFunction;
+import lombok.extern.slf4j.Slf4j;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
 
+@Slf4j
 public class PythonEngineImpl extends ScriptEngine {
 
     private Context context;
@@ -61,7 +63,7 @@ public class PythonEngineImpl extends ScriptEngine {
         FunFunction fun = getDemo();
         PythonEngineImpl engine = new PythonEngineImpl(fun);
         Object value = engine.exec("GraalVM, I'm Python");
-        System.out.println(value);
+        log.info("{}", value);
     }
 
 }

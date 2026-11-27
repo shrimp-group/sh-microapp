@@ -108,6 +108,7 @@ public class WxpayOrderSchedule {
 
                 log.info("订单已支付成功: {}", outTradeNo);
             } catch (WxPayException e) {
+                log.error("微信支付状态同步失败, outTradeNo: {}", outTradeNo, e);
                 throw new RuntimeException(e);
             }
         }

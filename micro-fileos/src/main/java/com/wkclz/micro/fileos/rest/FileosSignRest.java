@@ -9,6 +9,7 @@ import com.wkclz.tool.utils.BeanUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @RestController
 @RequestMapping(Route.PREFIX)
 @Tag(name = "文件签名")
@@ -28,6 +30,7 @@ public class FileosSignRest {
     @GetMapping(Route.SIGN_URL)
     @Operation(summary = "生成签名URL")
     public R<SignUrlResp> signUrl(@Valid SignUrlReq req) {
+        log.info("生成签名URL, req={}", req);
         String url;
         if (req.getExpireMinutes() != null && req.getExpireMinutes() > 0) {
             url = fileosSignApi.sign(req.getFileId(), req.getExpireMinutes(), TimeUnit.MINUTES);
@@ -42,6 +45,7 @@ public class FileosSignRest {
     @PostMapping(Route.SIGN_URLS)
     @Operation(summary = "批量生成签名URL")
     public R<List<SignUrlResp>> signUrls(@Valid @RequestBody SignUrlsReq req) {
+        log.info("批量生成签名URL, req={}", req);
         List<String> urls;
         if (req.getExpireMinutes() != null && req.getExpireMinutes() > 0) {
             urls = fileosSignApi.sign(req.getFileIds(), req.getExpireMinutes(), TimeUnit.MINUTES);

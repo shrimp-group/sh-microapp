@@ -40,6 +40,7 @@ public class FileosRecordRest {
     @GetMapping(Route.RECORD_PAGE)
     @Operation(summary = "文件记录分页查询")
     public R<PageData<RecordResp>> page(@Valid RecordPageReq req) {
+        log.info("分页查询文件记录, req={}", req);
         MdmFileosRecord entity = BeanUtil.cp(req, MdmFileosRecord.class);
         PageData<MdmFileosRecord> page = mdmFileosRecordService.getRecordPage(entity);
         if (CollectionUtils.isEmpty(page.getRecords())) {
@@ -53,6 +54,7 @@ public class FileosRecordRest {
     @GetMapping(Route.RECORD_INFO)
     @Operation(summary = "文件记录详情")
     public R<RecordResp> info(@Valid RecordInfoReq req) {
+        log.info("查询文件记录详情, req={}", req);
         MdmFileosRecord entity = mdmFileosRecordService.selectById(req.getId());
         if (entity == null) {
             return R.error("记录不存在");

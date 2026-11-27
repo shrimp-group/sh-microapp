@@ -9,6 +9,7 @@ import com.wkclz.tool.utils.BeanUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,7 @@ import java.util.List;
  * @table mdm_form_rule (表单校验规则) 示例rest 接口，代码重新生成会覆盖
  */
 @Tag(name = "3.表单校验规则验证器", description = "表单校验规则验证器管理接口")
+@Slf4j
 @Validated
 @RestController
 @RequestMapping(Route.PREFIX)
@@ -32,6 +34,7 @@ public class FormRuleValidatorRest {
     @Operation(summary = "6.表单校验规则-字段及验证器", description = "根据规则编码获取字段及验证器列表")
     @GetMapping(Route.FORM_RULE_FIELD_AND_VALIDATOR)
     public R<List<MdmFormRuleValidatorResp>> formRuleFieldAndValidator(@RequestParam String formRuleCode) {
+        log.info("字段及验证器列表查询, formRuleCode={}", formRuleCode);
         List<MdmFormRuleFieldValidatorDto> validatorList = mdmFormRuleFieldValidatorService.getFormRuleFieldValidatorList(formRuleCode);
         List<MdmFormRuleValidatorResp> respList = BeanUtil.cp(validatorList, MdmFormRuleValidatorResp.class);
         return R.ok(respList);
@@ -40,6 +43,7 @@ public class FormRuleValidatorRest {
     @Operation(summary = "7.表单校验规则-字段及验证器保存", description = "批量保存字段及验证器")
     @PostMapping(Route.FORM_RULE_FIELD_AND_VALIDATOR_SAVE)
     public R<Integer> formRuleFieldAndValidatorSave(@RequestBody List<MdmFormRuleValidatorCreateReq> reqList) {
+        log.info("字段及验证器批量保存, size={}", reqList.size());
         if (CollectionUtils.isEmpty(reqList)) {
             return R.error("表单校验规则列表不能为空");
         }

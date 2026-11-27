@@ -25,6 +25,9 @@ public class WxAppRest {
     @Autowired
     private WxMaConfiguration configuration;
 
+    /**
+     * 微信回调协议固定签名，豁免 Req/Resp 封装
+     */
     @Operation(summary = "1. 微信小程序验签")
     @GetMapping(value = Route.CUSTOMER_WX_PORTAL, produces = "text/plain;charset=utf-8")
     public String authGet(@RequestParam(name = "signature", required = false) String signature,

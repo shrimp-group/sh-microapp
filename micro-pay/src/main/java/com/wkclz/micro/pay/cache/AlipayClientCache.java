@@ -143,7 +143,7 @@ public class AlipayClientCache {
             CACHE_ALIPAY.put(tenantCode, client);
             CACHE_CONFIG.put(tenantCode, config);
         } catch (AlipayApiException e) {
-            log.error(e.getMessage(), e);
+            log.error("创建支付宝客户端失败, tenantCode: {}", tenantCode, e);
             throw new RuntimeException(e);
         }
     }

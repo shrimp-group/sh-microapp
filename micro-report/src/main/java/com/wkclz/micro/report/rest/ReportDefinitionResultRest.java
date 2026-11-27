@@ -14,6 +14,7 @@ import com.wkclz.web.bean.RemoveReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Tag(name = "4.报表结果字段", description = "报表结果字段管理接口")
+@Slf4j
 @Validated
 @RestController
 @RequestMapping(Route.PREFIX)
@@ -33,6 +35,7 @@ public class ReportDefinitionResultRest {
     @Operation(summary = "1.报表结果字段-列表查询", description = "根据报表编码查询结果字段列表")
     @GetMapping(Route.DEFINITION_RESULT_LIST)
     public R<List<ReportDefinitionResultResp>> resultList(@Valid ReportDefinitionResultListReq req) {
+        log.info("报表结果字段列表查询, req={}", req);
         ReportDefinitionResult result = BeanUtil.cp(req, ReportDefinitionResult.class);
         List<ReportDefinitionResult> list = reportDefinitionResultService.getResultList(result);
         List<ReportDefinitionResultResp> respList = BeanUtil.cp(list, ReportDefinitionResultResp.class);
@@ -43,6 +46,7 @@ public class ReportDefinitionResultRest {
     @PostMapping(Route.DEFINITION_RESULT_CREATE)
     @Transactional(rollbackFor = Exception.class)
     public R<ReportDefinitionResultResp> resultCreate(@Valid @RequestBody ReportDefinitionResultCreateReq req) {
+        log.info("报表结果字段创建, req={}", req);
         ReportDefinitionResult entity = BeanUtil.cp(req, ReportDefinitionResult.class);
         entity = reportDefinitionResultService.resultCreate(entity);
         ReportDefinitionResultResp resp = BeanUtil.cp(entity, ReportDefinitionResultResp.class);
@@ -53,6 +57,7 @@ public class ReportDefinitionResultRest {
     @PostMapping(Route.DEFINITION_RESULT_UPDATE)
     @Transactional(rollbackFor = Exception.class)
     public R<ReportDefinitionResultResp> resultUpdate(@Valid @RequestBody ReportDefinitionResultUpdateReq req) {
+        log.info("报表结果字段修改, req={}", req);
         ReportDefinitionResult entity = BeanUtil.cp(req, ReportDefinitionResult.class);
         entity = reportDefinitionResultService.resultUpdate(entity);
         ReportDefinitionResultResp resp = BeanUtil.cp(entity, ReportDefinitionResultResp.class);
@@ -63,6 +68,7 @@ public class ReportDefinitionResultRest {
     @PostMapping(Route.DEFINITION_RESULT_REMOVE)
     @Transactional(rollbackFor = Exception.class)
     public R<Integer> resultRemove(@Valid @RequestBody RemoveReq req) {
+        log.info("报表结果字段删除, req={}", req);
         ReportDefinitionResult entity = new ReportDefinitionResult();
         entity.setId(req.getId());
         Integer result = reportDefinitionResultService.resultRemove(entity);
@@ -72,6 +78,7 @@ public class ReportDefinitionResultRest {
     @Operation(summary = "5.报表结果字段-自动提取", description = "从SQL脚本自动提取结果字段")
     @PostMapping(Route.DEFINITION_RESULT_EXTRACT)
     public R<List<ReportDefinitionResultResp>> resultExtract(@Valid @RequestBody ReportDefinitionResultExtractReq req) {
+        log.info("报表结果字段自动提取, req={}", req);
         ReportDefinitionResultDto dto = BeanUtil.cp(req, ReportDefinitionResultDto.class);
         List<ReportDefinitionResult> list = reportDefinitionResultService.resultsExtract(dto);
         List<ReportDefinitionResultResp> respList = BeanUtil.cp(list, ReportDefinitionResultResp.class);

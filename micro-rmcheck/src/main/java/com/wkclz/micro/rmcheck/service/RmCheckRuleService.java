@@ -13,6 +13,7 @@ import com.wkclz.mybatis.helper.PageQuery;
 import com.wkclz.mybatis.service.BaseService;
 import com.wkclz.mybatis.service.TableInfoService;
 import com.wkclz.redis.helper.RedisIdGenerator;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,8 @@ import java.util.List;
  * @author wangkaicun
  * @table rm_check_rule (删除检查规则) 单表服务类，代码重新生成不覆盖. 只建议完成单表的逻辑，或主表为 rm_check_rule 的逻辑. 其他逻辑放 custom 中
  */
- 
+
+@Slf4j
 @Service
 public class RmCheckRuleService extends BaseService<RmCheckRule, RmCheckRuleMapper> {
 
@@ -45,6 +47,7 @@ public class RmCheckRuleService extends BaseService<RmCheckRule, RmCheckRuleMapp
     }
 
     public RmCheckRule create(RmCheckRule entity) {
+        log.info("删除检查规则创建, entity={}", entity);
         duplicateCheck(entity);
         tableCheck(entity);
         entity.setRuleCode(redisIdGenerator.generateIdWithPrefix("rm_rule_"));
@@ -53,6 +56,7 @@ public class RmCheckRuleService extends BaseService<RmCheckRule, RmCheckRuleMapp
     }
 
     public RmCheckRule update(RmCheckRule entity) {
+        log.info("删除检查规则修改, entity={}", entity);
         duplicateCheck(entity);
         tableCheck(entity);
         RmCheckRule oldEntity = selectById(entity.getId());
@@ -67,6 +71,7 @@ public class RmCheckRuleService extends BaseService<RmCheckRule, RmCheckRuleMapp
 
 
     public Integer customRemove(RmCheckRule rmCheckRule) {
+        log.info("删除检查规则删除, entity={}", rmCheckRule);
         if (rmCheckRule == null || rmCheckRule.getId() == null) {
             throw ValidationException.of(ResultCode.PARAM_NO_ID);
         }

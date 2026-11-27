@@ -2,12 +2,14 @@ package com.wkclz.micro.fun.engine.impl;
 
 import com.wkclz.micro.fun.engine.ScriptEngine;
 import com.wkclz.micro.fun.bean.entity.FunFunction;
+import lombok.extern.slf4j.Slf4j;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Value;
 
 /**
  * @author shrimp
  */
+@Slf4j
 public class JavaScriptEngineImpl extends ScriptEngine {
 
     private Context context;
@@ -19,6 +21,7 @@ public class JavaScriptEngineImpl extends ScriptEngine {
 
     @Override
     public Object exec(String param) {
+        log.info("执行 JS 脚本, funCode={}", this.getFunCode());
         Value function = this.context.getBindings("js").getMember(this.getFunCode());
         Value result = function.execute(param);
         return result.as(this.getFunReturn());
@@ -67,7 +70,7 @@ public class JavaScriptEngineImpl extends ScriptEngine {
         FunFunction fun = getDemo();
         JavaScriptEngineImpl engine = new JavaScriptEngineImpl(fun);
         Object value = engine.exec("GraalVM, I'm JavaScript");
-        System.out.println(value);
+        log.info("{}", value);
     }
 
 
