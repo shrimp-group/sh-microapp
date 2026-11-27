@@ -9,8 +9,8 @@
 | 属性 | 值 |
 |------|------|
 | GroupId | `com.wkclz.microapp` |
-| 版本 | `5.0.0-SNAPSHOT` |
-| 父 POM | `com.wkclz.framework:sh-parent:5.0.0-SNAPSHOT` |
+| 版本 | `5.0.1-SNAPSHOT` |
+| 父 POM | `com.wkclz.framework:sh-parent:5.0.1-SNAPSHOT` |
 | Java | 25 |
 | Spring Boot | 4.0.6 |
 | ORM | MyBatis 4.0.1 + PageHelper |
@@ -29,7 +29,7 @@
 ┌─────────────────────────────────────────────────────────────┐
 │                    sh-microapp (微应用集合)                    │
 │                                                              │
-│  micro-dict    micro-file    micro-form    micro-msg         │
+│  micro-dict    micro-fileos  micro-form    micro-msg         │
 │  micro-audit   micro-pdf     micro-mask    micro-pay         │
 │  micro-seq     micro-fun     micro-k8s     micro-liteflow    │
 │  micro-rmcheck micro-material micro-wxapp  micro-wxmp        │
@@ -61,7 +61,7 @@
 
 | 模块 | 说明 | API 前缀 | 核心能力 |
 |------|------|----------|----------|
-| `micro-file` | 文件管理 | `/micro-file` | 多 OSS 提供商(阿里云/S3/MinIO)、签名链接、Magic Bytes 校验 |
+| `micro-fileos` | 文件管理 | `/micro-fileos` | 多 OSS 提供商(阿里云/S3/MinIO)、签名链接、Magic Bytes 校验 |
 | `micro-pdf` | PDF 生成 | `/micro-pdf` | PDF 模板管理、基于模板生成 PDF |
 
 ### 消息与通知类

@@ -21,6 +21,18 @@
         <maven.compiler.source>25</maven.compiler.source>
         <maven.compiler.target>25</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- 三方依赖版本收口：未入 sh-bom 的版本在此集中管理（sh-bom 下沉后可迁移删除） -->
+        <graalvm-polyglot.version>25.0.1</graalvm-polyglot.version>
+        <easyexcel.version>3.1.1</easyexcel.version>
+        <jsqlparser.version>4.9</jsqlparser.version>
+        <flying-saucer-pdf.version>9.7.2</flying-saucer-pdf.version>
+        <wiremock.version>3.13.1</wiremock.version>
+        <qlexpress.version>3.3.4</qlexpress.version>
+        <!-- 命名避开 spring-boot-dependencies 内部属性 groovy.version（当前 5.0.5） -->
+        <codehaus-groovy.version>3.0.9</codehaus-groovy.version>
+        <flowable.version>8.0.0</flowable.version>
+        <liteflow.version>2.16.3.1</liteflow.version>
     </properties>
 
     <modules>
@@ -58,6 +70,188 @@
             <artifactId>sh-web</artifactId>
         </dependency>
     </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- 本工程模块统一登记（groupId com.wkclz.microapp），模块间依赖免写版本 -->
+            <dependency>
+                <groupId>com.wkclz.microapp</groupId>
+                <artifactId>micro-audit</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.wkclz.microapp</groupId>
+                <artifactId>micro-dict</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.wkclz.microapp</groupId>
+                <artifactId>micro-fileos</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.wkclz.microapp</groupId>
+                <artifactId>micro-liteflow</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.wkclz.microapp</groupId>
+                <artifactId>micro-form</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.wkclz.microapp</groupId>
+                <artifactId>micro-fun</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.wkclz.microapp</groupId>
+                <artifactId>micro-k8s</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.wkclz.microapp</groupId>
+                <artifactId>micro-mask</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.wkclz.microapp</groupId>
+                <artifactId>micro-material</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.wkclz.microapp</groupId>
+                <artifactId>micro-msg</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.wkclz.microapp</groupId>
+                <artifactId>micro-pdf</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.wkclz.microapp</groupId>
+                <artifactId>micro-points</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.wkclz.microapp</groupId>
+                <artifactId>micro-pay</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.wkclz.microapp</groupId>
+                <artifactId>micro-rmcheck</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.wkclz.microapp</groupId>
+                <artifactId>micro-seq</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.wkclz.microapp</groupId>
+                <artifactId>micro-flowable</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.wkclz.microapp</groupId>
+                <artifactId>micro-wxapp</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.wkclz.microapp</groupId>
+                <artifactId>micro-wxmp</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.wkclz.microapp</groupId>
+                <artifactId>micro-report</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.wkclz.microapp</groupId>
+                <artifactId>micro-autotest</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.wkclz.microapp</groupId>
+                <artifactId>micro-dbview</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.wkclz.microapp</groupId>
+                <artifactId>micro-dag</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <!-- 三方依赖版本收口（对应各模块原硬编码版本） -->
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>easyexcel</artifactId>
+                <version>${easyexcel.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.jsqlparser</groupId>
+                <artifactId>jsqlparser</artifactId>
+                <version>${jsqlparser.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.xhtmlrenderer</groupId>
+                <artifactId>flying-saucer-pdf-itext5</artifactId>
+                <version>${flying-saucer-pdf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wiremock</groupId>
+                <artifactId>wiremock-standalone</artifactId>
+                <version>${wiremock.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>QLExpress</artifactId>
+                <version>${qlexpress.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.groovy</groupId>
+                <artifactId>groovy</artifactId>
+                <version>${codehaus-groovy.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.flowable</groupId>
+                <artifactId>flowable-bpmn-model</artifactId>
+                <version>${flowable.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.flowable</groupId>
+                <artifactId>flowable-bpmn-converter</artifactId>
+                <version>${flowable.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.yomahub</groupId>
+                <artifactId>liteflow-spring-boot-starter</artifactId>
+                <version>${liteflow.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.yomahub</groupId>
+                <artifactId>liteflow-rule-sql</artifactId>
+                <version>${liteflow.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.yomahub</groupId>
+                <artifactId>liteflow-script-groovy</artifactId>
+                <version>${liteflow.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.yomahub</groupId>
+                <artifactId>liteflow-script-javax</artifactId>
+                <version>${liteflow.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.yomahub</groupId>
+                <artifactId>liteflow-script-aviator</artifactId>
+                <version>${liteflow.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <pluginManagement>

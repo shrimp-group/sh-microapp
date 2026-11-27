@@ -12,39 +12,30 @@
 
     <artifactId>micro-liteflow</artifactId>
 
-    <properties>
-        <liteflow.version>2.16.3.1</liteflow.version>
-    </properties>
-
     <dependencies>
 
         <dependency>
             <groupId>com.yomahub</groupId>
             <artifactId>liteflow-spring-boot-starter</artifactId>
-            <version>${liteflow.version}</version>
         </dependency>
         <dependency>
             <groupId>com.yomahub</groupId>
             <artifactId>liteflow-rule-sql</artifactId>
-            <version>${liteflow.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.yomahub</groupId>
             <artifactId>liteflow-script-groovy</artifactId>
-            <version>${liteflow.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.yomahub</groupId>
             <artifactId>liteflow-script-javax</artifactId>
-            <version>${liteflow.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.yomahub</groupId>
             <artifactId>liteflow-script-aviator</artifactId>
-            <version>${liteflow.version}</version>
         </dependency>
 
         <dependency>
@@ -53,20 +44,5 @@
         </dependency>
 
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>com.wkclz.generator</groupId>
-                <artifactId>generator-client</artifactId>
-                <version>5.0.0-SNAPSHOT</version>
-                <configuration>
-                    <options>
-                        <option>94d4e81d910ffe2ba738fc6dd1764c33</option>
-                    </options>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 
 </project>

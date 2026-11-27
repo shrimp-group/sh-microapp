@@ -12,12 +12,6 @@
 
     <artifactId>micro-flowable</artifactId>
 
-    <properties>
-        <maven.compiler.source>25</maven.compiler.source>
-        <maven.compiler.target>25</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-
     <dependencies>
         <!-- sh-flowable-client：对接 sh-flowable-server 的 HttpExchange 客户端 SDK -->
         <!-- 注：sh-flowable 属独立工程（com.wkclz.flowable），版本未由 sh-bom 管理，故在此显式声明 -->
@@ -35,16 +29,14 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
-        <!-- Flowable BPMN Model API：解析 BPMN XML 提取节点（版本由 sh-flowable 对齐 8.0.0） -->
+        <!-- Flowable BPMN Model API：解析 BPMN XML 提取节点（版本由根 pom dependencyManagement 收口，与 sh-flowable 对齐 8.0.0） -->
         <dependency>
             <groupId>org.flowable</groupId>
             <artifactId>flowable-bpmn-model</artifactId>
-            <version>8.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.flowable</groupId>
             <artifactId>flowable-bpmn-converter</artifactId>
-            <version>8.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

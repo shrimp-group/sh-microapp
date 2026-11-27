@@ -16,7 +16,6 @@
         <dependency>
             <groupId>com.wkclz.microapp</groupId>
             <artifactId>micro-fileos</artifactId>
-            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>com.github.binarywang</groupId>

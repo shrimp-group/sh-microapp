@@ -13,7 +13,10 @@
     <artifactId>micro-fun</artifactId>
 
     <properties>
+        <!-- 23.1.2 与运行 JDK 25 存在兼容性风险，整体升级 25.x 待设计评审（需运行时验证脚本引擎，模块暂无测试） -->
         <graalvm.version>23.1.2</graalvm.version>
+        <!-- org.graalvm.js:js 坐标仅发布至 23.0.x（无 23.1.x），无法随 ${graalvm.version} 统一 -->
+        <graalvm-js.version>23.0.7</graalvm-js.version>
     </properties>
 
     <dependencies>
@@ -36,11 +39,11 @@
         </dependency>
 
 
-        <!-- js 引擎 -->
+        <!-- js 引擎：随升级 25.x 一并评审（详见 properties 注释） -->
         <dependency>
             <groupId>org.graalvm.js</groupId>
             <artifactId>js</artifactId>
-            <version>23.0.7</version>
+            <version>${graalvm-js.version}</version>
         </dependency>
 
         <!-- Python 实现 -->
@@ -62,13 +65,11 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>QLExpress</artifactId>
-            <version>3.3.4</version>
         </dependency>
 
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy</artifactId>
-            <version>3.0.9</version>
         </dependency>
 
         <dependency>
@@ -78,20 +79,5 @@
 
 
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>com.wkclz.generator</groupId>
-                <artifactId>generator-client</artifactId>
-                <version>5.0.0-SNAPSHOT</version>
-                <configuration>
-                    <options>
-                        <option>fdd9f99973a1b7a1de7fe42119c22594</option>
-                    </options>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 
 </project>

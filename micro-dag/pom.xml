@@ -12,12 +12,6 @@
 
     <artifactId>micro-dag</artifactId>
 
-    <properties>
-        <maven.compiler.source>25</maven.compiler.source>
-        <maven.compiler.target>25</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.wkclz.framework</groupId>
@@ -36,13 +30,13 @@
         <dependency>
             <groupId>org.graalvm.polyglot</groupId>
             <artifactId>polyglot</artifactId>
-            <version>25.0.1</version>
+            <version>${graalvm-polyglot.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.graalvm.polyglot</groupId>
             <artifactId>js</artifactId>
-            <version>25.0.1</version>
+            <version>${graalvm-polyglot.version}</version>
             <type>pom</type>
             <optional>true</optional>
         </dependency>

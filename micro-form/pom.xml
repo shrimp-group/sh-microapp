@@ -12,12 +12,6 @@
 
     <artifactId>micro-form</artifactId>
 
-    <properties>
-        <maven.compiler.source>25</maven.compiler.source>
-        <maven.compiler.target>25</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.wkclz.framework</groupId>
@@ -29,19 +23,5 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>com.wkclz.generator</groupId>
-                <artifactId>generator-client</artifactId>
-                <version>5.0.0-SNAPSHOT</version>
-                <configuration>
-                    <options>
-                        <option>mdm_form</option>
-                    </options>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 
 </project>
