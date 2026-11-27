@@ -33,7 +33,8 @@
 │  micro-audit   micro-pdf     micro-mask    micro-pay         │
 │  micro-seq     micro-fun     micro-k8s     micro-liteflow    │
 │  micro-rmcheck micro-material micro-wxapp  micro-wxmp        │
-│  micro-autotest micro-report  micro-dag                       │
+│  micro-autotest micro-report  micro-dag    micro-dbview      │
+│  micro-points  micro-flowable                                 │
 └─────────────────────────────────────────────────────────────┘
                               ↓ 依赖
 ┌─────────────────────────────────────────────────────────────┐
@@ -247,12 +248,8 @@ public class XxxRest {
 ### 模块间依赖
 
 ```
-micro-dict ← micro-form (表单字典选项)
-micro-dict ← micro-mask (脱敏字典)
-micro-dict ← micro-seq  (序列号字典类型)
-micro-dict ← micro-report (报表参数字典选项，仅字段引用，无硬依赖)
-micro-file ← micro-pdf  (PDF 文件存储)
-micro-file ← micro-wxapp(小程序媒体上传)
+micro-dict ← micro-form/micro-mask/micro-seq (字典选项/脱敏字典/序列号类型，数据层引用，无代码依赖)
+micro-fileos ← micro-wxapp/micro-wxmp (FileosSignApi 签名头像)、micro-material (FileosDeleteApi/FileosSignApi)
 micro-points ← micro-pay (积分支付/退款积分回退)
 sh-flowable-client ← micro-flowable (流程引擎对接，外部工程 com.wkclz.flowable:sh-flowable-client:1.0.0-SNAPSHOT)
 ```
@@ -270,7 +267,7 @@ sh-flowable-client ← micro-flowable (流程引擎对接，外部工程 com.wkc
 5. 按标准目录结构创建 entity / mapper / service / rest
 6. 创建 `Route.java` 定义路由常量
 7. 编写 `AGENTS.md` 模块开发指南
-8. 在 `.agents/skills/` 下创建 SKILL.md
+8. 在 `.trae/skills/micro-apps/<module>/SKILL.md` 创建模块级技能文档（集中存放于根 `.trae/skills/micro-apps/`，父级索引见 `.trae/skills/micro-apps/SKILL.md`）
 
 ### 引用模块
 
