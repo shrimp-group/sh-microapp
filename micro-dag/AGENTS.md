@@ -36,7 +36,7 @@ public class DataFetchHandler implements NodeHandler {
 
 3. 执行建表脚本 `sql/dag_init.sql`，然后调用 `POST /micro-dag/process/create`（后端生成 dagCode）+ `/process/version/publish`
    创建流程，`POST /micro-dag/process/version/update` 编辑 DRAFT 草稿，`POST /micro-dag/instance/launch` 发起实例。
-4. 可选：执行 `sql/dag_demo.sql` 灌入 14 条全场景演示流程（幂等，dag_code 前缀 dag_demo_，配合 `dag.demo-enabled=true` 使用，教程见 docs/living-docs-technical/modules/micro-dag-demo-tutorial.md）
+4. 可选：执行 `sql/dag_demo.sql` 灌入 14 条全场景演示流程（幂等，dag_code 前缀 dag_demo_，配合 `dag.demo-enabled=true` 使用）
 
 ## 配置项（dag.*）
 

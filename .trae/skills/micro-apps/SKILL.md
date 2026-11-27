@@ -72,6 +72,9 @@ description: 微应用模块知识总索引——涉及微应用编码、模块�
 | micro-k8s | `micro-k8s/SKILL.md` | K8s 集群管理模块。多集群 kubeConfig 配置、通过 Kind 策略模式查询/创建/更新/删除 K8s 资源 |
 | micro-autotest | `micro-autotest/SKILL.md` | REST API 自动化测试引擎。运行时扫描 REST 接口、自动 Mock 外部依赖、生成 MD+HTML 测试报告 |
 | micro-dbview | `micro-dbview/SKILL.md` | 数据库管理工具。数据源管理、元数据查询、SQL 执行、DDL 操作、数据库权限控制 |
+| micro-report | `micro-report/SKILL.md` | 低代码 SQL 报表模块。报表定义/历史版本/参数/结果字段管理、SQL 测试、`#{param}` 与 SELECT 列自动提取、动态查询执行、分页、EasyExcel 导出、ReportCache Redis Pub/Sub 缓存 |
+| micro-flowable | `micro-flowable/SKILL.md` | 流程引擎对接模块。对接 sh-flowable-server（sh-flowable-client SDK）：流程设计/部署/节点配置/分类、申请与草稿提交、待办已办与审批动作、实例历史透传查询、审批意见、AOP client 异常监控落库 |
+| micro-dag | `micro-dag/SKILL.md` | 嵌入式轻量分布式 DAG 业务编排引擎。流程定义/发布、实例发起、分布式对等调度（CAS 领取+租约故障转移）、失败自动重试、人工干预治理（中断/跳过/重置/重跑）、系统节点 handler 化（开始/结束/分支/定时器）、开始节点 cron 时间驱动、NodeHandler SPI 接入、过程日志 NODE_LOG |
 
 ## 模块依赖关系
 

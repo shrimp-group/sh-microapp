@@ -178,15 +178,6 @@ CI 流水线规范详见 [harness-spec.md](harness-spec.md#四质量门禁规范
   - 是否影响现有功能
 - 审查反馈必须在 1 个工作日内响应
 
-### 活文档更新
-
-每次完成任务后，必须按照 [活文档更新规则](living-docs-guide.md) 更新 docs/living-docs-technical/ 和 docs/living-docs-business/：
-- 新增/删除模块 → 更新"模块说明"和"架构概览"
-- 新增/修改 API → 更新"API 列表"
-- 新增/修改数据模型 → 更新"数据模型"
-- 新增/升级依赖 → 更新"外部依赖"
-- 任何变更 → 在"变更日志"添加记录
-
 ### 技术债务管理
 
 发现技术债务时，按以下流程登记（参照 harness 规范 `tech-debt-conventions.md` 与本地模板 `docs/tech-debts/templates/common/`）：

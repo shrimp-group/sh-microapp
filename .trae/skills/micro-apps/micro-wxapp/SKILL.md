@@ -49,7 +49,7 @@ description: "微信小程序模块。小程序登录/用户管理/手机号绑�
 ┌─────────────────────────────────────────────────────────────────┐
 │                    配置 & 辅助层                                  │
 │  WxMaConfiguration  (多租户 WxMaService 管理 + 消息路由)         │
-│  MicroAppAutoConfig (自动配置 @ComponentScan + @MapperScan)      │
+│  Checker (配置校验器)         MicroAppAutoConfig (自动配置)       │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -112,6 +112,7 @@ description: "微信小程序模块。小程序登录/用户管理/手机号绑�
 | 类 | 说明 |
 |----|------|
 | `WxMaConfiguration` | 多租户 WxMaService 管理：按 appid/tenantCode 懒加载初始化，消息路由（log/text/pic/qrcode/template） |
+| `Checker` | 配置校验器：应用启动时校验小程序配置完整性 |
 | `MicroAppAutoConfig` | 自动配置类：`@ComponentScan("com.wkclz.micro.wxapp")` + `@MapperScan("com.wkclz.micro.wxapp.mapper")` |
 
 ---

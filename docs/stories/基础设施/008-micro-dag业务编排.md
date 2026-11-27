@@ -75,5 +75,5 @@ P1
 
 ## 备注
 - 系统分类说明：SYSTEM 永久生效 / DEMO 受 `dag.demo-enabled` 限制（6 个演示 handler，GraalJS optional）/ BUSINESS 业务接入默认
-- 全场景演示流程：`sql/dag_demo.sql`（14 条，dag_code 前缀 dag_demo_），教程见 `docs/living-docs-technical/modules/micro-dag-demo-tutorial.md`
+- 全场景演示流程：`sql/dag_demo.sql`（14 条，dag_code 前缀 dag_demo_）
 - DDL：新建库用 `sql/dag_init.sql`；存量库升级执行 detail_json JSON 迁移 + log_text TEXT 增列

@@ -43,5 +43,5 @@
 | 3. 代码规范符合度（P3C/java.md） | harness-alignment/03-code-standards.md | 20 | P1×12 P2×8 | Done（2026-11-27） |
 | 4. 冗余代码精减 | harness-alignment/04-redundant-code.md | 15 | P0×1 P1×4 P2×10 | Done（2026-11-27；实体/Dto copy 按用户裁定全部保留，净精减 7 个零引用文件约 130 行；条目 7/8 转设计评审/框架对齐，13 待业务确认） |
 | 5. 技术债务管理机制对齐 | harness-alignment/05-tech-debt-process.md | 7 | P1×3 P2×4 | Done（2026-11-27，含附带发现补录 micro-dbview） |
-| 6. 文档体系对齐 | harness-alignment/06-docs-alignment.md | 9 | P0×2 P1×1 P2×2（另有 4 条归类项） | Open |
-| 7. 构建与依赖规范 | harness-alignment/07-build-deps.md | 14 | P1×2 P2×12 | Open |
+| 6. 文档体系对齐 | harness-alignment/06-docs-alignment.md | 9 | P0×2 P1×1 P2×2（另有 4 条归类项） | Done（2026-11-28；13 份模块 AGENTS.md 补齐、stories 状态核对、依赖口径实测修正；模块 AGENTS.md 覆盖率 22/22） |
+| 7. 构建与依赖规范 | harness-alignment/07-build-deps.md | 14 | P1×2 P2×12 | Done（2026-11-27，根 pom 集中收口；sh-bom 下沉/GraalVM 升级待框架对齐与设计评审） |

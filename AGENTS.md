@@ -360,8 +360,6 @@ sh-flowable-client ← micro-flowable (流程引擎对接，外部工程 com.wkc
 ## 研发规范
 - [研发过程规范](docs/dev-process.md)
 - [需求拆解模板](docs/requirement-template.md)
-- [技术活文档](docs/living-docs-technical/)
-- [业务活文档](docs/living-docs-business/)
 - [开发规范](docs/standards/)
 - [Harness 规范总纲](docs/harness-spec.md)
 - [技术债务索引](docs/tech-debts/INDEX.md)——发现技术债务按 [dev-process 技术债务管理](docs/dev-process.md) 五步流程登记：取最大序号+1 → 按本地模板 `docs/tech-debts/templates/common/tech-debt.md.template` 建文件入分类子目录 → 填必填字段 → 更新 INDEX.md Open 组 → 更新统计概览

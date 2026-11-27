@@ -44,7 +44,6 @@ open → in-progress → resolved
 2. 填写"解决日期"（resolved 时）
 3. 填写"当前解决方案"或"建议解决方案"
 4. 更新 INDEX.md 中的对应条目
-5. 更新活文档（docs/living-docs-business/changelog.md）的变更日志
 
 ## 新增债务流程
 1. 确定下一个可用序号（查看 INDEX.md 中最大序号 +1）
@@ -57,4 +56,3 @@ open → in-progress → resolved
 1. 修改债务文件：状态改为 resolved，填写解决日期和解决方案
 2. 更新 INDEX.md：将条目从 Open/In Progress 移到 Resolved 分组
 3. 更新统计概览数据
-4. 在活文档变更日志中添加记录

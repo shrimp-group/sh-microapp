@@ -18,8 +18,6 @@ project-root/
 ├── docs/                   # 项目文档
 │   ├── harness-spec.md    # 本规范文档
 │   ├── dev-process.md     # 研发过程规范
-│   ├── living-docs-technical/ # 技术活文档
-│   ├── living-docs-business/  # 业务活文档
 │   ├── requirement-template.md  # 需求拆解模板
 │   ├── stories/           # Stories 目录
 │   ├── coding-standards/  # 代码规范目录
@@ -46,8 +44,6 @@ project-root/
 | `config/` | 应用配置文件（环境变量模板、特性开关等） | 不含敏感信息 |
 | `scripts/` | 构建、部署、数据迁移等运维脚本 | 必须可独立执行 |
 | `docs/` | 项目文档 | 包含规范与模板 |
-| `docs/living-docs-technical/` | 技术活文档，随代码同步更新 | 每次任务完成后更新 |
-| `docs/living-docs-business/` | 业务活文档，随代码同步更新 | 每次任务完成后更新 |
 | `docs/stories/` | 业务逻辑 Stories，含 mermaid 流程图 | 每个 story 独立文件 |
 | `docs/coding-standards/` | 代码规范文档（按语言） | 从 sh-harness 复制 |
 | `docs/standards/` | 开发规范文档（前端、后端、数据库、API 等） | 从 sh-harness 复制 |

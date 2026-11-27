@@ -65,24 +65,6 @@ description: Use when 创建新的 micro-* 微模块——需要新建模块目�
 </project>
 ```
 
-如需启用 shrimp-gen 代码生成器，追加 `<build>` 插件：
-
-```xml
-<build>
-    <plugins>
-        <plugin>
-            <groupId>com.wkclz.generator</groupId>
-            <artifactId>generator-client</artifactId>
-            <version>5.0.0-SNAPSHOT</version>
-            <configuration>
-                <options>
-                    <option><!-- 生成器选项 ID --></option>
-                </options>
-            </configuration>
-        </plugin>
-    </plugins>
-</build>
-```
 
 ### 步骤 3：自动配置 XxxModAutoConfig.java
 
