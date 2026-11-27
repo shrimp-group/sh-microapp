@@ -184,6 +184,8 @@ public class MdmXxx extends BaseEntity {
 ```
 
 > 命名前缀约定：新模块不再强制 `Mdm` 前缀，可按业务域自由命名（如 `DagInstance`、`PayOrder`）；存量模块两种风格（Mdm 前缀派与无前缀派）共存，不再批量重命名。
+>
+> 拷贝方法约定：实体类（bean/entity）与 Dto 类（bean/dto）的 copy/copyIfNotNull 方法**一律保留**——实体拷贝统一使用实体自带（或 `BaseEntity` 内置）的静态方法 `copy(source, target)`（全量）/`copyIfNotNull(source, target)`（增量），禁止替换为 `BeanUtil`；Dto 的 copy 为 `BeanUtil` 胶水示例代码，即使暂无调用方也保留，已有调用方保持 `Dto.copy(...)` / `Dto::copy` 静态调用形态；`BeanUtil.cp(source, Target.class)` 仅用于 Req→Entity、Entity→Resp 等无手写拷贝方法的转换。
 
 ### Mapper 定义
 

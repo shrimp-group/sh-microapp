@@ -340,7 +340,7 @@ public PayOrderDto createPayOrder(PayOrder model, HttpServletRequest req, HttpSe
             return wxpayHelper.pay(model, req, rep);   // 返回含 jsapiResult 的 DTO
         }
         if (PayMethod.MOCK_PAY == payMethod) {
-            return PayOrderDto.copy(model);             // 模拟支付直接返回
+            return BeanUtil.cp(model, PayOrderDto.class);  // 模拟支付直接返回
         }
     } catch (Exception e) {
         // 支付失败补偿：释放已扣减的积分（幂等键 CANCEL:outTradeNo）
